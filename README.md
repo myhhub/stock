@@ -195,4 +195,6 @@ _run_job.bat
 _run_web.bat
 
 # 特别声明
+本项目参考了pythonstock、sngyai。
+
 股市有风险投资需谨慎，本项目只能用于学习、股票分析，投资盈亏概不负责。
