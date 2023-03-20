@@ -4,10 +4,6 @@
 InStock股票系统，计算各种股票指标，内置多种选股策略，支持选股验证回测，支持批量时间，运行高效。
 ## 一：计算股票指标
 
-![](img/01.jpg)
-
-![](img/02.jpg)
-
 1、交易量delta指标分析
 
 The Volume Delta (Vol ∆) 与前一天交易量的增量。
@@ -76,9 +72,13 @@ The Volume Delta (Vol ∆) 与前一天交易量的增量。
 
 [成交量比率（Volumn Ratio，VR）（简称VR）](http://wiki.mbalib.com/wiki/成交量比率) ，是一项通过分析股价上升日成交额（或成交量，下同）与股价下降日成交额比值， 从而掌握市场买卖气势的中期技术指标。 VR, default to 26 days stock["vr"] MAVR is the simple moving average of VR stock["vr_6_sma"]
 
+
+![](img/01.jpg)
+
+![](img/02.jpg)
+
 ## 二：根据指标判定可能买入卖出的股票
 
-![](img/05.jpg)
 
 ```
 KDJ:
@@ -101,9 +101,9 @@ VR:
 2、低价区域40－70可以买进。
 ```
 
+![](img/05.jpg)
 ## 三：策略选股
 
-![](img/04.jpg)
 
 ```
 1、放量上涨
@@ -118,15 +118,18 @@ VR:
 10、低ATR成长策略
 ```
 
+![](img/04.jpg)
+
 ## 四：选股验证
 
-![](img/05.jpg)
-
-![](img/06.jpg)
 
 ```
 对指标、策略等选出的股票进行回测，验证其准确性。
 ```
+
+![](img/05.jpg)
+
+![](img/06.jpg)
 
 ## 四：支持批量
 
