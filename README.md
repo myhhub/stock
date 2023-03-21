@@ -9,7 +9,8 @@ InStock股票系统，计算各种股票指标，内置多种选股策略，支�
 ![](img/00.jpg)
 
 ## 一：计算股票指标
-
+计算了如下指标：
+```
 1、交易量delta指标分析
 
 The Volume Delta (Vol ∆) 与前一天交易量的增量。
@@ -77,7 +78,7 @@ The Volume Delta (Vol ∆) 与前一天交易量的增量。
 17、VR，MAVR指标
 
 [成交量比率（Volumn Ratio，VR）（简称VR）](http://wiki.mbalib.com/wiki/成交量比率) ，是一项通过分析股价上升日成交额（或成交量，下同）与股价下降日成交额比值， 从而掌握市场买卖气势的中期技术指标。 VR, default to 26 days stock["vr"] MAVR is the simple moving average of VR stock["vr_6_sma"]
-
+```
 
 ![](img/01.jpg)
 
