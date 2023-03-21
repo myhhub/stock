@@ -185,12 +185,11 @@ N个时间作业 python execute_daily_job.py 2022-01-01,2021-02-08,2022-03-012
 
 # 安装说明
 
-建议windows下安装系统，方便操作及使用，同时安装也简单。以下安装及运行以windows为例进行介绍。
+建议windows下安装，方便操作及使用系统，同时安装也非常简单。以下安装及运行以windows为例进行介绍。
 
 1.安装最新的 python 3.11.2
 
 ```
-
 （1）在官网 https://www.python.org/downloads/ 下载安装包，一键安装即可，安装切记勾选自动设置环境变量。
 （2）配置永久全局国内镜像库（因为有墙，无法正常安装库文件），执行如下dos命令：
 python pip config --global set  global.index-url https://mirrors.aliyun.com/pypi/simple/
@@ -217,7 +216,7 @@ python pip freeze > requirements.txt
 （2）解压并将ta_lib放在C盘根目录
 （3）https://visualstudio.microsoft.com/zh-hans/downloads/下载并安装Visual Studio Community，安装切记勾选Visual C++功能
 （4）Build TA-Lib Library # 构建 TA-Lib 库
-    ①在开始菜单中搜索并打开[VSxxxx x64(x32) Native Tools Command Prompt](根据系统选择32位或64位)
+    ①在开始菜单中搜索并打开[Native Tools Command Prompt](根据操作系统选择32位或64位)
     ②输入cd C:\ta-lib\c\make\cdr\win32\msvc
     ③构建库 nmake
 （5）安装完成。
