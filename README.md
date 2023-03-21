@@ -207,8 +207,9 @@ python pip freeze > requirements.txt
 
 4.安装talib，安装见以下：
 
-```
 常见安装方法：
+
+```
 第一种方法. Anaconda 下安装
     （1）打开Anaconda Prompt终端。
     （2）在终端输入命令行conda install -c conda-forge ta-lib 。
@@ -224,14 +225,16 @@ python pip freeze > requirements.txt
         ③构建库 nmake
     （5）安装完成。
 ```
-5.安装Navicat Premium（可选）
+5.安装Navicat（可选）
+
+安装Navicat可以方便管理数据库，以及可以手工对数据进行查看、处理、分析、挖掘。
+
+Navicat是一套可创建多个连接的数据库管理工具，用以方便管理 MySQL、Oracle、PostgreSQL、SQLite、SQL Server、MariaDB 和 MongoDB 等不同类型的数据库
 
 ```
-方便管理数据库，可以手工对数据进行处理、分析、挖掘。
+（1）在官网 https://www.navicat.com.cn/download/navicat-premium 下载安装包，一键安装即可。
 
-在官网 https://www.navicat.com.cn/download/navicat-premium 下载安装包，一键安装即可，
-
-然后下载破解补丁: https://pan.baidu.com/s/18XpTHrm9OiLEl3u6z_uxnw 提取码: 8888 ，破解即可。
+（2）然后下载破解补丁: https://pan.baidu.com/s/18XpTHrm9OiLEl3u6z_uxnw 提取码: 8888 ，破解即可。
 ```
 6.配置数据库
 
