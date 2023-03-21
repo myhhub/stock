@@ -141,6 +141,17 @@ VR:
 
 ```
 可以通过时间段、枚举时间、当前时间进行指标计算、策略选股及回测等。同时支持智能识别交易日，所以日期可以任意输入。
+------整体作业，支持批量作业------
+当前时间作业 python execute_daily_job.py
+1个时间作业 python execute_daily_job.py 2022-03-01
+N个时间作业 python execute_daily_job.py 2022-01-01,2021-02-08,2022-03-012
+区间作业 python execute_daily_job.py 2022-01-01 2022-03-01
+------单功能作业，除了创建数据库，其他都支持批量作业------
+创建数据库作业 python init_job.py
+基础数据作业 python basic_data_daily_job.py
+指标数据作业 python indicators_data_daily_job.py
+策略数据作业 python strategy_data_daily_job.py
+回测数据 python backtest_data_daily_job.py
 ```
 
 ## 五：运行高效
