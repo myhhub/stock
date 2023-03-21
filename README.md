@@ -194,10 +194,11 @@ db_charset = "utf8mb4"  # 数据库字符集
 ```
 
 # 运行说明
+```
 
 1.数据抓取、处理、分析
 
-_run_job.bat
+运行_run_job.bat
 
 支持批量作业，具体参见_run_job.bat中的注释说明。
 
@@ -205,7 +206,8 @@ _run_job.bat
 
 2.启动web服务
 
-_run_web.bat
+运行_run_web.bat
+```
 
 # 特别声明
 本项目参考了pythonstock、sngyai。
