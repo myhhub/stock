@@ -229,7 +229,7 @@ python pip freeze > requirements.txt
 ```
 5.安装Navicat（可选）
 
-安装Navicat可以方便管理数据库，以及可以手工对数据进行查看、处理、分析、挖掘。
+Navicat可以方便管理数据库，以及可以手工对数据进行查看、处理、分析、挖掘。
 
 Navicat是一套可创建多个连接的数据库管理工具，用以方便管理 MySQL、Oracle、PostgreSQL、SQLite、SQL Server、MariaDB 和 MongoDB 等不同类型的数据库
 
