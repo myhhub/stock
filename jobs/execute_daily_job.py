@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import logging
-import os.path
-import sys
+
 import time
 import datetime
 import concurrent.futures
 
+import logging
+import os.path
+import sys
 # 在项目运行时，临时将项目路径添加到环境变量
 cpath = os.path.dirname(os.path.dirname(__file__))
 sys.path.append(cpath)

@@ -4,6 +4,14 @@
 
 import logging
 import pymysql
+
+import os.path
+import sys
+# 在项目运行时，临时将项目路径添加到环境变量
+cpath = os.path.dirname(os.path.dirname(__file__))
+sys.path.append(cpath)
+
+
 import libs.database as mdb
 
 __author__ = 'myh '

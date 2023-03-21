@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import os.path
-import sys
 from abc import ABC
 import tornado.escape
 from tornado import gen
@@ -16,6 +14,9 @@ import akshare as ak
 import bokeh as bh
 import talib as tl
 
+
+import os.path
+import sys
 # 在项目运行时，临时将项目路径添加到环境变量
 cpath = os.path.dirname(os.path.dirname(__file__))
 sys.path.append(cpath)
