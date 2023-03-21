@@ -185,20 +185,22 @@ N个时间作业 python execute_daily_job.py 2022-01-01,2021-02-08,2022-03-012
 
 # 安装说明
 
-建议windows下安装系统，毕竟要安装的东西简单。
+建议windows下安装系统，方便操作及使用，同时安装也简单。以下安装及运行以windows为例进行介绍。
 
-1.安装最新的 python 3.11.2。
+1.安装最新的 python 3.11.2
 
 ```
-在官网 https://www.python.org/downloads/ 下载安装包，一键安装即可。安装切记勾选自动设置环境变量。
+
+（1）在官网 https://www.python.org/downloads/ 下载安装包，一键安装即可，安装切记勾选自动设置环境变量。
+（2）配置永久全局国内镜像库（因为有墙，无法正常安装库文件），执行如下dos命令：
+python pip config --global set  global.index-url https://mirrors.aliyun.com/pypi/simple/
+# 如果你只想为当前用户设置，你也可以去掉下面的"--global"选项
 ```
 2.安装最新的mysql数据库。
-
 ```
 在官网 https://dev.mysql.com/downloads/mysql/ 下载安装包，一键安装即可。
 ```
 3.安装requirements.txt中的库，都是目前最新版本。
-
 ```
 dos切换到本系统的根目录，执行下面命令：
 python pip install -r requirements.txt
@@ -209,23 +211,21 @@ python pip freeze > requirements.txt
 
 4.安装talib，安装见以下：
 
-常见安装方法：
-
 ```
-第一种方法. Anaconda 下安装
-    （1）打开Anaconda Prompt终端。
-    （2）在终端输入命令行conda install -c conda-forge ta-lib 。
-    （3）此处确认是否继续安装？输入y 继续安装，直到完成
-    （4）安装完成。
-第二种方法. pip 下安装
-    （1）https://www.ta-lib.org/下载并解压ta-lib-0.4.0-msvc.zip
-    （2）解压并将ta_lib放在C盘根目录
-    （3）下载并安装Visual Studio Community 2015版及以后，安装切记勾选Visual C++功能
-    （4）Build TA-Lib Library # 构建 TA-Lib 库
-        ①在开始菜单中搜索并打开[VS2015 x64   Native Tools Command Prompt]
-        ②输入cd C:\ta-lib\c\make\cdr\win32\msvc
-        ③构建库 nmake
-    （5）安装完成。
+第一种方法. pip 下安装
+（1）https://www.ta-lib.org/下载并解压ta-lib-0.4.0-msvc.zip
+（2）解压并将ta_lib放在C盘根目录
+（3）https://visualstudio.microsoft.com/zh-hans/downloads/下载并安装Visual Studio Community，安装切记勾选Visual C++功能
+（4）Build TA-Lib Library # 构建 TA-Lib 库
+    ①在开始菜单中搜索并打开[VSxxxx x64(x32) Native Tools Command Prompt](根据系统选择32位或64位)
+    ②输入cd C:\ta-lib\c\make\cdr\win32\msvc
+    ③构建库 nmake
+（5）安装完成。
+第二种方法. Anaconda 下安装
+（1）打开Anaconda Prompt终端。
+（2）在终端输入命令行conda install -c conda-forge ta-lib 。
+（3）此处确认是否继续安装？输入y 继续安装，直到完成
+（4）安装完成。
 ```
 5.安装Navicat（可选）
 
