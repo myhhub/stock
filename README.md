@@ -217,8 +217,8 @@ python pip freeze > requirements.txt
 （3）https://visualstudio.microsoft.com/zh-hans/downloads/下载并安装Visual Studio Community，安装切记勾选Visual C++功能
 （4）Build TA-Lib Library # 构建 TA-Lib 库
     ①在开始菜单中搜索并打开[Native Tools Command Prompt](根据操作系统选择32位或64位)
-    ②输入cd C:\ta-lib\c\make\cdr\win32\msvc
-    ③构建库 nmake
+    ②输入 cd C:\ta-lib\c\make\cdr\win32\msvc
+    ③构建库，输入 nmake
 （5）安装完成。
 第二种方法. Anaconda 下安装
 （1）打开Anaconda Prompt终端。
