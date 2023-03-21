@@ -136,23 +136,24 @@ VR:
 
 3.安装requirements.txt中的库，都是目前最新版本。
 
-4.talib安装，参见官网https://www.ta-lib.org/。
+4.安装talib，安装见以下：
+
 ```
 常见安装方法：
 第一种方法. Anaconda 下安装
     （1）打开Anaconda Prompt终端。
     （2）在终端输入命令行conda install -c conda-forge ta-lib 。
     （3）此处确认是否继续安装？输入y 继续安装，直到完成
-    （4） 安装完成。
+    （4）安装完成。
 第二种方法. pip 下安装
-    （1）下载并解压ta-lib-0.4.0-msvc.zip
-    （2） 解压并将ta_lib放在C盘根目录
+    （1）https://www.ta-lib.org/下载并解压ta-lib-0.4.0-msvc.zip
+    （2）解压并将ta_lib放在C盘根目录
     （3）下载并安装Visual Studio Community 2015版及以后，安装切记勾选Visual C++功能
-    （4） Build TA-Lib Library # 构建 TA-Lib 库
+    （4）Build TA-Lib Library # 构建 TA-Lib 库
         ①在开始菜单中搜索并打开[VS2015 x64   Native Tools Command Prompt]
         ②输入cd C:\ta-lib\c\make\cdr\win32\msvc
         ③构建库 nmake
-    （5） 安装完成。
+    （5）安装完成。
 ```
 5.配置数据库
 
