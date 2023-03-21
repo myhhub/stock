@@ -145,11 +145,21 @@ VR:
 
 # 安装说明
 
-1.安装最新的python3.11。
-
+1.安装最新的 python 3.11.2。
+```
+在官网 https://www.python.org/downloads/ 下载安装包，一键安装即可。
+```
 2.安装最新的mysql数据库。
 
+```
+在官网 https://dev.mysql.com/downloads/mysql/ 下载安装包，一键安装即可。
+```
 3.安装requirements.txt中的库，都是目前最新版本。
+
+```
+dos切换到系统的根目录，执行下面命令
+pip install -r requirements.txt
+```
 
 4.安装talib，安装见以下：
 
