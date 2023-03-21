@@ -1,0 +1,200 @@
+{% extends "layout/default.html" %}
+
+{% block main_content %}
+
+	<h3 class="header smaller lighter blue">InStock股票系统</h3>
+
+
+	<div class="clearfix">
+		<div class="pull-left tableTools-container">
+			<h3>功能介绍</h3>
+		</div>
+	</div>
+
+    <p dir="auto">一：计算股票指标：</p>
+    <div class="table">
+        <div class="tbody">
+            <div class="tr">
+                <div class="td">1、交易量delta指标分析</div>
+                <div class="td">The Volume Delta (Vol ∆) 与前一天交易量的增量。</div>
+            </div>
+            <div class="tr">
+                <div class="td">2、计算n天价差</div>
+                <div class="td">可以计算，向前n天，和向后n天的价差。</div>
+            </div>
+            <div class="tr">
+                <div class="td">3、n天涨跌百分百计算</div>
+                <div class="td">可以看到，-n天数据和今天数据的百分比。</div>
+            </div>
+            <div class="tr">
+                <div class="td">4、CR指标</div>
+                <div class="td"><a href="http://wiki.mbalib.com/wiki/CR%E6%8C%87%E6%A0%87" rel="nofollow" target="_blank">价格动量指标(CR)</a>
+                    跌穿a、b、c、d四条线，再由低点向上爬升160时，为短线获利的一个良机，应适当卖出股票。
+                    CR跌至40以下时，是建仓良机。而CR高于300~400时，应注意适当减仓。
+                </div>
+            </div>
+            <div class="tr">
+                <div class="td">5、最大值，最小值</div>
+                <div class="td">计算区间最大值 volume max of three days ago, yesterday and two days later stock["volume_-3,2,-1_max"] volume min between 3 days ago and tomorrow stock["volume_-3~1_min"] 实际使用的时候使用 -2~2 可计算出5天的最大，最小值。
+                </div>
+            </div>
+            <div class="tr">
+                <div class="td">6、KDJ指标</div>
+                <div class="td"><a href="http://wiki.mbalib.com/wiki/%E9%9A%8F%E6%9C%BA%E6%8C%87%E6%A0%87" rel="nofollow" target="_blank">随机指标(KDJ)</a>
+                    一般是根据统计学的原理，通过一个特定的周期（常为9日、9周等）内出现过的最高价、
+                    最低价及最后一个计算周期的收盘价及这三者之间的比例关系，来计算最后一个计算周期的未成熟随机值RSV，
+                    然后根据平滑移动平均线的方法来计算K值、D值与J值，并绘成曲线图来研判股票走势。
+                    （3）在使用中，常有J线的指标，即3乘以K值减2乘以D值（3K－2D＝J），其目的是求出K值与D值的最大乖离程度，
+                    以领先KD值找出底部和头部。J大于100时为超买，小于10时为超卖。
+                </div>
+            </div>
+            <div class="tr">
+                <div class="td">7、SMA指标</div>
+                <div class="td"><a href="http://wiki.mbalib.com/wiki/Sma" rel="nofollow" target="_blank">简单移动平均线（Simple
+                    Moving Average，SMA）</a>  可以动态输入参数，获得几天的移动平均。
+                </div>
+            </div>
+            <div class="tr">
+                <div class="td">8、MACD指标</div>
+                <div class="td"><a href="http://wiki.mbalib.com/wiki/MACD" rel="nofollow" target="_blank">平滑异同移动平均线(Moving Average Convergence Divergence，简称MACD指标)</a>
+                    ，也称移动平均聚散指标 MACD
+                    则可发挥其应有的功能，但当市场呈牛皮盘整格局，股价不上不下时，MACD买卖讯号较不明显。 当用MACD作分析时，亦可运用其他的技术分析指标如短期
+                    K，D图形作为辅助工具，而且也可对买卖讯号作双重的确认。
+                </div>
+            </div>
+            <div class="tr">
+                <div class="td">9、BOLL指标</div>
+                <div class="td"><a href="http://wiki.mbalib.com/wiki/BOLL" rel="nofollow" target="_blank">布林线指标(Bollinger Bands)</a>
+                    bolling, including upper band and lower band stock["boll"] stock["boll_ub"] stock["boll_lb"] 1、当布林线开口向上后，只要股价K线始终运行在布林线的中轨上方的时候，说明股价一直处在一个中长期上升轨道之中，这是BOLL指标发出的持股待涨信号，如果TRIX指标也是发出持股信号时，这种信号更加准确。此时，投资者应坚决持股待涨。 2、当布林线开口向下后，只要股价K线始终运行在布林线的中轨下方的时候，说明股价一直处在一个中长期下降轨道之中，这是BOLL指标发出的持币观望信号，如果TRIX指标也是发出持币信号时，这种信号更加准确。此时，投资者应坚决持币观望。
+                </div>
+            </div>
+            <div class="tr">
+                <div class="td">10、RSI指标</div>
+                <div class="td"><a href="http://wiki.mbalib.com/wiki/RSI" rel="nofollow" target="_blank">相对强弱指标（Relative
+                    Strength Index，简称RSI）</a> ，也称相对强弱指数、相对力度指数 2）强弱指标保持高于50表示为强势市场，反之低于50表示为弱势市场。
+                    （3）强弱指标多在70与30之间波动。当六日指标上升到达80时，表示股市已有超买现象，如果一旦继续上升，超过90以上时，则表示已到严重超买的警戒区，股价已形成头部，极可能在短期内反转回转。
+                </div>
+            </div>
+            <div class="tr">
+                <div class="td">11、W%R指标</div>
+                <div class="td"><a href="http://wiki.mbalib.com/wiki/%E5%A8%81%E5%BB%89%E6%8C%87%E6%A0%87" rel="nofollow" target="_blank">威廉指数（Williams%Rate）</a>
+                    该指数是利用摆动点来度量市场的超买超卖现象。 10 days WR stock["wr_10"] 6 days WR stock["wr_6"]
+                </div>
+            </div>
+            <div class="tr">
+                <div class="td">12、CCI指标</div>
+                <div class="td"><a href="http://wiki.mbalib.com/wiki/%E9%A1%BA%E5%8A%BF%E6%8C%87%E6%A0%87" rel="nofollow" target="_blank">顺势指标(CCI)</a>
+                    ，其英文全称为“Commodity Channel Index”， 是由美国股市分析家唐纳德·蓝伯特（Donald
+                    Lambert）所创造的，是一种重点研判股价偏离度的股市分析工具。 1、当CCI指标从下向上突破﹢100线而进入非常态区间时，表明股价脱离常态而进入异常波动阶段，
+                    中短线应及时买入，如果有比较大的成交量配合，买入信号则更为可靠。 2、当CCI指标从上向下突破﹣100线而进入另一个非常态区间时，表明股价的盘整阶段已经结束，
+                    将进入一个比较长的寻底过程，投资者应以持币观望为主。 CCI, default to 14 days
+                </div>
+            </div>
+            <div class="tr">
+                <div class="td">13、TR、ATR指标</div>
+                <div class="td"><a href="http://wiki.mbalib.com/wiki/%E5%9D%87%E5%B9%85%E6%8C%87%E6%A0%87" rel="nofollow" target="_blank">均幅指标（Average True Ranger,ATR）</a>
+                    是取一定时间周期内的股价波动幅度的移动平均值，主要用于研判买卖时机。TR (true range) stock["tr"] ATR (Average True Range) stock["atr"] 均幅指标无论是从下向上穿越移动平均线，还是从上向下穿越移动平均线时，都是一种研判信号。
+                </div>
+            </div>
+            <div class="tr">
+                <div class="td">14、DMA指标</div>
+                <div class="td"><a href="http://wiki.mbalib.com/wiki/DMA" rel="nofollow" target="_blank">DMA指标（Different
+                    of Moving Average）又叫平行线差指标</a> ，是目前股市分析技术指标中的一种中短期指标，它常用于大盘指数和个股的研判。
+                    DMA, difference of 10 and 50 moving average stock[‘dma’]
+                </div>
+            </div>
+            <div class="tr">
+                <div class="td">15、DMI，+DI，-DI，DX，ADX，ADXR指标</div>
+                <div class="td"><a href="http://wiki.mbalib.com/wiki/DMI" rel="nofollow" target="_blank">动向指数Directional
+                    Movement Index,DMI）</a>  <a href="http://wiki.mbalib.com/wiki/ADX"
+                                           rel="nofollow" target="_blank">平均趋向指标（Average Directional
+                    Indicator，简称ADX）</a>  <a
+                            href="http://wiki.mbalib.com/wiki/%E5%B9%B3%E5%9D%87%E6%96%B9%E5%90%91%E6%8C%87%E6%95%B0%E8%AF%84%E4%BC%B0"
+                            rel="nofollow" target="_blank">平均方向指数评估（ADXR）</a>
+                    实际是今日ADX与前面某一日的ADX的平均值。ADXR在高位与ADX同步下滑，可以增加对ADX已经调头的尽早确认。
+                    ADXR是ADX的附属产品，只能发出一种辅助和肯定的讯号，并非入市的指标，而只需同时配合动向指标(DMI)的趋势才可作出买卖策略。
+                    在应用时，应以ADX为主，ADXR为辅。
+                </div>
+            </div>
+            <div class="tr">
+                <div class="td">16、TRIX，MATRIX指标</div>
+                <div class="td"><a href="http://wiki.mbalib.com/wiki/TRIX" rel="nofollow" target="_blank">TRIX指标又叫三重指数平滑移动平均指标（Triple Exponentially Smoothed Average）</a>
+
+                </div>
+            </div>
+            <div class="tr">
+                <div class="td">17、VR，MAVR指标</div>
+                <div class="td"><a href="http://wiki.mbalib.com/wiki/%E6%88%90%E4%BA%A4%E9%87%8F%E6%AF%94%E7%8E%87" rel="nofollow" target="_blank">成交量比率（Volumn Ratio，VR）（简称VR）</a>
+                    ，是一项通过分析股价上升日成交额（或成交量，下同）与股价下降日成交额比值，
+                    从而掌握市场买卖气势的中期技术指标。 VR, default to 26 days stock["vr"] MAVR is the simple moving average of VR stock["vr_6_sma"]
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <p dir="auto">二：根据指标判定可能买入卖出的股票：</p>
+    <div class="snippet-clipboard-content notranslate position-relative overflow-auto">
+        <pre class="notranslate"><code>
+            KDJ:
+            1、超买区：K值在80以上，D值在70以上，J值大于90时为超买。一般情况下，股价有可能下跌。投资者应谨慎行事，局外人不应再追涨，局内人应适时卖出。
+            2、超卖区：K值在20以下，D值在30以下为超卖区。一般情况下，股价有可能上涨，反弹的可能性增大。局内人不应轻易抛出股票，局外人可寻机入场。
+
+            RSI:
+            1、当六日指标上升到达80时，表示股市已有超买现象，如果一旦继续上升，超过90以上时，则表示已到严重超买的警戒区，股价已形成头部，极可能在短期内反转回转。
+            2、当六日强弱指标下降至20时，表示股市有超卖现象，如果一旦继续下降至10以下时则表示已到严重超卖区域，股价极可能有止跌回升的机会。
+
+            CCI:
+            1、当CCI＞﹢100时，表明股价已经进入非常态区间——超买区间，股价的异动现象应多加关注。
+            2、当CCI＜﹣100时，表明股价已经进入另一个非常态区间——超卖区间，投资者可以逢低吸纳股票。
+
+            CR:
+            1、跌穿a、b、c、d四条线，再由低点向上爬升160时，为短线获利的一个良机，应适当卖出股票。
+            2、CR跌至40以下时，是建仓良机。
+
+            WR:
+            1、当％R线达到20时，市场处于超买状况，走势可能即将见顶。
+            2、当％R线达到80时，市场处于超卖状况，股价走势随时可能见底。
+
+            VR:
+            1、获利区域160－450根据情况获利了结。
+            2、低价区域40－70可以买进。
+        </code></pre>
+    </div>
+
+    <p dir="auto">三：策略选股：</p>
+    <div class="snippet-clipboard-content notranslate position-relative overflow-auto">
+        <pre class="notranslate"><code>
+            1、放量上涨
+            2、均线多头
+            3、停机坪
+            4、回踩年线
+            5、突破平台
+            6、无大幅回撤
+            7、海龟交易法则
+            8、高而窄的旗形
+            9、放量跌停
+            10、低ATR成长策略
+        </code></pre>
+    </div>
+
+    <p dir="auto">四：选股验证：</p>
+    <div class="snippet-clipboard-content notranslate position-relative overflow-auto">
+        <pre class="notranslate"><code>
+            对指标、策略等选出的股票进行回测，验证其准确性。
+        </code></pre>
+    </div>
+
+    <p dir="auto">四：支持批量：</p>
+    <div class="snippet-clipboard-content notranslate position-relative overflow-auto">
+        <pre class="notranslate"><code>
+            可以通过时间段、枚举时间、当前时间进行指标计算、策略选股及回测等。
+        </code></pre>
+    </div>
+
+    <p dir="auto">五：运行高效：</p>
+    <div class="snippet-clipboard-content notranslate position-relative overflow-auto">
+        <pre class="notranslate"><code>
+            采用多线程、单例共享资源有效提高运算效率。一天数据的指标计算、策略选股及回测运行时间大概3分钟。
+        </code></pre>
+    </div>
+{% end %}

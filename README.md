@@ -1,0 +1,167 @@
+### InStock股票系统
+
+# 一：功能介绍
+InStock股票系统，计算各种股票指标，内置多种选股策略，支持选股验证回测，支持批量时间，运行高效。
+## 一：计算股票指标
+
+1、交易量delta指标分析
+
+The Volume Delta (Vol ∆) 与前一天交易量的增量。
+
+2、计算n天价差
+
+可以计算，向前n天，和向后n天的价差。
+
+3、n天涨跌百分百计算
+
+可以看到，-n天数据和今天数据的百分比。
+
+4、CR指标
+
+[价格动量指标(CR)](http://wiki.mbalib.com/wiki/CR指标) 跌穿a、b、c、d四条线，再由低点向上爬升160时，为短线获利的一个良机，应适当卖出股票。 CR跌至40以下时，是建仓良机。而CR高于300~400时，应注意适当减仓。
+
+5、最大值，最小值
+
+计算区间最大值 volume max of three days ago, yesterday and two days later stock["volume_-3,2,-1_max"] volume min between 3 days ago and tomorrow stock["volume_-3~1_min"] 实际使用的时候使用 -2~2 可计算出5天的最大，最小值。
+
+6、KDJ指标
+
+[随机指标(KDJ)](http://wiki.mbalib.com/wiki/随机指标) 一般是根据统计学的原理，通过一个特定的周期（常为9日、9周等）内出现过的最高价、 最低价及最后一个计算周期的收盘价及这三者之间的比例关系，来计算最后一个计算周期的未成熟随机值RSV， 然后根据平滑移动平均线的方法来计算K值、D值与J值，并绘成曲线图来研判股票走势。 （3）在使用中，常有J线的指标，即3乘以K值减2乘以D值（3K－2D＝J），其目的是求出K值与D值的最大乖离程度， 以领先KD值找出底部和头部。J大于100时为超买，小于10时为超卖。
+
+7、SMA指标
+
+[简单移动平均线（Simple Moving Average，SMA）](http://wiki.mbalib.com/wiki/Sma) 可以动态输入参数，获得几天的移动平均。
+
+8、MACD指标
+
+[平滑异同移动平均线(Moving Average Convergence Divergence，简称MACD指标)](http://wiki.mbalib.com/wiki/MACD) ，也称移动平均聚散指标 MACD 则可发挥其应有的功能，但当市场呈牛皮盘整格局，股价不上不下时，MACD买卖讯号较不明显。 当用MACD作分析时，亦可运用其他的技术分析指标如短期 K，D图形作为辅助工具，而且也可对买卖讯号作双重的确认。
+
+9、BOLL指标
+
+[布林线指标(Bollinger Bands)](http://wiki.mbalib.com/wiki/BOLL) bolling, including upper band and lower band stock["boll"] stock["boll_ub"] stock["boll_lb"] 1、当布林线开口向上后，只要股价K线始终运行在布林线的中轨上方的时候，说明股价一直处在一个中长期上升轨道之中，这是BOLL指标发出的持股待涨信号，如果TRIX指标也是发出持股信号时，这种信号更加准确。此时，投资者应坚决持股待涨。 2、当布林线开口向下后，只要股价K线始终运行在布林线的中轨下方的时候，说明股价一直处在一个中长期下降轨道之中，这是BOLL指标发出的持币观望信号，如果TRIX指标也是发出持币信号时，这种信号更加准确。此时，投资者应坚决持币观望。
+
+10、RSI指标
+
+[相对强弱指标（Relative Strength Index，简称RSI）](http://wiki.mbalib.com/wiki/RSI) ，也称相对强弱指数、相对力度指数 2）强弱指标保持高于50表示为强势市场，反之低于50表示为弱势市场。 （3）强弱指标多在70与30之间波动。当六日指标上升到达80时，表示股市已有超买现象，如果一旦继续上升，超过90以上时，则表示已到严重超买的警戒区，股价已形成头部，极可能在短期内反转回转。
+
+11、W%R指标
+
+[威廉指数（Williams%Rate）](http://wiki.mbalib.com/wiki/威廉指标) 该指数是利用摆动点来度量市场的超买超卖现象。 10 days WR stock["wr_10"] 6 days WR stock["wr_6"]
+
+12、CCI指标
+
+[顺势指标(CCI)](http://wiki.mbalib.com/wiki/顺势指标) ，其英文全称为“Commodity Channel Index”， 是由美国股市分析家唐纳德·蓝伯特（Donald Lambert）所创造的，是一种重点研判股价偏离度的股市分析工具。 1、当CCI指标从下向上突破﹢100线而进入非常态区间时，表明股价脱离常态而进入异常波动阶段， 中短线应及时买入，如果有比较大的成交量配合，买入信号则更为可靠。 2、当CCI指标从上向下突破﹣100线而进入另一个非常态区间时，表明股价的盘整阶段已经结束， 将进入一个比较长的寻底过程，投资者应以持币观望为主。 CCI, default to 14 days
+
+13、TR、ATR指标
+
+[均幅指标（Average True Ranger,ATR）](http://wiki.mbalib.com/wiki/均幅指标) 是取一定时间周期内的股价波动幅度的移动平均值，主要用于研判买卖时机。TR (true range) stock["tr"] ATR (Average True Range) stock["atr"] 均幅指标无论是从下向上穿越移动平均线，还是从上向下穿越移动平均线时，都是一种研判信号。
+
+14、DMA指标
+
+[DMA指标（Different of Moving Average）又叫平行线差指标](http://wiki.mbalib.com/wiki/DMA) ，是目前股市分析技术指标中的一种中短期指标，它常用于大盘指数和个股的研判。 DMA, difference of 10 and 50 moving average stock[‘dma’]
+
+15、DMI，+DI，-DI，DX，ADX，ADXR指标
+
+[动向指数Directional Movement Index,DMI）](http://wiki.mbalib.com/wiki/DMI) [平均趋向指标（Average Directional Indicator，简称ADX）](http://wiki.mbalib.com/wiki/ADX) [平均方向指数评估（ADXR）](http://wiki.mbalib.com/wiki/平均方向指数评估) 实际是今日ADX与前面某一日的ADX的平均值。ADXR在高位与ADX同步下滑，可以增加对ADX已经调头的尽早确认。 ADXR是ADX的附属产品，只能发出一种辅助和肯定的讯号，并非入市的指标，而只需同时配合动向指标(DMI)的趋势才可作出买卖策略。 在应用时，应以ADX为主，ADXR为辅。
+
+16、TRIX，MATRIX指标
+
+[TRIX指标又叫三重指数平滑移动平均指标（Triple Exponentially Smoothed Average）](http://wiki.mbalib.com/wiki/TRIX)
+
+17、VR，MAVR指标
+
+[成交量比率（Volumn Ratio，VR）（简称VR）](http://wiki.mbalib.com/wiki/成交量比率) ，是一项通过分析股价上升日成交额（或成交量，下同）与股价下降日成交额比值， 从而掌握市场买卖气势的中期技术指标。 VR, default to 26 days stock["vr"] MAVR is the simple moving average of VR stock["vr_6_sma"]
+
+## 二：根据指标判定可能买入卖出的股票
+
+```
+KDJ:
+1、超买区：K值在80以上，D值在70以上，J值大于90时为超买。一般情况下，股价有可能下跌。投资者应谨慎行事，局外人不应再追涨，局内人应适时卖出。
+2、超卖区：K值在20以下，D值在30以下为超卖区。一般情况下，股价有可能上涨，反弹的可能性增大。局内人不应轻易抛出股票，局外人可寻机入场。
+RSI:
+1、当六日指标上升到达80时，表示股市已有超买现象，如果一旦继续上升，超过90以上时，则表示已到严重超买的警戒区，股价已形成头部，极可能在短期内反转回转。
+2、当六日强弱指标下降至20时，表示股市有超卖现象，如果一旦继续下降至10以下时则表示已到严重超卖区域，股价极可能有止跌回升的机会。
+CCI:
+1、当CCI＞﹢100时，表明股价已经进入非常态区间——超买区间，股价的异动现象应多加关注。
+2、当CCI＜﹣100时，表明股价已经进入另一个非常态区间——超卖区间，投资者可以逢低吸纳股票。
+CR:
+1、跌穿a、b、c、d四条线，再由低点向上爬升160时，为短线获利的一个良机，应适当卖出股票。
+2、CR跌至40以下时，是建仓良机。
+WR:
+1、当％R线达到20时，市场处于超买状况，走势可能即将见顶。
+2、当％R线达到80时，市场处于超卖状况，股价走势随时可能见底。
+VR:
+1、获利区域160－450根据情况获利了结。
+2、低价区域40－70可以买进。
+```
+
+## 三：策略选股
+
+```
+1、放量上涨
+2、均线多头
+3、停机坪
+4、回踩年线
+5、突破平台
+6、无大幅回撤
+7、海龟交易法则
+8、高而窄的旗形
+9、放量跌停
+10、低ATR成长策略
+```
+
+## 四：选股验证
+
+```
+对指标、策略等选出的股票进行回测，验证其准确性。
+```
+
+## 四：支持批量
+
+```
+可以通过时间段、枚举时间、当前时间进行指标计算、策略选股及回测等。
+```
+
+## 五：运行高效
+
+```
+采用多线程、单例共享资源有效提高运算效率。计算一天的数据运行时间大概3分钟，计算天数越多效率越高。
+```
+
+# 安装说明
+
+1.安装最新的python3.11。
+
+2.安装最新的mysql数据库。
+
+3.安装requirements.txt中的库，都是目前最新版本。
+
+4.talib安装，参见官网https://www.ta-lib.org/
+
+5.配置数据库
+
+修改database.py相关信息:
+
+```
+db_host = "localhost"  # 数据库服务主机
+db_user = "root"  # 数据库访问用户
+db_password = "root"  # 数据库访问密码
+db_database = "stockdb"  # 数据库名称
+db_port = 3306  # 数据库服务端口
+db_charset = "utf8mb4"  # 数据库字符集
+```
+
+# 运行说明
+
+1.数据抓取、处理、分析
+
+_run_job.bat
+
+支持批量作业，具体参见_run_job.bat中的注释说明。
+
+2.启动web服务
+
+_run_web.bat
+
+# 特别声明
+股市有风险投资需谨慎，本项目只能用于学习、股票分析，投资盈亏概不负责。
