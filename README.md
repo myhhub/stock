@@ -136,8 +136,24 @@ VR:
 
 3.安装requirements.txt中的库，都是目前最新版本。
 
-4.talib安装，参见官网https://www.ta-lib.org/
-
+4.talib安装，参见官网https://www.ta-lib.org/。
+```
+常见安装方法：
+第一种方法. Anaconda 下安装
+    （1）打开Anaconda Prompt终端。
+    （2）在终端输入命令行conda install -c conda-forge ta-lib 。
+    （3）此处确认是否继续安装？输入y 继续安装，直到完成
+    （4） 安装完成。
+第二种方法. pip 下安装
+    （1）下载并解压ta-lib-0.4.0-msvc.zip
+    （2） 解压并将ta_lib放在C盘根目录
+    （3）下载并安装Visual Studio Community 2015版及以后，安装切记勾选Visual C++功能
+    （4） Build TA-Lib Library # 构建 TA-Lib 库
+        ①在开始菜单中搜索并打开[VS2015 x64   Native Tools Command Prompt]
+        ②输入cd C:\ta-lib\c\make\cdr\win32\msvc
+        ③构建库 nmake
+    （5） 安装完成。
+```
 5.配置数据库
 
 修改database.py相关信息:
@@ -158,6 +174,8 @@ db_charset = "utf8mb4"  # 数据库字符集
 _run_job.bat
 
 支持批量作业，具体参见_run_job.bat中的注释说明。
+
+建议加入到任务计划中。
 
 2.启动web服务
 
