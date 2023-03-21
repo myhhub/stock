@@ -157,7 +157,7 @@ VR:
 3.安装requirements.txt中的库，都是目前最新版本。
 
 ```
-dos切换到系统的根目录，执行下面命令
+dos切换到本系统的根目录，执行下面命令
 pip install -r requirements.txt
 ```
 
