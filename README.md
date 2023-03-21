@@ -1,14 +1,14 @@
 ### InStock股票系统
 
-# 一：功能介绍
-InStock股票系统，计算各种股票指标，内置多种选股策略，支持选股验证回测，支持批量时间，运行高效。
+# 功能介绍
+InStock股票系统，计算各种股票指标，内置多种选股策略，支持选股验证回测，支持批量时间，运行高效，是量化投资的好工具。
 
 ##  一：股票每日数据
-抓取A股票每日数据，主要为一些关键数据，同时封装抓取方法，方便扩展系统获取个人关注的数据。基于免费开源的akshare抓取。
+抓取A股票每日数据，主要为一些关键数据，同时封装抓取方法，方便扩展系统获取个人关注的数据。基于免费开源的akshare抓取，更多数据获取参见 https://www.akshare.xyz/data/stock/stock.html 。
 
 ![](img/00.jpg)
 
-## 一：计算股票指标
+## 二：计算股票指标
 计算了如下指标：
 ```
 1、交易量delta指标分析
@@ -84,7 +84,7 @@ The Volume Delta (Vol ∆) 与前一天交易量的增量。
 
 ![](img/02.jpg)
 
-## 二：根据指标判定可能买入卖出的股票
+## 三：根据指标判定可能买入卖出的股票
 
 
 ```
@@ -109,7 +109,9 @@ VR:
 ```
 
 ![](img/05.jpg)
-## 三：策略选股
+## 四：策略选股
+
+内置多种选股策略，封装了策略模板，方便扩展实现自己的策略。
 
 
 ```
@@ -127,7 +129,7 @@ VR:
 
 ![](img/04.jpg)
 
-## 四：选股验证
+## 五：选股验证
 
 
 ```
@@ -138,7 +140,7 @@ VR:
 
 ![](img/06.jpg)
 
-## 四：支持批量
+## 六：支持批量
 
 ```
 可以通过时间段、枚举时间、当前时间进行指标计算、策略选股及回测等。同时支持智能识别交易日，所以日期可以任意输入。
@@ -157,13 +159,19 @@ N个时间作业 python execute_daily_job.py 2022-01-01,2021-02-08,2022-03-012
 回测数据 python backtest_data_daily_job.py
 ```
 
-## 五：运行高效
+## 七：采用数据库设计
+```
+数据存储采用数据库设计，能保存历史数据，以及对数据进行扩展分析、统计、挖掘。自动创建数据库、数据表，封装了批量更新、插入数据，方便业务扩展。
+```
+![](img/07.jpg)
+
+## 八：运行高效
 
 ```
 采用多线程、单例共享资源有效提高运算效率。计算一天的数据运行时间大概3分钟，计算天数越多效率越高。
 ```
 
-## 六：方便调试
+## 九：方便调试
 
 ```
 系统运行的重要日志记录在stock_execute_job.log(数据抓取、处理、分析)、stock_web.log(web服务)，方便调试发现问题。
@@ -172,8 +180,9 @@ N个时间作业 python execute_daily_job.py 2022-01-01,2021-02-08,2022-03-012
 # 安装说明
 
 1.安装最新的 python 3.11.2。
+
 ```
-在官网 https://www.python.org/downloads/ 下载安装包，一键安装即可。
+在官网 https://www.python.org/downloads/ 下载安装包，一键安装即可。安装切记勾选自动设置环境变量。
 ```
 2.安装最新的mysql数据库。
 
@@ -183,8 +192,11 @@ N个时间作业 python execute_daily_job.py 2022-01-01,2021-02-08,2022-03-012
 3.安装requirements.txt中的库，都是目前最新版本。
 
 ```
-dos切换到本系统的根目录，执行下面命令
-pip install -r requirements.txt
+dos切换到本系统的根目录，执行下面命令：
+python pip install -r requirements.txt
+
+也可以通过下面命令生成自己的requirements.txt
+python pip freeze > requirements.txt
 ```
 
 4.安装talib，安装见以下：
@@ -206,7 +218,16 @@ pip install -r requirements.txt
         ③构建库 nmake
     （5）安装完成。
 ```
-5.配置数据库
+5.安装Navicat Premium（可选）
+
+```
+方便管理数据库，可以手工对数据进行处理、分析、挖掘。
+
+在官网 https://www.navicat.com.cn/download/navicat-premium 下载安装包，一键安装即可，
+
+然后下载破解补丁: https://pan.baidu.com/s/18XpTHrm9OiLEl3u6z_uxnw 提取码: 8888 ，破解即可。
+```
+6.配置数据库
 
 修改database.py相关信息:
 
@@ -214,12 +235,14 @@ pip install -r requirements.txt
 db_host = "localhost"  # 数据库服务主机
 db_user = "root"  # 数据库访问用户
 db_password = "root"  # 数据库访问密码
-db_database = "stockdb"  # 数据库名称
 db_port = 3306  # 数据库服务端口
 db_charset = "utf8mb4"  # 数据库字符集
 ```
 
+一般可能会修改的信息是”数据库访问密码“。
+
 # 运行说明
+
 ```
 
 1.执行数据抓取、处理、分析
