@@ -180,6 +180,8 @@ N个时间作业 python execute_daily_job.py 2022-01-01,2021-02-08,2022-03-012
 
 系统运行的重要日志记录在stock_execute_job.log(数据抓取、处理、分析)、stock_web.log(web服务)，方便调试发现问题。
 
+![](img/08.jpg)
+
 
 # 安装说明
 
