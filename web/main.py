@@ -8,10 +8,6 @@ from tornado import gen
 import tornado.httpserver
 import tornado.ioloop
 import tornado.options
-import pandas as pd
-import numpy as np
-import akshare as ak
-import bokeh as bh
 import talib as tl
 
 
@@ -62,17 +58,8 @@ class Application(tornado.web.Application):
 class HomeHandler(webBase.BaseHandler, ABC):
     @gen.coroutine
     def get(self):
-        pandasVersion = pd.__version__
-        numpyVersion = np.__version__
-        akshareVersion = ak.__version__
-        bokehVersion = bh.__version__
-        stockstatsVersion = '0.5.2'  # ss.__version__
-        talibVersion = tl.__version__
-        self.render("index.html", pandasVersion=pandasVersion, numpyVersion=numpyVersion,
-                    akshareVersion=akshareVersion, bokehVersion=bokehVersion,
-                    stockstatsVersion=stockstatsVersion,
+        self.render("index.html",
                     stockVersion=common.__version__,
-                    talibVersion=talibVersion,
                     leftMenu=webBase.GetLeftMenu(self.request.uri))
 
 

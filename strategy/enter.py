@@ -21,7 +21,7 @@ def check_breakthrough(code_name, data, date=None, threshold=30):
         mask = (data['date'] <= end_date)
         data = data.loc[mask]
     data = data.tail(n=threshold + 1)
-    if len(data) < threshold + 1:
+    if len(data.index) < threshold + 1:
         logging.debug("{0}:样本小于{1}天...\n".format(code_name, threshold))
         return False
 
@@ -53,7 +53,7 @@ def check_ma(code_name, data, date=None, ma_days=250):
         mask = (data['date'] <= end_date)
         data = data.loc[mask]
 
-    if data is None or len(data) < ma_days:
+    if data is None or len(data.index) < ma_days:
         logging.debug("{0}:样本小于{1}天...\n".format(code_name, ma_days))
         return False
 
@@ -70,8 +70,7 @@ def check_ma(code_name, data, date=None, ma_days=250):
 
 # 上市日小于60天
 def check_new(code_name, data, date=None, threshold=60):
-    size = len(data.index)
-    if size < threshold:
+    if len(data.index) < threshold:
         return True
     else:
         return False
@@ -145,7 +144,7 @@ def check_continuous_volume(code_name, data, date=None, threshold=60, window_siz
     data.loc[:, 'vol_ma5'] = pd.Series(tl.MA(data['volume'].values, 5), index=data.index.values)
 
     data = data.tail(n=threshold + window_size)
-    if len(data) < threshold + window_size:
+    if len(data.index) < threshold + window_size:
         # logging.debug("{0}:样本小于{1}天...\n".format(code_name, threshold + window_size))
         return False
 

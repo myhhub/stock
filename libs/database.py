@@ -14,7 +14,7 @@ __date__ = '2023/3/10 '
 db_host = "localhost"  # 数据库服务主机
 db_user = "root"  # 数据库访问用户
 db_password = "root"  # 数据库访问密码
-db_database = "stockdb"  # 数据库名称
+db_database = "instockdb"  # 数据库名称
 db_port = 3306  # 数据库服务端口
 db_charset = "utf8mb4"  # 数据库字符集
 
@@ -78,7 +78,7 @@ def insert_other_db_from_df(to_db, data, table_name, cols_type, write_index, pri
         if cols_type is None:
             data.to_sql(name=table_name, con=engine_mysql, schema=to_db, if_exists='append',
                         index=write_index, )
-        elif len(cols_type) == 0:
+        elif not cols_type:
             data.to_sql(name=table_name, con=engine_mysql, schema=to_db, if_exists='append',
                         dtype={col_name: NVARCHAR(255) for col_name in col_name_list}, index=write_index, )
         else:

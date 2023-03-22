@@ -28,7 +28,7 @@ def check_low_increase(code_name, data, date=None, ma_short=30, ma_long=250, thr
     data = data.tail(n=threshold)
     inc_days = 0
     dec_days = 0
-    if len(data) < threshold:
+    if len(data.index) < threshold:
         # logging.debug("{0}:样本小于{1}天...\n".format(code_name, threshold))
         return False
 
