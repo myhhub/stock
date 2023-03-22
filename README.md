@@ -5,7 +5,7 @@ InStock股票系统，抓取股票每日关键数据，计算股票各种指标�
 # 功能介绍
 
 ##  一：股票每日数据
-抓取A股票每日数据，主要为一些关键数据，同时封装抓取方法，方便扩展系统获取个人关注的数据。基于免费开源的akshare抓取，更多数据获取参见 [akshare官网文档](https://www.akshare.xyz/data/stock/stock.html)。
+抓取A股票每日数据，主要为一些关键数据，同时封装抓取方法，方便扩展系统获取个人关注的数据。基于免费开源的akshare抓取，更多数据获取参见 [akshare官网文档](https://www.akshare.xyz/data/stock/stock.html){:target="_blank"}。
 
 ![](img/00.jpg)
 
