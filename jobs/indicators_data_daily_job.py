@@ -92,6 +92,9 @@ def run_check(stocks, date=None, workers=40):
 def guess_buy(date):
     try:
         _table_name = tbs.TABLE_CN_STOCK_INDICATORS['name']
+        if not mdb.checkTableIsExist(_table_name):
+            return
+
         _columns = list(tbs.TABLE_CN_STOCK_FOREIGN_KEY['columns'].keys())
         _selcol = '`' + '`,`'.join(_columns) + '`'
         sql = "SELECT " + _selcol + " FROM `" + _table_name + \
@@ -124,6 +127,9 @@ def guess_buy(date):
 def guess_sell(date):
     try:
         _table_name = tbs.TABLE_CN_STOCK_INDICATORS['name']
+        if not mdb.checkTableIsExist(_table_name):
+            return
+
         _columns = list(tbs.TABLE_CN_STOCK_FOREIGN_KEY['columns'].keys())
         _selcol = '`' + '`,`'.join(_columns) + '`'
         sql = "SELECT " + _selcol + " FROM `" + _table_name + \
