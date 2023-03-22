@@ -13,10 +13,10 @@ import sys
 cpath = os.path.dirname(os.path.dirname(__file__))
 sys.path.append(cpath)
 
-log_path = os.path.join(cpath, 'logs')
-if not os.path.exists(log_path):
-    os.makedirs(log_path)
-logging.basicConfig(format='%(asctime)s %(message)s', filename=os.path.join(log_path, 'stock_execute_job.log'))
+logs_path = os.path.join(cpath, 'logs')
+if not os.path.exists(logs_path):
+    os.makedirs(logs_path)
+logging.basicConfig(format='%(asctime)s %(message)s', filename=os.path.join(logs_path, 'stock_execute_job.log'))
 logging.getLogger().setLevel(logging.DEBUG)
 
 import init_job as bj
