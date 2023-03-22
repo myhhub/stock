@@ -16,6 +16,8 @@ from strategy import high_tight_flag
 __author__ = 'myh '
 __date__ = '2023/3/10 '
 
+RATE_FIELDS_COUNT = 100  # N日收益率字段数目，即N值
+
 TABLE_CN_STOCK_SPOT = {'name': 'cn_stock_spot', 'cn': '每日股票数据',
                        'columns': {'date': (DATE, '日期'), 'code': (NVARCHAR(6), '代码'),
                                    'name': (NVARCHAR(20), '名称'), 'latest_price': (FLOAT, '最新价'),
@@ -58,7 +60,8 @@ TABLE_CN_STOCK_FOREIGN_KEY = {'name': 'cn_stock_foreign_key', 'cn': '股票外�
                                           'name': (NVARCHAR(20), '名称')}}
 
 TABLE_CN_STOCK_BACKTEST_DATA = {'name': 'cn_stock_backtest_data', 'cn': '股票回归测试数据',
-                                'columns': {'rate_%s' % i: (FLOAT, '%s日收益率' % i) for i in range(1, 101, 1)}}
+                                'columns': {'rate_%s' % i: (FLOAT, '%s日收益率' % i) for i in
+                                            range(1, RATE_FIELDS_COUNT + 1, 1)}}
 
 TABLE_CN_STOCK_HIST = {'name': 'cn_stock_hist', 'cn': '股票日行情数据',
                        'columns': TABLE_CN_STOCK_FOREIGN_KEY.copy()}
