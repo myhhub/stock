@@ -1,5 +1,4 @@
-<base target="_blank">
-### InStock股票系统
+<font size=6>**InStock股票系统**</font>
 
 InStock股票系统，抓取股票每日关键数据，计算股票各种指标，内置多种选股策略，支持选股验证回测，支持批量时间，运行高效，是量化投资的好帮手。
 
