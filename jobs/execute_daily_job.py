@@ -12,7 +12,11 @@ import sys
 # 在项目运行时，临时将项目路径添加到环境变量
 cpath = os.path.dirname(os.path.dirname(__file__))
 sys.path.append(cpath)
-logging.basicConfig(format='%(asctime)s %(message)s', filename=os.path.join(cpath, 'logs', 'stock_execute_job.log'))
+
+log_path = os.path.join(cpath, 'logs')
+if not os.path.exists(log_path):
+    os.makedirs(log_path)
+logging.basicConfig(format='%(asctime)s %(message)s', filename=os.path.join(log_path, 'stock_execute_job.log'))
 logging.getLogger().setLevel(logging.DEBUG)
 
 import init_job as bj
