@@ -198,11 +198,13 @@ VR:
 python pip config --global set  global.index-url https://mirrors.aliyun.com/pypi/simple/
 # 如果你只想为当前用户设置，你也可以去掉下面的"--global"选项
 ```
-2.安装最新的mysql数据库。
+2.安装最新的 mysql
+
 ```
 在官网 https://dev.mysql.com/downloads/mysql/ 下载安装包，一键安装即可。
 ```
-3.安装requirements.txt中的库，都是目前最新版本。
+3.安装库文件，库都是目前最新版本
+
 ```
 dos切换到本系统的根目录，执行下面命令：
 python pip install -r requirements.txt
@@ -211,7 +213,7 @@ python pip install -r requirements.txt
 python pip freeze > requirements.txt
 ```
 
-4.安装talib，安装见以下：
+4.安装 talib，安装见以下：
 
 ```
 第一种方法. pip 下安装
@@ -229,7 +231,7 @@ python pip freeze > requirements.txt
 （3）此处确认是否继续安装？输入y 继续安装，直到完成
 （4）安装完成。
 ```
-5.安装Navicat（可选）
+5.安装 Navicat（可选）
 
 Navicat可以方便管理数据库，以及可以手工对数据进行查看、处理、分析、挖掘。
 
