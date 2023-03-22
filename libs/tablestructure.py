@@ -119,7 +119,7 @@ TABLE_CN_STOCK_STRATEGIES = [
      'columns': _tmp_columns},
     {'name': 'cn_stock_strategy_climax_limitdown', 'cn': '放量跌停', 'func': climax_limitdown.check,
      'columns': _tmp_columns},
-    {'name': 'cn_stock_strategy_low_atr', 'cn': '低ATR成长策略', 'func': low_atr.check_low_increase,
+    {'name': 'cn_stock_strategy_low_atr', 'cn': '低ATR成长', 'func': low_atr.check_low_increase,
      'columns': _tmp_columns}
 ]
 
