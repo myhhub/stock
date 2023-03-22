@@ -190,7 +190,7 @@ VR:
 
 建议windows下安装，方便操作及使用系统，同时安装也非常简单。以下安装及运行以windows为例进行介绍。
 
-1.安装最新的 python 3.11.2
+1.安装最新的 python
 
 ```
 （1）在官网 https://www.python.org/downloads/ 下载安装包，一键安装即可，安装切记勾选自动设置环境变量。
