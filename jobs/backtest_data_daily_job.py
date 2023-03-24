@@ -84,9 +84,9 @@ def run_check(stocks, data_all, date, backtest_column, workers=40):
                     if _data_ is not None:
                         data[stock] = _data_
                 except Exception as e:
-                    logging.debug("{}处理异常：{}代码{}".format('backtest_data_daily_job.run_get_rate', stock[1], e))
+                    logging.debug("{}处理异常：{}代码{}".format('backtest_data_daily_job.run_check', stock[1], e))
     except Exception as e:
-        logging.debug("{}处理异常：{}".format('backtest_data_daily_job.run_get_rate', e))
+        logging.debug("{}处理异常：{}".format('backtest_data_daily_job.run_check', e))
     if not data:
         return None
     else:

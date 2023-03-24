@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from sqlalchemy import DATE, NVARCHAR, FLOAT
+from sqlalchemy import DATE, NVARCHAR, FLOAT, SmallInteger
+import talib as tl
 from strategy import enter
 from strategy import turtle_trade
 from strategy import climax_limitdown
@@ -19,48 +20,66 @@ __date__ = '2023/3/10 '
 RATE_FIELDS_COUNT = 100  # N日收益率字段数目，即N值
 
 TABLE_CN_STOCK_SPOT = {'name': 'cn_stock_spot', 'cn': '每日股票数据',
-                       'columns': {'date': (DATE, '日期'), 'code': (NVARCHAR(6), '代码'),
-                                   'name': (NVARCHAR(20), '名称'), 'latest_price': (FLOAT, '最新价'),
-                                   'quote_change': (FLOAT, '涨跌幅'), 'ups_downs': (FLOAT, '涨跌额'),
-                                   'volume': (FLOAT, '成交量'), 'turnover': (FLOAT, '成交额'),
-                                   'amplitude': (FLOAT, '振幅'), 'high': (FLOAT, '最高'),
-                                   'low': (FLOAT, '最低'), 'open': (FLOAT, '今开'),
-                                   'closed': (FLOAT, '昨收'), 'quantity_ratio': (FLOAT, '量比'),
-                                   'turnover_rate': (FLOAT, '换手率'), 'pe_dynamic': (FLOAT, '动态市盈率'),
-                                   'pb': (FLOAT, '市净率'), 'value_total': (FLOAT, '总市值'),
-                                   'value_liquidity': (FLOAT, '流通市值'), 'speed_increase': (FLOAT, '涨速'),
-                                   'speed_increase_5': (FLOAT, '5分钟涨跌'), 'speed_increase_60': (FLOAT, '60日涨跌幅'),
-                                   'speed_increase_all': (FLOAT, '年初至今涨跌幅')}}
+                       'columns': {'date': {'type': DATE, 'cn': '日期'}, 'code': {'type': NVARCHAR(6), 'cn': '代码'},
+                                   'name': {'type': NVARCHAR(20), 'cn': '名称'},
+                                   'latest_price': {'type': FLOAT, 'cn': '最新价'},
+                                   'quote_change': {'type': FLOAT, 'cn': '涨跌幅'},
+                                   'ups_downs': {'type': FLOAT, 'cn': '涨跌额'},
+                                   'volume': {'type': FLOAT, 'cn': '成交量'},
+                                   'turnover': {'type': FLOAT, 'cn': '成交额'},
+                                   'amplitude': {'type': FLOAT, 'cn': '振幅'}, 'high': {'type': FLOAT, 'cn': '最高'},
+                                   'low': {'type': FLOAT, 'cn': '最低'}, 'open': {'type': FLOAT, 'cn': '今开'},
+                                   'closed': {'type': FLOAT, 'cn': '昨收'},
+                                   'quantity_ratio': {'type': FLOAT, 'cn': '量比'},
+                                   'turnover_rate': {'type': FLOAT, 'cn': '换手率'},
+                                   'pe_dynamic': {'type': FLOAT, 'cn': '动态市盈率'},
+                                   'pb': {'type': FLOAT, 'cn': '市净率'},
+                                   'value_total': {'type': FLOAT, 'cn': '总市值'},
+                                   'value_liquidity': {'type': FLOAT, 'cn': '流通市值'},
+                                   'speed_increase': {'type': FLOAT, 'cn': '涨速'},
+                                   'speed_increase_5': {'type': FLOAT, 'cn': '5分钟涨跌'},
+                                   'speed_increase_60': {'type': FLOAT, 'cn': '60日涨跌幅'},
+                                   'speed_increase_all': {'type': FLOAT, 'cn': '年初至今涨跌幅'}}}
 
 TABLE_CN_STOCK_TOP = {'name': 'cn_stock_top', 'cn': '龙虎榜',
-                      'columns': {'date': (DATE, '日期'), 'code': (NVARCHAR(6), '代码'),
-                                  'name': (NVARCHAR(20), '名称'), 'ranking_times': (FLOAT, '上榜次数'),
-                                  'sum_buy': (FLOAT, '累积购买额'), 'sum_sell': (FLOAT, '累积卖出额'),
-                                  'net_amount': (FLOAT, '净额'), 'buy_seat': (FLOAT, '买入席位数'),
-                                  'sell_seat': (FLOAT, '卖出席位数')}}
+                      'columns': {'date': {'type': DATE, 'cn': '日期'}, 'code': {'type': NVARCHAR(6), 'cn': '代码'},
+                                  'name': {'type': NVARCHAR(20), 'cn': '名称'},
+                                  'ranking_times': {'type': FLOAT, 'cn': '上榜次数'},
+                                  'sum_buy': {'type': FLOAT, 'cn': '累积购买额'},
+                                  'sum_sell': {'type': FLOAT, 'cn': '累积卖出额'},
+                                  'net_amount': {'type': FLOAT, 'cn': '净额'},
+                                  'buy_seat': {'type': FLOAT, 'cn': '买入席位数'},
+                                  'sell_seat': {'type': FLOAT, 'cn': '卖出席位数'}}}
 
 TABLE_CN_STOCK_BLOCKTRADE = {'name': 'cn_stock_blocktrade', 'cn': '大宗交易',
-                             'columns': {'date': (DATE, '日期'), 'code': (NVARCHAR(6), '代码'),
-                                         'name': (NVARCHAR(20), '名称'), 'quote_change': (FLOAT, '涨跌幅'),
-                                         'close_price': (FLOAT, '收盘价'), 'average_price': (FLOAT, '成交均价'),
-                                         'overflow_rate': (FLOAT, '折溢率'), 'trade_number': (FLOAT, '成交笔数'),
-                                         'sum_volume': (FLOAT, '成交总量'), 'sum_turnover': (FLOAT, '成交总额'),
-                                         'turnover_market_rate': (FLOAT, '成交总额/流通市值')}}
+                             'columns': {'date': {'type': DATE, 'cn': '日期'},
+                                         'code': {'type': NVARCHAR(6), 'cn': '代码'},
+                                         'name': {'type': NVARCHAR(20), 'cn': '名称'},
+                                         'quote_change': {'type': FLOAT, 'cn': '涨跌幅'},
+                                         'close_price': {'type': FLOAT, 'cn': '收盘价'},
+                                         'average_price': {'type': FLOAT, 'cn': '成交均价'},
+                                         'overflow_rate': {'type': FLOAT, 'cn': '折溢率'},
+                                         'trade_number': {'type': FLOAT, 'cn': '成交笔数'},
+                                         'sum_volume': {'type': FLOAT, 'cn': '成交总量'},
+                                         'sum_turnover': {'type': FLOAT, 'cn': '成交总额'},
+                                         'turnover_market_rate': {'type': FLOAT, 'cn': '成交总额/流通市值'}}}
 
 CN_STOCK_HIST_DATA = {'name': 'stock_zh_a_hist', 'cn': '股票某时间段的日行情数据库',
-                      'columns': {'date': (DATE, '日期'), 'open': (FLOAT, '开盘价'),
-                                  'close': (FLOAT, '收盘价'), 'high': (FLOAT, '最高'),
-                                  'low': (FLOAT, '最低'), 'volume': (FLOAT, '成交量'),
-                                  'amount': (FLOAT, '成交额'), 'amplitude': (FLOAT, '振幅'),
-                                  'quote_change': (FLOAT, '涨跌幅'), 'ups_downs': (FLOAT, '涨跌额'),
-                                  'turnover': (FLOAT, '换手率')}}
+                      'columns': {'date': {'type': DATE, 'cn': '日期'}, 'open': {'type': FLOAT, 'cn': '开盘价'},
+                                  'close': {'type': FLOAT, 'cn': '收盘价'}, 'high': {'type': FLOAT, 'cn': '最高'},
+                                  'low': {'type': FLOAT, 'cn': '最低'}, 'volume': {'type': FLOAT, 'cn': '成交量'},
+                                  'amount': {'type': FLOAT, 'cn': '成交额'}, 'amplitude': {'type': FLOAT, 'cn': '振幅'},
+                                  'quote_change': {'type': FLOAT, 'cn': '涨跌幅'},
+                                  'ups_downs': {'type': FLOAT, 'cn': '涨跌额'},
+                                  'turnover': {'type': FLOAT, 'cn': '换手率'}}}
 
 TABLE_CN_STOCK_FOREIGN_KEY = {'name': 'cn_stock_foreign_key', 'cn': '股票外键',
-                              'columns': {'date': (DATE, '日期'), 'code': (NVARCHAR(6), '代码'),
-                                          'name': (NVARCHAR(20), '名称')}}
+                              'columns': {'date': {'type': DATE, 'cn': '日期'},
+                                          'code': {'type': NVARCHAR(6), 'cn': '代码'},
+                                          'name': {'type': NVARCHAR(20), 'cn': '名称'}}}
 
 TABLE_CN_STOCK_BACKTEST_DATA = {'name': 'cn_stock_backtest_data', 'cn': '股票回归测试数据',
-                                'columns': {'rate_%s' % i: (FLOAT, '%s日收益率' % i) for i in
+                                'columns': {'rate_%s' % i: {'type': FLOAT, 'cn': '%s日收益率' % i} for i in
                                             range(1, RATE_FIELDS_COUNT + 1, 1)}}
 
 TABLE_CN_STOCK_HIST = {'name': 'cn_stock_hist', 'cn': '股票日行情数据',
@@ -70,22 +89,23 @@ _tmp_data_.pop('date')
 TABLE_CN_STOCK_HIST['columns'].update(_tmp_data_)
 
 STOCK_STATS_DATA = {'name': 'stockstats', 'cn': '股票统计/指标计算助手库',
-                    'columns': {'adx': (FLOAT, 'adx'), 'adxr': (FLOAT, 'adxr'),
-                                'boll': (FLOAT, 'boll'), 'boll_lb': (FLOAT, 'boll_lb'),
-                                'boll_ub': (FLOAT, 'boll_ub'), 'cci': (FLOAT, 'cci'),
-                                'cci_20': (FLOAT, 'cci_20'), 'close_-1_r': (FLOAT, 'close_-1_r'),
-                                'close_-2_r': (FLOAT, 'close_-2_r'), 'cr': (FLOAT, 'cr'),
-                                'cr-ma1': (FLOAT, 'cr-ma1'), 'cr-ma2': (FLOAT, 'cr-ma2'),
-                                'cr-ma3': (FLOAT, 'cr-ma3 '), 'dma': (FLOAT, 'dma'),
-                                'dx': (FLOAT, 'dx'), 'kdjd': (FLOAT, 'kdjd'),
-                                'kdjj': (FLOAT, 'kdjj'), 'kdjk': (FLOAT, 'kdjk'),
-                                'macd': (FLOAT, 'macd'), 'macdh': (FLOAT, 'macdh'),
-                                'macds': (FLOAT, 'macds'), 'mdi': (FLOAT, 'mdi'),
-                                'pdi': (FLOAT, 'pdi'), 'rsi_12': (FLOAT, 'rsi_12'),
-                                'rsi_6': (FLOAT, 'rsi_6'), 'trix': (FLOAT, 'trix'),
-                                'trix_9_sma': (FLOAT, 'trix_9_sma'), 'vr': (FLOAT, 'vr'),
-                                'vr_6_sma': (FLOAT, 'vr_6_sma'), 'wr_10': (FLOAT, 'wr_10'),
-                                'wr_6': (FLOAT, 'wr_6')}}
+                    'columns': {'adx': {'type': FLOAT, 'cn': 'adx'}, 'adxr': {'type': FLOAT, 'cn': 'adxr'},
+                                'boll': {'type': FLOAT, 'cn': 'boll'}, 'boll_lb': {'type': FLOAT, 'cn': 'boll_lb'},
+                                'boll_ub': {'type': FLOAT, 'cn': 'boll_ub'}, 'cci': {'type': FLOAT, 'cn': 'cci'},
+                                'cci_20': {'type': FLOAT, 'cn': 'cci_20'},
+                                'close_-1_r': {'type': FLOAT, 'cn': 'close_-1_r'},
+                                'close_-2_r': {'type': FLOAT, 'cn': 'close_-2_r'}, 'cr': {'type': FLOAT, 'cn': 'cr'},
+                                'cr-ma1': {'type': FLOAT, 'cn': 'cr-ma1'}, 'cr-ma2': {'type': FLOAT, 'cn': 'cr-ma2'},
+                                'cr-ma3': {'type': FLOAT, 'cn': 'cr-ma3 '}, 'dma': {'type': FLOAT, 'cn': 'dma'},
+                                'dx': {'type': FLOAT, 'cn': 'dx'}, 'kdjk': {'type': FLOAT, 'cn': 'kdjk'},
+                                'kdjd': {'type': FLOAT, 'cn': 'kdjd'}, 'kdjj': {'type': FLOAT, 'cn': 'kdjj'},
+                                'macd': {'type': FLOAT, 'cn': 'macd'}, 'macdh': {'type': FLOAT, 'cn': 'macdh'},
+                                'macds': {'type': FLOAT, 'cn': 'macds'}, 'mdi': {'type': FLOAT, 'cn': 'mdi'},
+                                'pdi': {'type': FLOAT, 'cn': 'pdi'}, 'rsi_12': {'type': FLOAT, 'cn': 'rsi_12'},
+                                'rsi_6': {'type': FLOAT, 'cn': 'rsi_6'}, 'trix': {'type': FLOAT, 'cn': 'trix'},
+                                'trix_9_sma': {'type': FLOAT, 'cn': 'trix_9_sma'}, 'vr': {'type': FLOAT, 'cn': 'vr'},
+                                'vr_6_sma': {'type': FLOAT, 'cn': 'vr_6_sma'}, 'wr_10': {'type': FLOAT, 'cn': 'wr_10'},
+                                'wr_6': {'type': FLOAT, 'cn': 'wr_6'}}}
 
 TABLE_CN_STOCK_INDICATORS = {'name': 'cn_stock_indicators', 'cn': '股票指标数据',
                              'columns': TABLE_CN_STOCK_FOREIGN_KEY['columns'].copy()}
@@ -123,16 +143,124 @@ TABLE_CN_STOCK_STRATEGIES = [
      'columns': _tmp_columns}
 ]
 
+STOCK_KLINE_PATTERN_DATA = {'name': 'cn_stock_pattern_recognitions', 'cn': 'K线形态',
+                            'columns': {
+                                'tow_crows': {'type': SmallInteger, 'cn': '两只乌鸦', 'func': tl.CDL2CROWS},
+                                'upside_gap_two_crows': {'type': SmallInteger, 'cn': '向上跳空的两只乌鸦',
+                                                         'func': tl.CDLUPSIDEGAP2CROWS},
+                                'three_black_crows': {'type': SmallInteger, 'cn': '三只乌鸦',
+                                                      'func': tl.CDL3BLACKCROWS},
+                                'identical_three_crows': {'type': SmallInteger, 'cn': '三胞胎乌鸦',
+                                                          'func': tl.CDLIDENTICAL3CROWS},
+                                'three_line_strike': {'type': SmallInteger, 'cn': '三线打击',
+                                                      'func': tl.CDL3LINESTRIKE},
+                                'dark_cloud_cover': {'type': SmallInteger, 'cn': '乌云压顶',
+                                                     'func': tl.CDLDARKCLOUDCOVER},
+                                'evening_doji_star': {'type': SmallInteger, 'cn': '十字暮星',
+                                                      'func': tl.CDLEVENINGDOJISTAR},
+                                'doji_Star': {'type': SmallInteger, 'cn': '十字星', 'func': tl.CDLDOJISTAR},
+                                'hanging_man': {'type': SmallInteger, 'cn': '上吊线', 'func': tl.CDLHANGINGMAN},
+                                'hikkake_pattern': {'type': SmallInteger, 'cn': '陷阱', 'func': tl.CDLHIKKAKE},
+                                'modified_hikkake_pattern': {'type': SmallInteger, 'cn': '修正陷阱',
+                                                             'func': tl.CDLHIKKAKEMOD},
+                                'in_neck_pattern': {'type': SmallInteger, 'cn': '颈内线', 'func': tl.CDLINNECK},
+                                'on_neck_pattern': {'type': SmallInteger, 'cn': '颈上线', 'func': tl.CDLONNECK},
+                                'thrusting_pattern': {'type': SmallInteger, 'cn': '插入', 'func': tl.CDLTHRUSTING},
+                                'shooting_star': {'type': SmallInteger, 'cn': '射击之星',
+                                                  'func': tl.CDLSHOOTINGSTAR},
+                                'stalled_pattern': {'type': SmallInteger, 'cn': '停顿形态',
+                                                    'func': tl.CDLSTALLEDPATTERN},
+                                'advance_block': {'type': SmallInteger, 'cn': '大敌当前',
+                                                  'func': tl.CDLADVANCEBLOCK},
+                                'high_wave_candle': {'type': SmallInteger, 'cn': '风高浪大线',
+                                                     'func': tl.CDLHIGHWAVE},
+                                'engulfing_pattern': {'type': SmallInteger, 'cn': '吞噬模式',
+                                                      'func': tl.CDLENGULFING},
+                                'abandoned_baby': {'type': SmallInteger, 'cn': '弃婴',
+                                                   'func': tl.CDLABANDONEDBABY},
+                                'closing_marubozu': {'type': SmallInteger, 'cn': '收盘缺影线',
+                                                     'func': tl.CDLCLOSINGMARUBOZU},
+                                'doji': {'type': SmallInteger, 'cn': '十字', 'func': tl.CDLDOJI},
+                                'up_down_gap': {'type': SmallInteger, 'cn': '向上/下跳空并列阳线',
+                                                'func': tl.CDLGAPSIDESIDEWHITE},
+                                'long_legged_doji': {'type': SmallInteger, 'cn': '长脚十字',
+                                                     'func': tl.CDLLONGLEGGEDDOJI},
+                                'rickshaw_man': {'type': SmallInteger, 'cn': '黄包车夫',
+                                                 'func': tl.CDLRICKSHAWMAN},
+                                'marubozu': {'type': SmallInteger, 'cn': '光头光脚/缺影线',
+                                             'func': tl.CDLMARUBOZU},
+                                'three_inside_up_down': {'type': SmallInteger, 'cn': '三内部上涨和下跌',
+                                                         'func': tl.CDL3INSIDE},
+                                'three_outside_up_down': {'type': SmallInteger, 'cn': '三外部上涨和下跌',
+                                                          'func': tl.CDL3OUTSIDE},
+                                'three_stars_in_the_south': {'type': SmallInteger, 'cn': '南方三星',
+                                                             'func': tl.CDL3STARSINSOUTH},
+                                'three_white_soldiers': {'type': SmallInteger, 'cn': '三个白兵',
+                                                         'func': tl.CDL3WHITESOLDIERS},
+                                'belt_hold': {'type': SmallInteger, 'cn': '捉腰带线', 'func': tl.CDLBELTHOLD},
+                                'breakaway': {'type': SmallInteger, 'cn': '脱离', 'func': tl.CDLBREAKAWAY},
+                                'concealing_baby_swallow': {'type': SmallInteger, 'cn': '藏婴吞没',
+                                                            'func': tl.CDLCONCEALBABYSWALL},
+                                'counterattack': {'type': SmallInteger, 'cn': '反击线',
+                                                  'func': tl.CDLCOUNTERATTACK},
+                                'dragonfly_doji': {'type': SmallInteger, 'cn': '蜻蜓十字/T形十字',
+                                                   'func': tl.CDLDRAGONFLYDOJI},
+                                'evening_star': {'type': SmallInteger, 'cn': '暮星', 'func': tl.CDLEVENINGSTAR},
+                                'gravestone_doji': {'type': SmallInteger, 'cn': '墓碑十字/倒T十字',
+                                                    'func': tl.CDLGRAVESTONEDOJI},
+                                'hammer': {'type': SmallInteger, 'cn': '锤头', 'func': tl.CDLHAMMER},
+                                'harami_pattern': {'type': SmallInteger, 'cn': '母子线', 'func': tl.CDLHARAMI},
+                                'harami_cross_pattern': {'type': SmallInteger, 'cn': '十字孕线',
+                                                         'func': tl.CDLHARAMICROSS},
+                                'homing_pigeon': {'type': SmallInteger, 'cn': '家鸽', 'func': tl.CDLHOMINGPIGEON},
+                                'inverted_hammer': {'type': SmallInteger, 'cn': '倒锤头',
+                                                    'func': tl.CDLINVERTEDHAMMER},
+                                'kicking': {'type': SmallInteger, 'cn': '反冲形态', 'func': tl.CDLKICKING},
+                                'kicking_bull_bear': {'type': SmallInteger, 'cn': '由较长缺影线决定的反冲形态',
+                                                      'func': tl.CDLKICKINGBYLENGTH},
+                                'ladder_bottom': {'type': SmallInteger, 'cn': '梯底', 'func': tl.CDLLADDERBOTTOM},
+                                'long_line_candle': {'type': SmallInteger, 'cn': '长蜡烛', 'func': tl.CDLLONGLINE},
+                                'matching_low': {'type': SmallInteger, 'cn': '相同低价',
+                                                 'func': tl.CDLMATCHINGLOW},
+                                'mat_hold': {'type': SmallInteger, 'cn': '铺垫', 'func': tl.CDLMATHOLD},
+                                'morning_doji_star': {'type': SmallInteger, 'cn': '十字晨星',
+                                                      'func': tl.CDLMORNINGDOJISTAR},
+                                'morning_star': {'type': SmallInteger, 'cn': '晨星', 'func': tl.CDLMORNINGSTAR},
+                                'piercing_pattern': {'type': SmallInteger, 'cn': '刺透形态',
+                                                     'func': tl.CDLPIERCING},
+                                'rising_falling_three': {'type': SmallInteger, 'cn': '上升/下降三法',
+                                                         'func': tl.CDLRISEFALL3METHODS},
+                                'separating_lines': {'type': SmallInteger, 'cn': '分离线',
+                                                     'func': tl.CDLSEPARATINGLINES},
+                                'short_line_candle': {'type': SmallInteger, 'cn': '短蜡烛',
+                                                      'func': tl.CDLSHORTLINE},
+                                'spinning_top': {'type': SmallInteger, 'cn': '纺锤', 'func': tl.CDLSPINNINGTOP},
+                                'stick_sandwich': {'type': SmallInteger, 'cn': '条形三明治',
+                                                   'func': tl.CDLSTICKSANDWICH},
+                                'takuri': {'type': SmallInteger, 'cn': '探水竿', 'func': tl.CDLTAKURI},
+                                'tasuki_gap': {'type': SmallInteger, 'cn': '跳空并列阴阳线',
+                                               'func': tl.CDLTASUKIGAP},
+                                'tristar_pattern': {'type': SmallInteger, 'cn': '三星', 'func': tl.CDLTRISTAR},
+                                'unique_3_river': {'type': SmallInteger, 'cn': '奇特三河床',
+                                                   'func': tl.CDLUNIQUE3RIVER},
+                                'upside_downside_gap': {'type': SmallInteger, 'cn': '上升/下降跳空三法',
+                                                        'func': tl.CDLXSIDEGAP3METHODS}
+                            }}
 
-def get_cols_cn(cols_val):
+TABLE_CN_STOCK_KLINE_PATTERN = {'name': 'cn_stock_pattern', 'cn': '股票K线形态',
+                                'columns': TABLE_CN_STOCK_FOREIGN_KEY['columns'].copy()}
+TABLE_CN_STOCK_KLINE_PATTERN['columns'].update(STOCK_KLINE_PATTERN_DATA['columns'])
+
+
+def get_field_cns(cols_val):
     data = []
     for v in cols_val:
-        data.append(v[1])
+        data.append(v['cn'])
     return data
 
 
-def get_cols_type(cols):
+def get_field_types(cols):
     data = {}
     for k, v in cols.items():
-        data[k] = v[0]
+        data[k] = v['type']
     return data

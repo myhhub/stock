@@ -29,7 +29,7 @@ STOCK_WEB_DATA_LIST = [StockWebData(
     name=tbs.TABLE_CN_STOCK_SPOT['cn'],
     table_name=tbs.TABLE_CN_STOCK_SPOT['name'],
     columns=list(tbs.TABLE_CN_STOCK_SPOT['columns'].keys()),
-    column_names=tbs.get_cols_cn(tbs.TABLE_CN_STOCK_SPOT['columns'].values()),
+    column_names=tbs.get_field_cns(tbs.TABLE_CN_STOCK_SPOT['columns'].values()),
     primary_key=[],
     order_by=" code asc "
 ), StockWebData(
@@ -38,7 +38,7 @@ STOCK_WEB_DATA_LIST = [StockWebData(
     name=tbs.TABLE_CN_STOCK_TOP['cn'],
     table_name=tbs.TABLE_CN_STOCK_TOP['name'],
     columns=list(tbs.TABLE_CN_STOCK_TOP['columns'].keys()),
-    column_names=tbs.get_cols_cn(tbs.TABLE_CN_STOCK_TOP['columns'].values()),
+    column_names=tbs.get_field_cns(tbs.TABLE_CN_STOCK_TOP['columns'].values()),
     primary_key=[],
     order_by=" code asc "
 ), StockWebData(
@@ -47,7 +47,7 @@ STOCK_WEB_DATA_LIST = [StockWebData(
     name=tbs.TABLE_CN_STOCK_BLOCKTRADE['cn'],
     table_name=tbs.TABLE_CN_STOCK_BLOCKTRADE['name'],
     columns=list(tbs.TABLE_CN_STOCK_BLOCKTRADE['columns'].keys()),
-    column_names=tbs.get_cols_cn(tbs.TABLE_CN_STOCK_BLOCKTRADE['columns'].values()),
+    column_names=tbs.get_field_cns(tbs.TABLE_CN_STOCK_BLOCKTRADE['columns'].values()),
     primary_key=[],
     order_by=" code asc "
 ), StockWebData(
@@ -56,7 +56,7 @@ STOCK_WEB_DATA_LIST = [StockWebData(
     name=tbs.TABLE_CN_STOCK_INDICATORS['cn'],
     table_name=tbs.TABLE_CN_STOCK_INDICATORS['name'],
     columns=list(tbs.TABLE_CN_STOCK_INDICATORS['columns'].keys()),
-    column_names=tbs.get_cols_cn(tbs.TABLE_CN_STOCK_INDICATORS['columns'].values()),
+    column_names=tbs.get_field_cns(tbs.TABLE_CN_STOCK_INDICATORS['columns'].values()),
     primary_key=[],
     order_by=" code desc  "
 ), StockWebData(
@@ -65,7 +65,7 @@ STOCK_WEB_DATA_LIST = [StockWebData(
     name=tbs.TABLE_CN_STOCK_INDICATORS_BUY['cn'],
     table_name=tbs.TABLE_CN_STOCK_INDICATORS_BUY['name'],
     columns=list(tbs.TABLE_CN_STOCK_INDICATORS_BUY['columns'].keys()),
-    column_names=tbs.get_cols_cn(tbs.TABLE_CN_STOCK_INDICATORS_BUY['columns'].values()),
+    column_names=tbs.get_field_cns(tbs.TABLE_CN_STOCK_INDICATORS_BUY['columns'].values()),
     primary_key=[],
     order_by=" code desc  "
 ), StockWebData(
@@ -74,7 +74,16 @@ STOCK_WEB_DATA_LIST = [StockWebData(
     name=tbs.TABLE_CN_STOCK_INDICATORS_SELL['cn'],
     table_name=tbs.TABLE_CN_STOCK_INDICATORS_SELL['name'],
     columns=list(tbs.TABLE_CN_STOCK_INDICATORS_SELL['columns'].keys()),
-    column_names=tbs.get_cols_cn(tbs.TABLE_CN_STOCK_INDICATORS_SELL['columns'].values()),
+    column_names=tbs.get_field_cns(tbs.TABLE_CN_STOCK_INDICATORS_SELL['columns'].values()),
+    primary_key=[],
+    order_by=" code desc  "
+), StockWebData(
+    mode="query",
+    type="3、股票K线形态",
+    name=tbs.TABLE_CN_STOCK_KLINE_PATTERN['cn'],
+    table_name=tbs.TABLE_CN_STOCK_KLINE_PATTERN['name'],
+    columns=list(tbs.TABLE_CN_STOCK_KLINE_PATTERN['columns'].keys()),
+    column_names=tbs.get_field_cns(tbs.TABLE_CN_STOCK_KLINE_PATTERN['columns'].values()),
     primary_key=[],
     order_by=" code desc  "
 )]
@@ -83,11 +92,11 @@ for table in tbs.TABLE_CN_STOCK_STRATEGIES:
     STOCK_WEB_DATA_LIST.append(
         StockWebData(
             mode="query",
-            type="3、股票策略数据",
+            type="4、股票策略数据",
             name=table['cn'],
             table_name=table['name'],
             columns=list(table['columns'].keys()),
-            column_names=tbs.get_cols_cn(table['columns'].values()),
+            column_names=tbs.get_field_cns(table['columns'].values()),
             primary_key=[],
             order_by=" code asc "
         )

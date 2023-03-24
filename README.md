@@ -35,6 +35,19 @@ The Volume Delta (Vol ∆) 与前一天交易量的增量。
 6、KDJ指标
 
 [随机指标(KDJ)](http://wiki.mbalib.com/wiki/随机指标) 一般是根据统计学的原理，通过一个特定的周期（常为9日、9周等）内出现过的最高价、 最低价及最后一个计算周期的收盘价及这三者之间的比例关系，来计算最后一个计算周期的未成熟随机值RSV， 然后根据平滑移动平均线的方法来计算K值、D值与J值，并绘成曲线图来研判股票走势。 （3）在使用中，常有J线的指标，即3乘以K值减2乘以D值（3K－2D＝J），其目的是求出K值与D值的最大乖离程度， 以领先KD值找出底部和头部。J大于100时为超买，小于10时为超卖。
+（4）KDJ指标应用法则：
+a、K值与D值永远介于0～100。D值>80，行情呈现超买现象;D值<20，行情呈现超卖现象。
+b、当K值>D值时，显示趋势是上涨，因而K线向上突破D线时，为买进信号;当K值
+c、K线与D线在70以上，30以下发生交叉，进行买卖比较可靠。如果KD黄金交叉发生在20以下时，是最佳买点;如果KD死亡交叉发生在80以上时，是最佳卖点。
+d、KD指标不适于发行量小、交易不活跃的股票。但KD指标对大盘和热门大盘股有极高准确性。
+e、当KD指标与股价出现背离时，一般为转势信号，中期或短期的走势有可能已见顶或见底。
+f、当K值和D值上升或下跌的速度减弱，倾斜度趋于平缓时，这是短期转势的预警信号。
+KDJ指标是三条曲线，在应用时主要从五个方面进行考虑：
+a、KD的取值的绝对数字;
+b、KD曲线的形态;
+c、KD指标的交叉;
+d、KD指标的背离;
+e、J指标的取值大小。
 
 7、SMA指标
 
@@ -115,12 +128,14 @@ VR:
 
 ## 四：K线形态识别
 
+正在开发中............
+
 **K线形态识别返回的结果有三种：**
 **-100：出现卖出信号**
 **0：没有出现该形态**
 **100：出现买入信号**
 
-### 两只乌鸦
+### 1、两只乌鸦
 
 > 函数名：CDL2CROWS
 > 名称：Two Crows 两只乌鸦
@@ -130,7 +145,7 @@ VR:
 integer = CDL2CROWS(open, high, low, close)
 ```
 
-### 三只乌鸦
+### 2、三只乌鸦
 
 > 函数名：CDL3BLACKCROWS
 > 名称：Three Black Crows 三只乌鸦
@@ -140,7 +155,7 @@ integer = CDL2CROWS(open, high, low, close)
 integer = CDL3BLACKCROWS(open, high, low, close)
 ```
 
-### 三内部上涨和下跌
+### 3、三内部上涨和下跌
 
 > 函数名：CDL3INSIDE
 > 名称： Three Inside Up/Down 三内部上涨和下跌
@@ -150,7 +165,7 @@ integer = CDL3BLACKCROWS(open, high, low, close)
 integer = CDL3INSIDE(open, high, low, close)
 ```
 
-### 三线打击
+### 4、三线打击
 
 > 函数名：CDL3LINESTRIKE
 > 名称： Three-Line Strike 三线打击
@@ -160,7 +175,7 @@ integer = CDL3INSIDE(open, high, low, close)
 integer = CDL3LINESTRIKE(open, high, low, close)
 ```
 
-###  三外部上涨和下跌
+###  5、三外部上涨和下跌
 
 > 函数名：CDL3OUTSIDE
 > 名称：Three Outside Up/Down 三外部上涨和下跌
@@ -170,7 +185,7 @@ integer = CDL3LINESTRIKE(open, high, low, close)
 integer = CDL3OUTSIDE(open, high, low, close)
 ```
 
-### 南方三星
+### 6、南方三星
 
 > 函数名：CDL3STARSINSOUTH
 > 名称：Three Stars In The South 南方三星
@@ -180,7 +195,7 @@ integer = CDL3OUTSIDE(open, high, low, close)
 integer = CDL3STARSINSOUTH(open, high, low, close)
 ```
 
-### 三个白兵
+### 7、三个白兵
 
 > 函数名：CDL3WHITESOLDIERS
 > 名称：Three Advancing White Soldiers 三个白兵
@@ -190,7 +205,7 @@ integer = CDL3STARSINSOUTH(open, high, low, close)
 integer = CDL3WHITESOLDIERS(open, high, low, close)
 ```
 
-### 弃婴
+### 8、弃婴
 
 > 函数名：CDLABANDONEDBABY
 > 名称：Abandoned Baby 弃婴
@@ -200,7 +215,7 @@ integer = CDL3WHITESOLDIERS(open, high, low, close)
 integer = CDLABANDONEDBABY(open, high, low, close, penetration=0)
 ```
 
-### 大敌当前
+### 9、大敌当前
 
 > 函数名：CDLADVANCEBLOCK
 > 名称：Advance Block 大敌当前
@@ -210,7 +225,7 @@ integer = CDLABANDONEDBABY(open, high, low, close, penetration=0)
 integer = CDLADVANCEBLOCK(open, high, low, close)
 ```
 
-### 捉腰带线
+### 10、捉腰带线
 
 > 函数名：CDLBELTHOLD
 > 名称：Belt-hold 捉腰带线
@@ -220,7 +235,7 @@ integer = CDLADVANCEBLOCK(open, high, low, close)
 integer = CDLBELTHOLD(open, high, low, close)
 ```
 
-### 脱离
+### 11、脱离
 
 > 函数名：CDLBREAKAWAY
 > 名称：Breakaway 脱离
@@ -230,7 +245,7 @@ integer = CDLBELTHOLD(open, high, low, close)
 integer = CDLBREAKAWAY(open, high, low, close)
 ```
 
-### 收盘缺影线
+### 12、收盘缺影线
 
 > 函数名：CDLCLOSINGMARUBOZU
 > 名称：Closing Marubozu 收盘缺影线
@@ -240,7 +255,7 @@ integer = CDLBREAKAWAY(open, high, low, close)
 integer = CDLCLOSINGMARUBOZU(open, high, low, close)
 ```
 
-### 藏婴吞没
+### 13、藏婴吞没
 
 > 函数名：CDLCONCEALBABYSWALL
 > 名称： Concealing Baby Swallow 藏婴吞没
@@ -250,7 +265,7 @@ integer = CDLCLOSINGMARUBOZU(open, high, low, close)
 integer = CDLCONCEALBABYSWALL(open, high, low, close)
 ```
 
-### 反击线
+### 14、反击线
 
 > 函数名：CDLCOUNTERATTACK
 > 名称：Counterattack 反击线
@@ -260,7 +275,7 @@ integer = CDLCONCEALBABYSWALL(open, high, low, close)
 integer = CDLCOUNTERATTACK(open, high, low, close)
 ```
 
-### 乌云压顶
+### 15、乌云压顶
 
 > 函数名：CDLDARKCLOUDCOVER
 > 名称：Dark Cloud Cover 乌云压顶
@@ -270,7 +285,7 @@ integer = CDLCOUNTERATTACK(open, high, low, close)
 integer = CDLDARKCLOUDCOVER(open, high, low, close, penetration=0)
 ```
 
-### 十字
+### 16、十字
 
 > 函数名：CDLDOJI
 > 名称：Doji 十字
@@ -280,7 +295,7 @@ integer = CDLDARKCLOUDCOVER(open, high, low, close, penetration=0)
 integer = CDLDOJI(open, high, low, close)
 ```
 
-### 十字星
+### 17、十字星
 
 > 函数名：CDLDOJISTAR
 > 名称：Doji Star 十字星
@@ -290,7 +305,7 @@ integer = CDLDOJI(open, high, low, close)
 integer = CDLDOJISTAR(open, high, low, close)
 ```
 
-### 蜻蜓十字/T形十字
+### 18、蜻蜓十字/T形十字
 
 > 函数名：CDLDRAGONFLYDOJI
 > 名称：Dragonfly Doji 蜻蜓十字/T形十字
@@ -300,7 +315,7 @@ integer = CDLDOJISTAR(open, high, low, close)
 integer = CDLDRAGONFLYDOJI(open, high, low, close)
 ```
 
-### 吞噬模式
+### 19、吞噬模式
 
 > 函数名：CDLENGULFING
 > 名称：Engulfing Pattern 吞噬模式
@@ -310,7 +325,7 @@ integer = CDLDRAGONFLYDOJI(open, high, low, close)
 integer = CDLENGULFING(open, high, low, close)
 ```
 
-### 十字暮星
+### 20、十字暮星
 
 > 函数名：CDLEVENINGDOJISTAR
 > 名称：Evening Doji Star 十字暮星
@@ -320,7 +335,7 @@ integer = CDLENGULFING(open, high, low, close)
 integer = CDLEVENINGDOJISTAR(open, high, low, close, penetration=0)
 ```
 
-### 暮星
+### 21、暮星
 
 > 函数名：CDLEVENINGSTAR
 > 名称：Evening Star 暮星
@@ -330,7 +345,7 @@ integer = CDLEVENINGDOJISTAR(open, high, low, close, penetration=0)
 integer = CDLEVENINGSTAR(open, high, low, close, penetration=0)
 ```
 
-### 向上/下跳空并列阳线
+### 22、向上/下跳空并列阳线
 
 > 函数名：CDLGAPSIDESIDEWHITE
 > 名称：Up/Down-gap side-by-side white lines 向上/下跳空并列阳线
@@ -340,7 +355,7 @@ integer = CDLEVENINGSTAR(open, high, low, close, penetration=0)
 integer = CDLGAPSIDESIDEWHITE(open, high, low, close)
 ```
 
-### 墓碑十字/倒T十字
+### 23、墓碑十字/倒T十字
 
 > 函数名：CDLGRAVESTONEDOJI
 > 名称：Gravestone Doji 墓碑十字/倒T十字
@@ -350,7 +365,7 @@ integer = CDLGAPSIDESIDEWHITE(open, high, low, close)
 integer = CDLGRAVESTONEDOJI(open, high, low, close)
 ```
 
-### 锤头
+### 24、锤头
 
 > 函数名：CDLHAMMER
 > 名称：Hammer 锤头
@@ -360,7 +375,7 @@ integer = CDLGRAVESTONEDOJI(open, high, low, close)
 integer = CDLHAMMER(open, high, low, close)
 ```
 
-### 上吊线
+### 25、上吊线
 
 > 函数名：CDLHANGINGMAN
 > 名称：Hanging Man 上吊线
@@ -370,7 +385,7 @@ integer = CDLHAMMER(open, high, low, close)
 integer = CDLHANGINGMAN(open, high, low, close)
 ```
 
-### 母子线
+### 26、母子线
 
 > 函数名：CDLHARAMI
 > 名称：Harami Pattern 母子线
@@ -380,7 +395,7 @@ integer = CDLHANGINGMAN(open, high, low, close)
 integer = CDLHARAMI(open, high, low, close)
 ```
 
-### 十字孕线
+### 27、十字孕线
 
 > 函数名：CDLHARAMICROSS
 > 名称：Harami Cross Pattern 十字孕线
@@ -390,7 +405,7 @@ integer = CDLHARAMI(open, high, low, close)
 integer = CDLHARAMICROSS(open, high, low, close)
 ```
 
-### 风高浪大线
+### 28、风高浪大线
 
 > 函数名：CDLHIGHWAVE
 > 名称：High-Wave Candle 风高浪大线
@@ -400,7 +415,7 @@ integer = CDLHARAMICROSS(open, high, low, close)
 integer = CDLHIGHWAVE(open, high, low, close)
 ```
 
-### 陷阱
+### 29、陷阱
 
 > 函数名：CDLHIKKAKE
 > 名称：Hikkake Pattern 陷阱
@@ -410,7 +425,7 @@ integer = CDLHIGHWAVE(open, high, low, close)
 integer = CDLHIKKAKE(open, high, low, close)
 ```
 
-### 修正陷阱
+### 30、修正陷阱
 
 > 函数名：CDLHIKKAKEMOD
 > 名称：Modified Hikkake Pattern 修正陷阱
@@ -420,7 +435,7 @@ integer = CDLHIKKAKE(open, high, low, close)
 integer = CDLHIKKAKEMOD(open, high, low, close)
 ```
 
-### 家鸽
+### 31、家鸽
 
 > 函数名：CDLHOMINGPIGEON
 > 名称：Homing Pigeon 家鸽
@@ -430,7 +445,7 @@ integer = CDLHIKKAKEMOD(open, high, low, close)
 integer = CDLHOMINGPIGEON(open, high, low, close)
 ```
 
-### 三胞胎乌鸦
+### 32、三胞胎乌鸦
 
 > 函数名：CDLIDENTICAL3CROWS
 > 名称：Identical Three Crows 三胞胎乌鸦
@@ -440,7 +455,7 @@ integer = CDLHOMINGPIGEON(open, high, low, close)
 integer = CDLIDENTICAL3CROWS(open, high, low, close)
 ```
 
-### 颈内线
+### 33、颈内线
 
 > 函数名：CDLINNECK
 > 名称：In-Neck Pattern 颈内线
@@ -450,7 +465,7 @@ integer = CDLIDENTICAL3CROWS(open, high, low, close)
 integer = CDLINNECK(open, high, low, close)
 ```
 
-### 倒锤头
+### 34、倒锤头
 
 > 函数名：CDLINVERTEDHAMMER
 > 名称：Inverted Hammer 倒锤头
@@ -460,7 +475,7 @@ integer = CDLINNECK(open, high, low, close)
 integer = CDLINVERTEDHAMMER(open, high, low, close)
 ```
 
-### 反冲形态
+### 35、反冲形态
 
 > 函数名：CDLKICKING
 > 名称：Kicking 反冲形态
@@ -470,7 +485,7 @@ integer = CDLINVERTEDHAMMER(open, high, low, close)
 integer = CDLKICKING(open, high, low, close)
 ```
 
-### 由较长缺影线决定的反冲形态
+### 36、由较长缺影线决定的反冲形态
 
 > 函数名：CDLKICKINGBYLENGTH
 > 名称：Kicking - bull/bear determined by the longer marubozu 由较长缺影线决定的反冲形态
@@ -480,7 +495,7 @@ integer = CDLKICKING(open, high, low, close)
 integer = CDLKICKINGBYLENGTH(open, high, low, close)
 ```
 
-### 梯底
+### 37、梯底
 
 > 函数名：CDLLADDERBOTTOM
 > 名称：Ladder Bottom 梯底
@@ -490,7 +505,7 @@ integer = CDLKICKINGBYLENGTH(open, high, low, close)
 integer = CDLLADDERBOTTOM(open, high, low, close)
 ```
 
-### 长脚十字
+### 38、长脚十字
 
 > 函数名：CDLLONGLEGGEDDOJI
 > 名称：Long Legged Doji 长脚十字
@@ -500,7 +515,7 @@ integer = CDLLADDERBOTTOM(open, high, low, close)
 integer = CDLLONGLEGGEDDOJI(open, high, low, close)
 ```
 
-### 长蜡烛
+### 39、长蜡烛
 
 > 函数名：CDLLONGLINE
 > 名称：Long Line Candle 长蜡烛
@@ -510,7 +525,7 @@ integer = CDLLONGLEGGEDDOJI(open, high, low, close)
 integer = CDLLONGLINE(open, high, low, close)
 ```
 
-### 光头光脚/缺影线
+### 40、光头光脚/缺影线
 
 函数名：CDLMARUBOZU
 名称：Marubozu 光头光脚/缺影线
@@ -520,7 +535,7 @@ integer = CDLLONGLINE(open, high, low, close)
 integer = CDLMARUBOZU(open, high, low, close)
 ```
 
-### 相同低价
+### 41、相同低价
 
 > 函数名：CDLMATCHINGLOW
 > 名称：Matching Low 相同低价
@@ -530,7 +545,7 @@ integer = CDLMARUBOZU(open, high, low, close)
 integer = CDLMATCHINGLOW(open, high, low, close)
 ```
 
-### 铺垫
+### 42、铺垫
 
 > 函数名：CDLMATHOLD
 > 名称：Mat Hold 铺垫
@@ -540,7 +555,7 @@ integer = CDLMATCHINGLOW(open, high, low, close)
 integer = CDLMATHOLD(open, high, low, close, penetration=0)
 ```
 
-### 十字晨星
+### 43、十字晨星
 
 > 函数名：CDLMORNINGDOJISTAR
 > 名称：Morning Doji Star 十字晨星
@@ -550,7 +565,7 @@ integer = CDLMATHOLD(open, high, low, close, penetration=0)
 integer = CDLMORNINGDOJISTAR(open, high, low, close, penetration=0)
 ```
 
-### 晨星
+### 44、晨星
 
 > 函数名：CDLMORNINGSTAR
 > 名称：Morning Star 晨星
@@ -560,7 +575,7 @@ integer = CDLMORNINGDOJISTAR(open, high, low, close, penetration=0)
 integer = CDLMORNINGSTAR(open, high, low, close, penetration=0)
 ```
 
-### 颈上线
+### 45、颈上线
 
 > 函数名：CDLONNECK
 > 名称：On-Neck Pattern 颈上线
@@ -570,7 +585,7 @@ integer = CDLMORNINGSTAR(open, high, low, close, penetration=0)
 integer = CDLONNECK(open, high, low, close)
 ```
 
-### 刺透形态
+### 46、刺透形态
 
 > 函数名：CDLPIERCING
 > 名称：Piercing Pattern 刺透形态
@@ -580,7 +595,7 @@ integer = CDLONNECK(open, high, low, close)
 integer = CDLPIERCING(open, high, low, close)
 ```
 
-### 黄包车夫
+### 47、黄包车夫
 
 > 函数名：CDLRICKSHAWMAN
 > 名称：Rickshaw Man 黄包车夫
@@ -590,7 +605,7 @@ integer = CDLPIERCING(open, high, low, close)
 integer = CDLRICKSHAWMAN(open, high, low, close)
 ```
 
-### 上升/下降三法
+### 48、上升/下降三法
 
 > 函数名：CDLRISEFALL3METHODS 
 > 名称：Rising/Falling Three Methods 上升/下降三法
@@ -600,7 +615,7 @@ integer = CDLRICKSHAWMAN(open, high, low, close)
 integer = CDLRISEFALL3METHODS(open, high, low, close)
 ```
 
-### 分离线
+### 49、分离线
 
 > 函数名：CDLSEPARATINGLINES
 > 名称：Separating Lines 分离线
@@ -610,7 +625,7 @@ integer = CDLRISEFALL3METHODS(open, high, low, close)
 integer = CDLSEPARATINGLINES(open, high, low, close)
 ```
 
-### 射击之星
+### 50、射击之星
 
 > 函数名：CDLSHOOTINGSTAR
 > 名称：Shooting Star 射击之星
@@ -620,7 +635,7 @@ integer = CDLSEPARATINGLINES(open, high, low, close)
 integer = CDLSHOOTINGSTAR(open, high, low, close)
 ```
 
-### 短蜡烛
+### 51、短蜡烛
 
 > 函数名：CDLSHORTLINE
 > 名称：Short Line Candle 短蜡烛
@@ -630,7 +645,7 @@ integer = CDLSHOOTINGSTAR(open, high, low, close)
 integer = CDLSHORTLINE(open, high, low, close)
 ```
 
-### 纺锤
+### 52、纺锤
 
 > 函数名：CDLSPINNINGTOP
 > 名称：Spinning Top 纺锤
@@ -640,7 +655,7 @@ integer = CDLSHORTLINE(open, high, low, close)
 integer = CDLSPINNINGTOP(open, high, low, close)
 ```
 
-### 停顿形态
+### 53、停顿形态
 
 > 函数名：CDLSTALLEDPATTERN
 > 名称：Stalled Pattern 停顿形态
@@ -650,7 +665,7 @@ integer = CDLSPINNINGTOP(open, high, low, close)
 integer = CDLSTALLEDPATTERN(open, high, low, close)
 ```
 
-### 条形三明治
+### 54、条形三明治
 
 > 函数名：CDLSTICKSANDWICH
 > 名称：Stick Sandwich 条形三明治
@@ -660,7 +675,7 @@ integer = CDLSTALLEDPATTERN(open, high, low, close)
 integer = CDLSTICKSANDWICH(open, high, low, close)
 ```
 
-### 探水竿
+### 55、探水竿
 
 > 函数名：CDLTAKURI
 > 名称：Takuri (Dragonfly Doji with very long lower shadow) 探水竿
@@ -670,7 +685,7 @@ integer = CDLSTICKSANDWICH(open, high, low, close)
 integer = CDLTAKURI(open, high, low, close)
 ```
 
-### 跳空并列阴阳线
+### 56、跳空并列阴阳线
 
 > 函数名：CDLTASUKIGAP
 > 名称：Tasuki Gap 跳空并列阴阳线
@@ -680,7 +695,7 @@ integer = CDLTAKURI(open, high, low, close)
 integer = CDLTASUKIGAP(open, high, low, close)
 ```
 
-### 插入
+### 57、插入
 
 > 函数名：CDLTHRUSTING
 > 名称：Thrusting Pattern 插入
@@ -690,7 +705,7 @@ integer = CDLTASUKIGAP(open, high, low, close)
 integer = CDLTHRUSTING(open, high, low, close)
 ```
 
-### 三星
+### 58、三星
 
 > 函数名：CDLTRISTAR
 > 名称：Tristar Pattern 三星
@@ -700,7 +715,7 @@ integer = CDLTHRUSTING(open, high, low, close)
 integer = CDLTRISTAR(open, high, low, close)
 ```
 
-### 奇特三河床
+### 59、奇特三河床
 
 > 函数名：CDLUNIQUE3RIVER
 > 名称：Unique 3 River 奇特三河床
@@ -710,7 +725,7 @@ integer = CDLTRISTAR(open, high, low, close)
 integer = CDLUNIQUE3RIVER(open, high, low, close)
 ```
 
-### 向上跳空的两只乌鸦
+### 60、向上跳空的两只乌鸦
 
 > 函数名：CDLUPSIDEGAP2CROWS
 > 名称：Upside Gap Two Crows 向上跳空的两只乌鸦
@@ -720,7 +735,7 @@ integer = CDLUNIQUE3RIVER(open, high, low, close)
 integer = CDLUPSIDEGAP2CROWS(open, high, low, close)
 ```
 
-### 上升/下降跳空三法
+### 61、上升/下降跳空三法
 
 > 函数名：CDLXSIDEGAP3METHODS
 > 名称：Upside/Downside Gap Three Methods 上升/下降跳空三法

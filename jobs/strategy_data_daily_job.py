@@ -39,7 +39,7 @@ def prepare(date, strategy):
             mdb.executeSql(del_sql)
             cols_type = None
         else:
-            cols_type = tbs.get_cols_type(tbs.TABLE_CN_STOCK_STRATEGIES[0]['columns'])
+            cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_STRATEGIES[0]['columns'])
 
         data = pd.DataFrame(results)
         columns = list(tbs.TABLE_CN_STOCK_FOREIGN_KEY['columns'].keys())
@@ -53,7 +53,7 @@ def prepare(date, strategy):
         mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
 
     except Exception as e:
-        logging.debug("{}处理异常：{}策略{}".format('strategy_data_daily_job.check', strategy, e))
+        logging.debug("{}处理异常：{}策略{}".format('strategy_data_daily_job.prepare', strategy, e))
 
 
 def run_check(strategy_fun, stocks, date, workers=40):
@@ -78,9 +78,9 @@ def run_check(strategy_fun, stocks, date, workers=40):
                         data.append(stock)
                 except Exception as e:
                     logging.debug(
-                        "{}处理异常：{}代码{}".format('strategy_data_daily_job.run_get_indicator', stock[1], e))
+                        "{}处理异常：{}代码{}".format('strategy_data_daily_job.run_check', stock[1], e))
     except Exception as e:
-        logging.debug("{}处理异常：{}".format('strategy_data_daily_job.run_strategy', e))
+        logging.debug("{}处理异常：{}".format('strategy_data_daily_job.run_check', e))
     if not data:
         return None
     else:

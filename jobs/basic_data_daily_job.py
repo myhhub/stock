@@ -38,11 +38,11 @@ def save_stock_spot_data(date):
             mdb.executeSql(del_sql)
             cols_type = None
         else:
-            cols_type = tbs.get_cols_type(tbs.TABLE_CN_STOCK_SPOT['columns'])
+            cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_SPOT['columns'])
 
         mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
     except Exception as e:
-        logging.debug("{}处理异常：{}".format('basic_data_daily_job.stat_stock_spot_data', e))
+        logging.debug("{}处理异常：{}".format('basic_data_daily_job.save_stock_spot_data', e))
 
 
 # 龙虎榜-个股上榜统计
@@ -65,10 +65,10 @@ def save_stock_top_data(date):
             mdb.executeSql(del_sql)
             cols_type = None
         else:
-            cols_type = tbs.get_cols_type(tbs.TABLE_CN_STOCK_TOP['columns'])
+            cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_TOP['columns'])
         mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
     except Exception as e:
-        logging.debug("{}处理异常：{}".format('basic_data_daily_job.stat_stock_top_data', e))
+        logging.debug("{}处理异常：{}".format('basic_data_daily_job.save_stock_top_data', e))
 
 
 # 每日统计
@@ -88,11 +88,11 @@ def save_stock_blocktrade_data(date):
             mdb.executeSql(del_sql)
             cols_type = None
         else:
-            cols_type = tbs.get_cols_type(tbs.TABLE_CN_STOCK_BLOCKTRADE['columns'])
+            cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_BLOCKTRADE['columns'])
 
         mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
     except Exception as e:
-        logging.debug("{}处理异常：{}".format('basic_data_daily_job.stat_stock_blocktrade_data', e))
+        logging.debug("{}处理异常：{}".format('basic_data_daily_job.save_stock_blocktrade_data', e))
 
 
 def main():

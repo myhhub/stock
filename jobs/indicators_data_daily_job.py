@@ -38,7 +38,7 @@ def prepare(date):
             mdb.executeSql(del_sql)
             cols_type = None
         else:
-            cols_type = tbs.get_cols_type(tbs.TABLE_CN_STOCK_INDICATORS['columns'])
+            cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_INDICATORS['columns'])
 
         dataKey = pd.DataFrame(results.keys())
         _columns = list(tbs.TABLE_CN_STOCK_FOREIGN_KEY['columns'].keys())
@@ -78,9 +78,9 @@ def run_check(stocks, date=None, workers=40):
                         data[stock] = _data_
                 except Exception as e:
                     logging.debug(
-                        "{}处理异常：{}代码{}".format('indicators_data_daily_job.run_get_indicator', stock[1], e))
+                        "{}处理异常：{}代码{}".format('indicators_data_daily_job.run_check', stock[1], e))
     except Exception as e:
-        logging.debug("{}处理异常：{}".format('indicators_data_daily_job.run_get_indicator', e))
+        logging.debug("{}处理异常：{}".format('indicators_data_daily_job.run_check', e))
     if not data:
         return None
     else:
@@ -114,13 +114,13 @@ def guess_buy(date):
             mdb.executeSql(del_sql)
             cols_type = None
         else:
-            cols_type = tbs.get_cols_type(tbs.TABLE_CN_STOCK_INDICATORS_BUY['columns'])
+            cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_INDICATORS_BUY['columns'])
 
         _columns_backtest = list(tbs.TABLE_CN_STOCK_BACKTEST_DATA['columns'].keys())
         data = pd.concat([data, pd.DataFrame(columns=_columns_backtest)])
         mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
     except Exception as e:
-        logging.debug("{}处理异常：{}".format('indicators_data_daily_job.stat_all_lite_buy', e))
+        logging.debug("{}处理异常：{}".format('indicators_data_daily_job.guess_buy', e))
 
 
 # 设置卖出数据。
@@ -148,13 +148,13 @@ def guess_sell(date):
             mdb.executeSql(del_sql)
             cols_type = None
         else:
-            cols_type = tbs.get_cols_type(tbs.TABLE_CN_STOCK_INDICATORS_SELL['columns'])
+            cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_INDICATORS_SELL['columns'])
 
         _columns_backtest = list(tbs.TABLE_CN_STOCK_BACKTEST_DATA['columns'].keys())
         data = pd.concat([data, pd.DataFrame(columns=_columns_backtest)])
         mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
     except Exception as e:
-        logging.debug("{}处理异常：{}".format('indicators_data_daily_job.stat_all_lite_sell', e))
+        logging.debug("{}处理异常：{}".format('indicators_data_daily_job.guess_sell', e))
 
 
 def main():
