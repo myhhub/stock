@@ -794,6 +794,7 @@ integer = CDLXSIDEGAP3METHODS(open, high, low, close)
 ------单功能作业，支持批量作业，回测数据自动填补到当前
 基础数据作业 python basic_data_daily_job.py
 指标数据作业 python indicators_data_daily_job.py
+K线形态作业 klinepattern_data_daily_job.py
 策略数据作业 python strategy_data_daily_job.py
 回测数据 python backtest_data_daily_job.py
 ```
