@@ -9,6 +9,7 @@ echo ------单功能作业，除了创建数据库，其他都支持批量作业
 echo 创建数据库作业 python init_job.py
 echo 基础数据作业 python basic_data_daily_job.py
 echo 指标数据作业 python indicators_data_daily_job.py
+echo K线形态作业 klinepattern_data_daily_job.py
 echo 策略数据作业 python strategy_data_daily_job.py
 echo 回测数据 python backtest_data_daily_job.py
 echo ------执行作业------
