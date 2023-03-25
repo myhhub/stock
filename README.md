@@ -128,7 +128,7 @@ VR:
 
 ## 四：K线形态识别
 
-正在开发中............
+***还有部分功能正在开发中............***
 
 **K线形态识别返回的结果有三种：**
 **-100：出现卖出信号**
@@ -744,6 +744,8 @@ integer = CDLUPSIDEGAP2CROWS(open, high, low, close)
 ```
 integer = CDLXSIDEGAP3METHODS(open, high, low, close)
 ```
+
+![](img/09.jpg)
 
 ## 五：策略选股
 
