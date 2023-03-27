@@ -350,6 +350,6 @@ def add_kline(stock, date):
     return {
         "script": script,
         "div": div,
-        "title": "k线",
-        "desc": "日k线"
+        "title": "K线",
+        "desc": "日K线图，K线形态识别"
     }
