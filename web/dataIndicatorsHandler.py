@@ -319,14 +319,18 @@ def add_kline(stock, date):
         pattern = data[data[k] != 0]
         for index, d in pattern.iterrows():
             x_posit = data.index.get_loc(index)
+            # s = "{}\n{}".format(v['cn'], d["date"])
             s = "{}".format(v['cn'])
             if d[k] > 0:
                 y_posit = d['high']
                 t_color = 'red'
+                angle = 90
             else:
                 y_posit = d['low']
                 t_color = 'green'
-            label = Label(x=x_posit, y=y_posit, text=s, text_color=t_color, x_offset=0, y_offset=0, text_font_size="12pt")
+                angle = 270
+            label = Label(x=x_posit, y=y_posit, x_offset=0, y_offset=5, angle=angle, angle_units='deg',
+                          text=s, text_font_style='bold', text_color=t_color, text_font_size="9pt")
             p.add_layout(label)
 
     p.xaxis.visible = False  # 隐藏x-axis
