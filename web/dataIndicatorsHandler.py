@@ -10,7 +10,7 @@ import pandas as pd
 # 首映 bokeh 画图。
 from bokeh.plotting import figure
 from bokeh.embed import components
-from bokeh.palettes import Spectral6
+from bokeh.palettes import Spectral7
 from bokeh.layouts import gridplot
 from bokeh.palettes import Category20
 from bokeh.models import DatetimeTickFormatter, ColumnDataSource, HoverTool, Label
@@ -284,7 +284,7 @@ def add_kline(stock, date):
     data = kpr.get_pattern_recognitions(data, stock_column)
     data['index'] = list(np.arange(len(data)))
 
-    average_labels = ["MA_5", "MA_10", "MA_20", 'MA_30', 'MA_60', 'MA_90']
+    average_labels = ["MA_1", "MA_5", "MA_10", "MA_20", 'MA_30', 'MA_60', 'MA_90']
     # 均线计算
     data_1 = moving_average(data, average_labels)  # 计算各种长度的均线
     source_1 = ColumnDataSource(data_1)
@@ -301,12 +301,13 @@ def add_kline(stock, date):
                                 ('最高', '@high'), ('最低', '@low'),
                                 ('收盘', '@close')])
     # 均线图
-    p.line(x='index', y='MA_5', source=source_1, color=Spectral6[5])
-    p.line(x='index', y='MA_10', source=source_1, color=Spectral6[4])
-    p.line(x='index', y='MA_20', source=source_1, color=Spectral6[3])
-    p.line(x='index', y='MA_30', source=source_1, color=Spectral6[2])
-    p.line(x='index', y='MA_60', source=source_1, color=Spectral6[1])
-    p.line(x='index', y='MA_90', source=source_1, color=Spectral6[0])
+    p.line(x='index', y='close', source=source_1,  color=Spectral7[6])
+    p.line(x='index', y='MA_5', source=source_1, color=Spectral7[5])
+    p.line(x='index', y='MA_10', source=source_1, color=Spectral7[4])
+    p.line(x='index', y='MA_20', source=source_1, color=Spectral7[3])
+    p.line(x='index', y='MA_30', source=source_1, color=Spectral7[2])
+    p.line(x='index', y='MA_60', source=source_1, color=Spectral7[1])
+    p.line(x='index', y='MA_90', source=source_1, color=Spectral7[0])
     p.segment(x0='index', y0='high', x1='index', y1='low', color='red', source=inc_source)
     p.segment(x0='index', y0='high', x1='index', y1='low', color='green', source=dec_source)
     p.vbar('index', 0.5, 'open', 'close', fill_color='red', line_color='red', source=inc_source, hover_fill_alpha=0.5)
