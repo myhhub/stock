@@ -2,19 +2,23 @@
 # -*- coding: utf-8 -*-
 
 from abc import ABC
+import numpy as np
 from tornado import gen
 import logging
 import datetime
+import pandas as pd
 # 首映 bokeh 画图。
 from bokeh.plotting import figure
 from bokeh.embed import components
-import pandas as pd
+from bokeh.palettes import Spectral6
 from bokeh.layouts import gridplot
 from bokeh.palettes import Category20
-from bokeh.models import DatetimeTickFormatter
+from bokeh.models import DatetimeTickFormatter, ColumnDataSource, HoverTool, Label
 import libs.stockfetch as stf
 import libs.common as common
+import libs.tablestructure as tbs
 import indicator.stockstats_data as ssd
+import kline.pattern_recognitions as kpr
 import web.base as webBase
 
 __author__ = 'myh '
@@ -236,18 +240,18 @@ def add_plot(stockStat, conf):
     # logging.info("############################", type(conf["dic"]))
     # 循环 多个line 信息。
     for key, val in enumerate(conf["dic"]):
-        p1 = figure(width=1000, height=150, x_axis_type="datetime")
+        p = figure(width=1000, height=150, x_axis_type="datetime")
         # add renderers
         stockStat['date'] = pd.to_datetime(stockStat.index.values)
         # ["volume","volume_delta"]
         # 设置20个颜色循环，显示0 2 4 6 号序列。
-        p1.line(stockStat['date'], stockStat[val], color=Category20[20][key * 2])
+        p.line(stockStat['date'], stockStat[val], color=Category20[20][key * 2])
 
         # Set date format for x axis 格式化。
-        p1.xaxis[0].formatter = DatetimeTickFormatter(days="%Y-%m-%d")
+        p.xaxis[0].formatter = DatetimeTickFormatter(days="%Y-%m-%d")
         # p1.xaxis.major_label_orientation = radians(30) #可以旋转一个角度。
 
-        p_list.append([p1])
+        p_list.append([p])
 
     gp = gridplot(p_list)
     script, div = components(gp)
@@ -259,20 +263,84 @@ def add_plot(stockStat, conf):
     }
 
 
-# 增加k线图
 def add_kline(stock, date):
+    def moving_average(data_arg, selection):
+        selection_mapping = {k: int(k.split('_')[-1]) for k in selection}
+        for k, v in selection_mapping.items():
+            data_arg.loc[:, k] = data_arg['close'].rolling(window=v).mean()
+        return data_arg
+
     p_list = []
     tmp_year, tmp_month, tmp_day = date.split("-")
     start_date = datetime.datetime(int(tmp_year), int(tmp_month), int(tmp_day))
-    run_date = (start_date + datetime.timedelta(days=-15))
+    _day = (datetime.datetime.now() - start_date).days - 120
+    if _day < 0:
+        run_date = (start_date + datetime.timedelta(days=_day))
     run_date_str = run_date.strftime("%Y-%m-%d")
     mask = (stock['date'] >= run_date_str)
-    stock = stock.loc[mask]
-    p1 = figure(width=1000, height=150, x_axis_type="datetime")
-    stock['date'] = pd.to_datetime(stock['date'])
-    p1.line(stock['date'], stock['close'], color='red')
-    p1.xaxis[0].formatter = DatetimeTickFormatter(days="%Y-%m-%d")
+    data = stock.loc[mask]
+
+    stock_column = tbs.STOCK_KLINE_PATTERN_DATA['columns']
+    data = kpr.get_pattern_recognitions(data, stock_column)
+    data['index'] = list(np.arange(len(data)))
+
+    average_labels = ["MA_5", "MA_10", "MA_20", 'MA_30', 'MA_60', 'MA_90']
+    # 均线计算
+    data_1 = moving_average(data, average_labels)  # 计算各种长度的均线
+    source_1 = ColumnDataSource(data_1)
+
+    inc = data.close >= data.open
+    dec = data.open > data.close
+
+    inc_source = ColumnDataSource(data.loc[inc])
+    dec_source = ColumnDataSource(data.loc[dec])
+
+    length = len(data)
+    p = figure(width=1000, height=300, x_range=(0, length + 1))
+    hover = HoverTool(tooltips=[('日期', '@date'), ('开盘', '@open'),
+                                ('最高', '@high'), ('最低', '@low'),
+                                ('收盘', '@close')])
+    # 均线图
+    p.line(x='index', y='MA_5', source=source_1, color=Spectral6[5])
+    p.line(x='index', y='MA_10', source=source_1, color=Spectral6[4])
+    p.line(x='index', y='MA_20', source=source_1, color=Spectral6[3])
+    p.line(x='index', y='MA_30', source=source_1, color=Spectral6[2])
+    p.line(x='index', y='MA_60', source=source_1, color=Spectral6[1])
+    p.line(x='index', y='MA_90', source=source_1, color=Spectral6[0])
+    p.segment(x0='index', y0='high', x1='index', y1='low', color='red', source=inc_source)
+    p.segment(x0='index', y0='high', x1='index', y1='low', color='green', source=dec_source)
+    p.vbar('index', 0.5, 'open', 'close', fill_color='red', line_color='red', source=inc_source, hover_fill_alpha=0.5)
+    p.vbar('index', 0.5, 'open', 'close', fill_color='green', line_color='green', source=dec_source,
+           hover_fill_alpha=0.5)
+    # add hover tool
+    p.add_tools(hover)
+    # 绘制注释
+    for k, v in stock_column.items():
+        pattern = data[data[k] != 0]
+        for index, d in pattern.iterrows():
+            x_posit = data.index.get_loc(index)
+            s = "{}".format(v['cn'])
+            if d[k] > 0:
+                y_posit = d['high']
+                t_color = 'red'
+            else:
+                y_posit = d['low']
+                t_color = 'green'
+            label = Label(x=x_posit, y=y_posit, text=s, text_color=t_color, x_offset=0, y_offset=0, text_font_size="12pt")
+            p.add_layout(label)
+
+    p.xaxis.visible = False  # 隐藏x-axis
+    p.min_border_bottom = 0
+    p_list.append([p])
+
+    p1 = figure(width=p.width, height=150, x_range=p.x_range, toolbar_location=None)
+    p1.vbar('index', 0.5, 0, 'volume', color='red', source=inc_source)
+    p1.vbar('index', 0.5, 0, 'volume', color='green', source=dec_source)
+    p1.xaxis.major_label_overrides = {i: date for i, date in enumerate(data['date'])}
+    # p1.xaxis.major_label_orientation = pi / 4
+    p1.min_border_bottom = 0
     p_list.append([p1])
+
     gp = gridplot(p_list)
     script, div = components(gp)
     return {

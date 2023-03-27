@@ -11,7 +11,7 @@ def get_pattern_recognitions(data, stock_column, end_date=None, threshold=60):
     if end_date is not None:
         mask = (data['date'] <= end_date)
         data = data.loc[mask].copy()
-    data = data.tail(n=threshold)
+    data = data.tail(n=threshold).copy()
 
     if len(data.index) <= 1:
         return None
