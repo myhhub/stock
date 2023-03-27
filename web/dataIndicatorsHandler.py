@@ -268,7 +268,7 @@ def add_kline(stock, date):
     run_date_str = run_date.strftime("%Y-%m-%d")
     mask = (stock['date'] >= run_date_str)
     stock = stock.loc[mask]
-    p1 = figure(width=1000, height=300, x_axis_type="datetime")
+    p1 = figure(width=1000, height=150, x_axis_type="datetime")
     stock['date'] = pd.to_datetime(stock['date'])
     p1.line(stock['date'], stock['close'], color='red')
     p1.xaxis[0].formatter = DatetimeTickFormatter(days="%Y-%m-%d")
