@@ -4,6 +4,7 @@
 from abc import ABC
 from tornado import gen
 import logging
+import datetime
 # 首映 bokeh 画图。
 from bokeh.plotting import figure
 from bokeh.embed import components
@@ -261,7 +262,11 @@ def add_plot(stockStat, conf):
 # 增加k线图
 def add_kline(stock, date):
     p_list = []
-    mask = (stock['date'] >= date)
+    tmp_year, tmp_month, tmp_day = date.split("-")
+    start_date = datetime.datetime(int(tmp_year), int(tmp_month), int(tmp_day))
+    run_date = (start_date + datetime.timedelta(days=-15))
+    run_date_str = run_date.strftime("%Y-%m-%d")
+    mask = (stock['date'] >= run_date_str)
     stock = stock.loc[mask]
     p1 = figure(width=1000, height=300, x_axis_type="datetime")
     stock['date'] = pd.to_datetime(stock['date'])
