@@ -11,9 +11,9 @@ import pandas as pd
 from bokeh.plotting import figure
 from bokeh.embed import components
 from bokeh.palettes import Spectral7
-from bokeh.layouts import gridplot
+from bokeh.layouts import gridplot, column, row
 from bokeh.palettes import Category20
-from bokeh.models import DatetimeTickFormatter, ColumnDataSource, HoverTool, Label
+from bokeh.models import DatetimeTickFormatter, ColumnDataSource, HoverTool, CheckboxGroup, LabelSet, Button, CustomJS
 import libs.stockfetch as stf
 import libs.common as common
 import libs.tablestructure as tbs
@@ -220,7 +220,7 @@ class GetDataIndicatorsHandler(webBase.BaseHandler, ABC):
             comp_list.append(add_kline(stock, date))
             batch_add(comp_list, stockStat)
         except Exception as e:
-            logging.debug("{}处理异常：{}代码{}".format('dataIndicatorsHandler.GetDataIndicatorsHandler', e))
+            logging.debug("{}处理异常：{}".format('dataIndicatorsHandler.GetDataIndicatorsHandler', e))
 
         self.render("stock_indicators.html", comp_list=comp_list,
                     stockVersion=common.__version__,
@@ -270,87 +270,123 @@ def add_kline(stock, date):
             data_arg.loc[:, k] = data_arg['close'].rolling(window=v).mean()
         return data_arg
 
-    p_list = []
-    tmp_year, tmp_month, tmp_day = date.split("-")
-    start_date = datetime.datetime(int(tmp_year), int(tmp_month), int(tmp_day))
-    _day = (datetime.datetime.now() - start_date).days - 120
-    if _day < 0:
-        run_date = (start_date + datetime.timedelta(days=_day))
-    run_date_str = run_date.strftime("%Y-%m-%d")
-    mask = (stock['date'] >= run_date_str)
-    data = stock.loc[mask]
+    try:
+        tmp_year, tmp_month, tmp_day = date.split("-")
+        start_date = datetime.datetime(int(tmp_year), int(tmp_month), int(tmp_day))
+        _day = (datetime.datetime.now() - start_date).days - 120
+        if _day < 0:
+            run_date = (start_date + datetime.timedelta(days=_day))
+        run_date_str = run_date.strftime("%Y-%m-%d")
+        mask = (stock['date'] >= run_date_str)
+        data = stock.loc[mask]
 
-    stock_column = tbs.STOCK_KLINE_PATTERN_DATA['columns']
-    data = kpr.get_pattern_recognitions(data, stock_column)
-    data['index'] = list(np.arange(len(data)))
+        stock_column = tbs.STOCK_KLINE_PATTERN_DATA['columns']
+        data = kpr.get_pattern_recognitions(data, stock_column)
+        data['index'] = list(np.arange(len(data)))
 
-    average_labels = ["MA_1", "MA_5", "MA_10", "MA_20", 'MA_30', 'MA_60', 'MA_90']
-    # 均线计算
-    data_1 = moving_average(data, average_labels)  # 计算各种长度的均线
-    source_1 = ColumnDataSource(data_1)
+        average_labels = ["MA_1", "MA_5", "MA_10", "MA_20", 'MA_30', 'MA_60', 'MA_90']
+        # 均线计算
+        data_1 = moving_average(data, average_labels)  # 计算各种长度的均线
+        source_1 = ColumnDataSource(data_1)
 
-    inc = data.close >= data.open
-    dec = data.open > data.close
+        inc = data['close'] >= data['open']
+        dec = data['open'] > data['close']
 
-    inc_source = ColumnDataSource(data.loc[inc])
-    dec_source = ColumnDataSource(data.loc[dec])
+        inc_source = ColumnDataSource(data.loc[inc])
+        dec_source = ColumnDataSource(data.loc[dec])
 
-    length = len(data)
-    p = figure(width=1000, height=300, x_range=(0, length + 1))
-    hover = HoverTool(tooltips=[('日期', '@date'), ('开盘', '@open'),
-                                ('最高', '@high'), ('最低', '@low'),
-                                ('收盘', '@close')])
-    # 均线图
-    p.line(x='index', y='close', source=source_1,  color=Spectral7[6])
-    p.line(x='index', y='MA_5', source=source_1, color=Spectral7[5])
-    p.line(x='index', y='MA_10', source=source_1, color=Spectral7[4])
-    p.line(x='index', y='MA_20', source=source_1, color=Spectral7[3])
-    p.line(x='index', y='MA_30', source=source_1, color=Spectral7[2])
-    p.line(x='index', y='MA_60', source=source_1, color=Spectral7[1])
-    p.line(x='index', y='MA_90', source=source_1, color=Spectral7[0])
-    p.segment(x0='index', y0='high', x1='index', y1='low', color='red', source=inc_source)
-    p.segment(x0='index', y0='high', x1='index', y1='low', color='green', source=dec_source)
-    p.vbar('index', 0.5, 'open', 'close', fill_color='red', line_color='red', source=inc_source, hover_fill_alpha=0.5)
-    p.vbar('index', 0.5, 'open', 'close', fill_color='green', line_color='green', source=dec_source,
-           hover_fill_alpha=0.5)
-    # add hover tool
-    p.add_tools(hover)
-    # 绘制注释
-    for k, v in stock_column.items():
-        pattern = data[data[k] != 0]
-        for index, d in pattern.iterrows():
-            x_posit = data.index.get_loc(index)
-            # s = "{}\n{}".format(v['cn'], d["date"])
-            s = "{}".format(v['cn'])
-            if d[k] > 0:
-                y_posit = d['high']
-                t_color = 'red'
-                angle = 90
-            else:
-                y_posit = d['low']
-                t_color = 'green'
-                angle = 270
-            label = Label(x=x_posit, y=y_posit, x_offset=0, y_offset=5, angle=angle, angle_units='deg',
-                          text=s, text_font_style='bold', text_color=t_color, text_font_size="9pt")
-            p.add_layout(label)
+        length = len(data)
+        p = figure(width=1000, height=300, x_range=(0, length + 1), toolbar_location='above')
+        hover = HoverTool(tooltips=[('日期', '@date'), ('开盘', '@open'),
+                                    ('最高', '@high'), ('最低', '@low'),
+                                    ('收盘', '@close')])
+        # 均线图
+        for name, color in zip(average_labels, Spectral7):
+            p.line(x='index', y=name, source=source_1, line_width=1.5, color=color, alpha=0.8, legend_label=name)
+        p.legend.location = "top_left"
+        p.legend.click_policy = "hide"
 
-    p.xaxis.visible = False  # 隐藏x-axis
-    p.min_border_bottom = 0
-    p_list.append([p])
+        p.segment(x0='index', y0='high', x1='index', y1='low', color='red', source=inc_source)
+        p.segment(x0='index', y0='high', x1='index', y1='low', color='green', source=dec_source)
+        p.vbar('index', 0.5, 'open', 'close', fill_color='red', line_color='red', source=inc_source,
+               hover_fill_alpha=0.5)
+        p.vbar('index', 0.5, 'open', 'close', fill_color='green', line_color='green', source=dec_source,
+               hover_fill_alpha=0.5)
+        # 提示
+        p.add_tools(hover)
+        # 注释
+        args = {}
+        code = """var acts = cb_obj.active;"""
+        pattern_labels = []
+        i = 0
+        for k, v in stock_column.items():
+            label_mask_u = (data[k] > 0)
+            label_data_u = data.loc[label_mask_u].copy()
+            isHas = False
+            if len(label_data_u.index) > 0:
+                label_data_u.loc[:, 'label_cn'] = v['cn']
+                label_source_u = ColumnDataSource(label_data_u)
+                locals()['pattern_labels_u_' + str(i)] = LabelSet(x='index', y='high', text="label_cn",
+                                                                  source=label_source_u, x_offset=7, y_offset=5,
+                                                                  angle=90, angle_units='deg', text_color='red',
+                                                                  text_font_style='bold', text_font_size="9pt")
+                p.add_layout(locals()['pattern_labels_u_' + str(i)])
+                args['lsu' + str(i)] = locals()['pattern_labels_u_' + str(i)]
+                code += "lsu{}.visible = acts.includes({});".format(i, i)
+                pattern_labels.append(v['cn'])
+                isHas = True
 
-    p1 = figure(width=p.width, height=150, x_range=p.x_range, toolbar_location=None)
-    p1.vbar('index', 0.5, 0, 'volume', color='red', source=inc_source)
-    p1.vbar('index', 0.5, 0, 'volume', color='green', source=dec_source)
-    p1.xaxis.major_label_overrides = {i: date for i, date in enumerate(data['date'])}
-    # p1.xaxis.major_label_orientation = pi / 4
-    p1.min_border_bottom = 0
-    p_list.append([p1])
+            label_mask_d = (data[k] < 0)
+            label_data_d = data.loc[label_mask_d].copy()
+            if len(label_data_d.index) > 0:
+                label_data_d.loc[:, 'label_cn'] = v['cn']
+                label_source_d = ColumnDataSource(label_data_d)
+                locals()['pattern_labels_d_' + str(i)] = LabelSet(x='index', y='low', text='label_cn',
+                                                                  source=label_source_d, x_offset=-7, y_offset=-5,
+                                                                  angle=270, angle_units='deg',
+                                                                  text_color='green',
+                                                                  text_font_style='bold', text_font_size="9pt")
+                p.add_layout(locals()['pattern_labels_d_' + str(i)])
+                args['lsd' + str(i)] = locals()['pattern_labels_d_' + str(i)]
+                code += "lsd{}.visible = acts.includes({});".format(i, i)
+                if not isHas:
+                    pattern_labels.append(v['cn'])
+                    isHas = True
+            if isHas:
+                i += 1
+        p.xaxis.visible = False  # 隐藏x-axis
+        p.min_border_bottom = 0
 
-    gp = gridplot(p_list)
-    script, div = components(gp)
-    return {
-        "script": script,
-        "div": div,
-        "title": "K线",
-        "desc": "日K线图，K线形态识别"
-    }
+        p1 = figure(width=p.width, height=150, x_range=p.x_range, toolbar_location=None)
+        p1.vbar('index', 0.5, 0, 'volume', color='red', source=inc_source)
+        p1.vbar('index', 0.5, 0, 'volume', color='green', source=dec_source)
+        p1.xaxis.major_label_overrides = {i: date for i, date in enumerate(data['date'])}
+        # p1.xaxis.major_label_orientation = pi / 4
+        p1.min_border_bottom = 0
+
+        pattern_checkboxes = CheckboxGroup(labels=pattern_labels, active=list(range(len(pattern_labels))))
+        # pattern_selection.inline = True
+        pattern_checkboxes.height = p.height + p1.height
+        if args:
+            pattern_checkboxes.js_on_change('active', CustomJS(args=args, code=code))
+        ck = column(row(pattern_checkboxes))
+
+        select_all = Button(label="全选(形态)")
+        select_none = Button(label='全不选(形态)')
+        select_all.js_on_event("button_click", CustomJS(args={'pcs': pattern_checkboxes, 'pls': pattern_labels},
+                                                        code="pcs.active = Array.from(pls, (x, i) => i);"))
+        select_none.js_on_event("button_click", CustomJS(args={'pcs': pattern_checkboxes},
+                                                         code="pcs.active = [];"))
+
+        layouts = row(column(row(select_all, select_none), p, p1), ck)
+
+        script, div = components(layouts)
+        return {
+            "script": script,
+            "div": div,
+            "title": "K线",
+            "desc": "日K线图，K线形态识别"
+        }
+    except Exception as e:
+        print(e)
+        logging.debug("{}处理异常：{}".format('dataIndicatorsHandler.add_kline', e))
