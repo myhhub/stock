@@ -273,7 +273,7 @@ def add_kline(stock, date):
     try:
         tmp_year, tmp_month, tmp_day = date.split("-")
         start_date = datetime.datetime(int(tmp_year), int(tmp_month), int(tmp_day))
-        _day = (datetime.datetime.now() - start_date).days - 150
+        _day = (datetime.datetime.now() - start_date).days - 120
         if _day < 0:
             run_date = (start_date + datetime.timedelta(days=_day))
         run_date_str = run_date.strftime("%Y-%m-%d")
@@ -281,7 +281,7 @@ def add_kline(stock, date):
         data = stock.loc[mask]
 
         stock_column = tbs.STOCK_KLINE_PATTERN_DATA['columns']
-        data = kpr.get_pattern_recognitions(data, stock_column, threshold=150)
+        data = kpr.get_pattern_recognitions(data, stock_column, threshold=120)
         data['index'] = list(np.arange(len(data)))
 
         average_labels = ["MA_1", "MA_5", "MA_10", "MA_20", 'MA_30', 'MA_60', 'MA_90']
@@ -388,5 +388,4 @@ def add_kline(stock, date):
             "desc": "日K线图，K线形态识别"
         }
     except Exception as e:
-        print(e)
         logging.debug("{}处理异常：{}".format('dataIndicatorsHandler.add_kline', e))
