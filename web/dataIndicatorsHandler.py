@@ -281,7 +281,7 @@ def add_kline(stock, date):
         data = stock.loc[mask]
 
         stock_column = tbs.STOCK_KLINE_PATTERN_DATA['columns']
-        data = kpr.get_pattern_recognitions(data, stock_column)
+        data = kpr.get_pattern_recognitions(data, stock_column, threshold=120)
         data['index'] = list(np.arange(len(data)))
 
         average_labels = ["MA_1", "MA_5", "MA_10", "MA_20", 'MA_30', 'MA_60', 'MA_90']
