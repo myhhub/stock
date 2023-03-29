@@ -235,7 +235,7 @@ def add_plot(stockStat, conf):
     p_list = []
     # 循环 多个line 信息。
     for val in conf["dic"]:
-        p = figure(width=1000, height=150, x_axis_type="datetime", toolbar_location='right')
+        p = figure(width=1000, height=180, x_axis_type="datetime", toolbar_location='right')
         for name, color in zip(val, Spectral11):
             p.line(stockStat['date'], stockStat[name], legend_label=name, color=color, line_width=1.5, alpha=0.8)
         p.xaxis[0].formatter = DatetimeTickFormatter(days="%Y-%m-%d")
@@ -287,7 +287,7 @@ def add_kline(stock, date):
         dec_source = ColumnDataSource(data.loc[dec])
 
         length = len(data)
-        p = figure(width=1000, height=300, x_range=(0, length + 1), toolbar_location='above')
+        p = figure(width=1000, height=320, x_range=(0, length + 1), toolbar_location='above')
         hover = HoverTool(tooltips=[('日期', '@date'), ('开盘', '@open'),
                                     ('最高', '@high'), ('最低', '@low'),
                                     ('收盘', '@close')])
