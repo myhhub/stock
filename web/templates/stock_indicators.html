@@ -22,7 +22,7 @@
 
 {% for index,element in enumerate(comp_list) %}
 <h4 class="header smaller lighter blue">{{ element["title"] }}</h4>
-<div class="row">{{ element["desc"] }}</div>
+<div class="row">{% raw element["desc"] %}</div>
 <div class="row" id="_col_{{ index + 1 }}" data-column="{{ index }}">
     {% raw element["div"] %}
     {% raw element["script"] %}

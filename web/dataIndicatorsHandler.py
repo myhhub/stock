@@ -40,7 +40,7 @@ indicators_dic = [
     }, {
         "title": "4，CR指标",
         "desc": """
-            http://wiki.mbalib.com/wiki/CR%E6%8C%87%E6%A0%87 价格动量指标
+            <a href="http://wiki.mbalib.com/wiki/CR%E6%8C%87%E6%A0%87" rel="nofollow" target="_blank">价格动量指标(CR)</a>
             4. CR跌穿a、b、c、d四条线，再由低点向上爬升160时，为短线获利的一个良机，应适当卖出股票。
             5. CR跌至40以下时，是建仓良机。而CR高于300~400时，应注意适当减仓。
         """,
@@ -59,8 +59,8 @@ indicators_dic = [
     }, {
         "title": "6，KDJ指标",
         "desc": """
-            http://wiki.mbalib.com/wiki/%E9%9A%8F%E6%9C%BA%E6%8C%87%E6%A0%87
-            随机指标(KDJ)一般是根据统计学的原理，通过一个特定的周期（常为9日、9周等）内出现过的最高价、最低价及最后一个计算周期的收盘价及这三者之间的比例关系，来计算最后一个计算周期的未成熟随机值RSV，然后根据平滑移动平均线的方法来计算K值、D值与J值，并绘成曲线图来研判股票走势。
+            <a href="http://wiki.mbalib.com/wiki/%E9%9A%8F%E6%9C%BA%E6%8C%87%E6%A0%87" rel="nofollow" target="_blank">随机指标(KDJ)</a>
+            一般是根据统计学的原理，通过一个特定的周期（常为9日、9周等）内出现过的最高价、最低价及最后一个计算周期的收盘价及这三者之间的比例关系，来计算最后一个计算周期的未成熟随机值RSV，然后根据平滑移动平均线的方法来计算K值、D值与J值，并绘成曲线图来研判股票走势。
             （3）在使用中，常有J线的指标，即3乘以K值减2乘以D值（3K－2D＝J），其目的是求出K值与D值的最大乖离程度，以领先KD值找出底部和头部。J大于100时为超买，小于10时为超卖。
             （4）KDJ指标应用法则： 1、K值与D值永远介于0～100。D值>80，行情呈现超买现象;D值<20，行情呈现超卖现象。 2、当K值>D值时，显示趋势是上涨，因而K线向上突破D线时，为买进信号;当K值 3、K线与D线在70以上，30以下发生交叉，进行买卖比较可靠。如果KD黄金交叉发生在20以下时，是最佳买点;如果KD死亡交叉发生在80以上时，是最佳卖点。 4、KD指标不适于发行量小、交易不活跃的股票。但KD指标对大盘和热门大盘股有极高准确性。 5、当KD指标与股价出现背离时，一般为转势信号，中期或短期的走势有可能已见顶或见底。 6、当K值和D值上升或下跌的速度减弱，倾斜度趋于平缓时，这是短期转势的预警信号。 KDJ指标是三条曲线，在应用时主要从五个方面进行考虑： 1、KD的取值的绝对数字; 2、KD曲线的形态; 3、KD指标的交叉; 4、KD指标的背离; 5、J指标的取值大小。
         """,
@@ -68,16 +68,15 @@ indicators_dic = [
     }, {
         "title": "7，SMA指标",
         "desc": """
-            http://wiki.mbalib.com/wiki/Sma
-            简单移动平均线（Simple Moving Average，SMA）
+            <a href="http://wiki.mbalib.com/wiki/Sma" rel="nofollow" target="_blank">简单移动平均线（Simple Moving Average，SMA）</a> 
             可以动态输入参数，获得几天的移动平均。
         """,
         "dic": [("close",), ("close_5_sma", "close_10_sma")]
     }, {
         "title": "8，MACD指标",
         "desc": """
-            http://wiki.mbalib.com/wiki/MACD
-            平滑异同移动平均线(Moving Average Convergence Divergence，简称MACD指标)，也称移动平均聚散指标
+            <a href="http://wiki.mbalib.com/wiki/MACD" rel="nofollow" target="_blank">平滑异同移动平均线(Moving Average Convergence Divergence，简称MACD指标)</a>
+            也称移动平均聚散指标
             MACD
             stock["macd"]
             MACD signal line
@@ -92,8 +91,7 @@ indicators_dic = [
     }, {
         "title": "9，BOLL指标",
         "desc": """
-        http://wiki.mbalib.com/wiki/BOLL
-            布林线指标(Bollinger Bands)
+            <a href="http://wiki.mbalib.com/wiki/BOLL" rel="nofollow" target="_blank">布林线指标(Bollinger Bands)</a>
             bolling, including upper band and lower band
             stock["boll"]
             stock["boll_ub"]
@@ -105,8 +103,8 @@ indicators_dic = [
     }, {
         "title": "10，RSI指标",
         "desc": """
-            http://wiki.mbalib.com/wiki/RSI
-            相对强弱指标（Relative Strength Index，简称RSI），也称相对强弱指数、相对力度指数
+            <a href="http://wiki.mbalib.com/wiki/RSI" rel="nofollow" target="_blank">相对强弱指标（Relative Strength Index，简称RSI）</a> 
+            ，也称相对强弱指数、相对力度指数
             6 days RSI
             stock["rsi_6"]
             12 days RSI
@@ -119,8 +117,8 @@ indicators_dic = [
     }, {
         "title": "11，WR指标",
         "desc": """
-            http://wiki.mbalib.com/wiki/%E5%A8%81%E5%BB%89%E6%8C%87%E6%A0%87
-            威廉指数（Williams%Rate）该指数是利用摆动点来度量市场的超买超卖现象。
+            <a href="http://wiki.mbalib.com/wiki/%E5%A8%81%E5%BB%89%E6%8C%87%E6%A0%87" rel="nofollow" target="_blank">威廉指数（Williams%Rate）</a>
+            该指数是利用摆动点来度量市场的超买超卖现象。
             10 days WR
             stock["wr_10"]
             6 days WR
@@ -130,8 +128,8 @@ indicators_dic = [
     }, {
         "title": "12，CCI指标",
         "desc": """
-            http://wiki.mbalib.com/wiki/%E9%A1%BA%E5%8A%BF%E6%8C%87%E6%A0%87
-            顺势指标又叫CCI指标，其英文全称为“Commodity Channel Index”，
+            <a href="http://wiki.mbalib.com/wiki/%E9%A1%BA%E5%8A%BF%E6%8C%87%E6%A0%87" rel="nofollow" target="_blank">顺势指标(CCI)</a>
+            其英文全称为“Commodity Channel Index”，
             是由美国股市分析家唐纳德·蓝伯特（Donald Lambert）所创造的，是一种重点研判股价偏离度的股市分析工具。
              CCI, default to 14 days
             stock["cci"]
@@ -146,9 +144,8 @@ indicators_dic = [
     }, {
         "title": "13，TR、ATR指标",
         "desc": """
-            http://wiki.mbalib.com/wiki/%E5%9D%87%E5%B9%85%E6%8C%87%E6%A0%87
-            均幅指标（Average True Ranger,ATR）
-            均幅指标（ATR）是取一定时间周期内的股价波动幅度的移动平均值，主要用于研判买卖时机。
+           <a href="http://wiki.mbalib.com/wiki/%E5%9D%87%E5%B9%85%E6%8C%87%E6%A0%87" rel="nofollow" target="_blank">均幅指标（Average True Ranger,ATR）</a>
+            是取一定时间周期内的股价波动幅度的移动平均值，主要用于研判买卖时机。
             TR (true range)
             stock["tr"]
              ATR (Average True Range)
@@ -159,8 +156,8 @@ indicators_dic = [
     }, {
         "title": "14，DMA指标",
         "desc": """
-            http://wiki.mbalib.com/wiki/DMA
-            DMA指标（Different of Moving Average）又叫平行线差指标，是目前股市分析技术指标中的一种中短期指标，它常用于大盘指数和个股的研判。
+            <a href="http://wiki.mbalib.com/wiki/DMA" rel="nofollow" target="_blank">DMA指标（Different of Moving Average）又叫平行线差指标</a> 
+            ，是目前股市分析技术指标中的一种中短期指标，它常用于大盘指数和个股的研判。
             DMA, difference of 10 and 50 moving average
             stock["dma"]
         """,
@@ -168,12 +165,10 @@ indicators_dic = [
     }, {
         "title": "15，DMI，+DI，-DI，DX，ADX，ADXR指标",
         "desc": """
-            http://wiki.mbalib.com/wiki/DMI
-            动向指数Directional Movement Index,DMI）
-            http://wiki.mbalib.com/wiki/ADX
-            平均趋向指标（Average Directional Indicator，简称ADX）
-            http://wiki.mbalib.com/wiki/%E5%B9%B3%E5%9D%87%E6%96%B9%E5%90%91%E6%8C%87%E6%95%B0%E8%AF%84%E4%BC%B0
-            平均方向指数评估（ADXR）实际是今日ADX与前面某一日的ADX的平均值。ADXR在高位与ADX同步下滑，可以增加对ADX已经调头的尽早确认。
+            <a href="http://wiki.mbalib.com/wiki/DMI" rel="nofollow" target="_blank">动向指数Directional Movement Index,DMI）</a>
+            <a href="http://wiki.mbalib.com/wiki/ADX" rel="nofollow" target="_blank">平均趋向指标（Average Directional Indicator，简称ADX）</a>
+            <a href="http://wiki.mbalib.com/wiki/%E5%B9%B3%E5%9D%87%E6%96%B9%E5%90%91%E6%8C%87%E6%95%B0%E8%AF%84%E4%BC%B0" rel="nofollow" target="_blank">平均方向指数评估（ADXR）</a>
+            均方向指数评估（ADXR）实际是今日ADX与前面某一日的ADX的平均值。ADXR在高位与ADX同步下滑，可以增加对ADX已经调头的尽早确认。
             ADXR是ADX的附属产品，只能发出一种辅助和肯定的讯号，并非入市的指标，而只需同时配合动向指标(DMI)的趋势才可作出买卖策略。
             在应用时，应以ADX为主，ADXR为辅。
         """,
@@ -181,15 +176,14 @@ indicators_dic = [
     }, {
         "title": "16，TRIX，MATRIX指标",
         "desc": """
-            http://wiki.mbalib.com/wiki/TRIX
-            TRIX指标又叫三重指数平滑移动平均指标（Triple Exponentially Smoothed Average）
+            <a href="http://wiki.mbalib.com/wiki/TRIX" rel="nofollow" target="_blank">TRIX指标又叫三重指数平滑移动平均指标（Triple Exponentially Smoothed Average）</a>
         """,
         "dic": [("close",), ("trix", "trix_9_sma")]
     }, {
         "title": "17，VR，MAVR指标",
         "desc": """
-            http://wiki.mbalib.com/wiki/%E6%88%90%E4%BA%A4%E9%87%8F%E6%AF%94%E7%8E%87
-            成交量比率（Volumn Ratio，VR）（简称VR），是一项通过分析股价上升日成交额（或成交量，下同）与股价下降日成交额比值，
+            <a href="http://wiki.mbalib.com/wiki/%E6%88%90%E4%BA%A4%E9%87%8F%E6%AF%94%E7%8E%87" rel="nofollow" target="_blank">成交量比率（Volumn Ratio，VR）（简称VR）</a>
+            ，是一项通过分析股价上升日成交额（或成交量，下同）与股价下降日成交额比值，
             从而掌握市场买卖气势的中期技术指标。
              VR, default to 26 days
             stock["vr"]
@@ -269,7 +263,7 @@ def add_kline(stock, date):
     try:
         tmp_year, tmp_month, tmp_day = date.split("-")
         start_date = datetime.datetime(int(tmp_year), int(tmp_month), int(tmp_day))
-        _day = (datetime.datetime.now() - start_date).days - 120
+        _day = (datetime.datetime.now() - start_date).days - 150
         if _day < 0:
             run_date = (start_date + datetime.timedelta(days=_day))
         run_date_str = run_date.strftime("%Y-%m-%d")
@@ -277,7 +271,7 @@ def add_kline(stock, date):
         data = stock.loc[mask]
 
         stock_column = tbs.STOCK_KLINE_PATTERN_DATA['columns']
-        data = kpr.get_pattern_recognitions(data, stock_column, threshold=120)
+        data = kpr.get_pattern_recognitions(data, stock_column, threshold=150)
         data['index'] = list(np.arange(len(data)))
 
         average_labels = ["MA_1", "MA_5", "MA_10", "MA_20", 'MA_30', 'MA_60', 'MA_90']
@@ -381,7 +375,10 @@ def add_kline(stock, date):
             "script": script,
             "div": div,
             "title": "K线",
-            "desc": """日K线图，K线形态识别"""
+            "desc": """
+                <a href="https://wiki.mbalib.com/wiki/K%E7%BA%BF%E7%90%86%E8%AE%BA" rel="nofollow" target="_blank">K线图</a>
+                ，识别股票K线61种K线形态。
+            """
         }
     except Exception as e:
         logging.debug("{}处理异常：{}".format('dataIndicatorsHandler.add_kline', e))
