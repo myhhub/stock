@@ -25,7 +25,7 @@ def get_pattern_recognitions(data, stock_column, end_date=None, threshold=60):
     return data
 
 
-def get_pattern_recognition_tail(code_name, data, stock_column, date=None, threshold=6):
+def get_pattern_recognition_tail(code_name, data, stock_column, date=None, threshold=60):
     try:
         # 增加空判断，如果是空返回 0 数据。
         if date is None:
@@ -35,12 +35,13 @@ def get_pattern_recognition_tail(code_name, data, stock_column, date=None, thres
 
         code = code_name[1]
         # 设置返回数组。
-
+        if code == '600601':
+            pass
         # 增加空判断，如果是空返回 0 数据。
         if len(data.index) == 0:
             return None
 
-        stockStat = get_pattern_recognitions(data, stock_column, end_date=end_date, threshold=6)
+        stockStat = get_pattern_recognitions(data, stock_column, end_date=end_date, threshold=threshold)
 
         if stockStat is None:
             return None
