@@ -381,7 +381,7 @@ def add_kline(stock, date):
             "script": script,
             "div": div,
             "title": "K线",
-            "desc": """日K线图，K线形态识别<a herf= "bbb.html?bianliang=xxx "> </a>"""
+            "desc": """日K线图，K线形态识别"""
         }
     except Exception as e:
         logging.debug("{}处理异常：{}".format('dataIndicatorsHandler.add_kline', e))
