@@ -10,7 +10,7 @@ import pandas as pd
 # 首映 bokeh 画图。
 from bokeh.plotting import figure
 from bokeh.embed import components
-from bokeh.palettes import Spectral7
+from bokeh.palettes import Spectral11
 from bokeh.layouts import gridplot, column, row
 from bokeh.palettes import Category20
 from bokeh.models import DatetimeTickFormatter, ColumnDataSource, HoverTool, CheckboxGroup, LabelSet, Button, CustomJS
@@ -29,15 +29,15 @@ indicators_dic = [
     {
         "title": "1，交易量delta指标分析",
         "desc": "The Volume Delta (Vol ∆) 与前一天交易量的增量。",
-        "dic": ["volume", "volume_delta"]
+        "dic": [("volume", "volume_delta")]
     }, {
         "title": "2，计算n天价差",
         "desc": "可以计算，向前n天，和向后n天的价差。",
-        "dic": ["close", "close_1_d", "close_2_d", "close_-1_d", "close_-2_d"]
+        "dic": [("close",), ("close_1_d", "close_2_d", "close_-1_d", "close_-2_d")]
     }, {
         "title": "3，n天涨跌百分百计算",
         "desc": "可以看到，-n天数据和今天数据的百分比。",
-        "dic": ["close", "close_-1_r", "close_-2_r"]
+        "dic": [("close",), ("close_-1_r", "close_-2_r")]
     }, {
         "title": "4，CR指标",
         "desc": """
@@ -45,7 +45,7 @@ indicators_dic = [
             4. CR跌穿a、b、c、d四条线，再由低点向上爬升160时，为短线获利的一个良机，应适当卖出股票。
             5. CR跌至40以下时，是建仓良机。而CR高于300~400时，应注意适当减仓。
         """,
-        "dic": ["close", "cr", "cr-ma1", "cr-ma2", "cr-ma3"]
+        "dic": [("close",), ("cr", "cr-ma1", "cr-ma2", "cr-ma3")]
     }, {
         "title": "5，最大值，最小值",
         "desc": """
@@ -56,7 +56,7 @@ indicators_dic = [
             stock["volume_-3~1_min"]
             实际使用的时候使用 -2~2 可计算出5天的最大，最小值。
         """,
-        "dic": ["volume", "volume_-2~2_max", "volume_-2~2_min"]
+        "dic": [("volume", "volume_-2~2_max", "volume_-2~2_min")]
     }, {
         "title": "6，KDJ指标",
         "desc": """
@@ -64,7 +64,7 @@ indicators_dic = [
             随机指标(KDJ)一般是根据统计学的原理，通过一个特定的周期（常为9日、9周等）内出现过的最高价、最低价及最后一个计算周期的收盘价及这三者之间的比例关系，来计算最后一个计算周期的未成熟随机值RSV，然后根据平滑移动平均线的方法来计算K值、D值与J值，并绘成曲线图来研判股票走势。
             （3）在使用中，常有J线的指标，即3乘以K值减2乘以D值（3K－2D＝J），其目的是求出K值与D值的最大乖离程度，以领先KD值找出底部和头部。J大于100时为超买，小于10时为超卖。
         """,
-        "dic": ["close", "kdjk", "kdjd", "kdjj"]
+        "dic": [("close",), ("kdjk", "kdjd", "kdjj")]
     }, {
         "title": "7，SMA指标",
         "desc": """
@@ -72,7 +72,7 @@ indicators_dic = [
             简单移动平均线（Simple Moving Average，SMA）
             可以动态输入参数，获得几天的移动平均。
         """,
-        "dic": ["close", "close_5_sma", "close_10_sma"]
+        "dic": [("close",), ("close_5_sma", "close_10_sma")]
     }, {
         "title": "8，MACD指标",
         "desc": """
@@ -88,7 +88,7 @@ indicators_dic = [
             MACD 则可发挥其应有的功能，但当市场呈牛皮盘整格局，股价不上不下时，MACD买卖讯号较不明显。
             当用MACD作分析时，亦可运用其他的技术分析指标如短期 K，D图形作为辅助工具，而且也可对买卖讯号作双重的确认。
         """,
-        "dic": ["close", "macd", "macds", "macdh"]
+        "dic": [("close",), ("macd", "macds", "macdh")]
     }, {
         "title": "9，BOLL指标",
         "desc": """
@@ -101,7 +101,7 @@ indicators_dic = [
             1、当布林线开口向上后，只要股价K线始终运行在布林线的中轨上方的时候，说明股价一直处在一个中长期上升轨道之中，这是BOLL指标发出的持股待涨信号，如果TRIX指标也是发出持股信号时，这种信号更加准确。此时，投资者应坚决持股待涨。
             2、当布林线开口向下后，只要股价K线始终运行在布林线的中轨下方的时候，说明股价一直处在一个中长期下降轨道之中，这是BOLL指标发出的持币观望信号，如果TRIX指标也是发出持币信号时，这种信号更加准确。此时，投资者应坚决持币观望。
         """,
-        "dic": ["close", "boll", "boll_ub", "boll_lb"]
+        "dic": [("close",), ("boll", "boll_ub", "boll_lb")]
     }, {
         "title": "10，RSI指标",
         "desc": """
@@ -115,7 +115,7 @@ indicators_dic = [
             （3）强弱指标多在70与30之间波动。当六日指标上升到达80时，表示股市已有超买现象，如果一旦继续上升，超过90以上时，则表示已到严重超买的警戒区，股价已形成头部，极可能在短期内反转回转。
             （4）当六日强弱指标下降至20时，表示股市有超卖现象，如果一旦继续下降至10以下时则表示已到严重超卖区域，股价极可能有止跌回升的机会。
         """,
-        "dic": ["close", "rsi_6", "rsi_12"]
+        "dic": [("close",), ("rsi_6", "rsi_12")]
     }, {
         "title": "11，WR指标",
         "desc": """
@@ -126,7 +126,7 @@ indicators_dic = [
             6 days WR
             stock["wr_6"]
         """,
-        "dic": ["close", "wr_10", "wr_6"]
+        "dic": [("close",), ("wr_10", "wr_6")]
     }, {
         "title": "12，CCI指标",
         "desc": """
@@ -142,7 +142,7 @@ indicators_dic = [
             2、当CCI指标从上向下突破﹣100线而进入另一个非常态区间时，表明股价的盘整阶段已经结束，
               将进入一个比较长的寻底过程，投资者应以持币观望为主。
         """,
-        "dic": ["close", "cci", "cci_20"]
+        "dic": [("close",), ("cci", "cci_20")]
     }, {
         "title": "13，TR、ATR指标",
         "desc": """
@@ -155,7 +155,7 @@ indicators_dic = [
             stock["atr"]
             均幅指标无论是从下向上穿越移动平均线，还是从上向下穿越移动平均线时，都是一种研判信号。
         """,
-        "dic": ["close", "tr", "atr"]
+        "dic": [("close",), ("tr", "atr")]
     }, {
         "title": "14，DMA指标",
         "desc": """
@@ -164,7 +164,7 @@ indicators_dic = [
             DMA, difference of 10 and 50 moving average
             stock["dma"]
         """,
-        "dic": ["close", "dma"]
+        "dic": [("close",), ("dma",)]
     }, {
         "title": "15，DMI，+DI，-DI，DX，ADX，ADXR指标",
         "desc": """
@@ -177,14 +177,14 @@ indicators_dic = [
             ADXR是ADX的附属产品，只能发出一种辅助和肯定的讯号，并非入市的指标，而只需同时配合动向指标(DMI)的趋势才可作出买卖策略。
             在应用时，应以ADX为主，ADXR为辅。
         """,
-        "dic": ["close", "pdi", "mdi", "dx", "adx", "adxr"]
+        "dic": [("close",), ("pdi", "mdi", "dx", "adx", "adxr")]
     }, {
         "title": "16，TRIX，MATRIX指标",
         "desc": """
             http://wiki.mbalib.com/wiki/TRIX
             TRIX指标又叫三重指数平滑移动平均指标（Triple Exponentially Smoothed Average）
         """,
-        "dic": ["close", "trix", "trix_9_sma"]
+        "dic": [("close",), ("trix", "trix_9_sma")]
     }, {
         "title": "17，VR，MAVR指标",
         "desc": """
@@ -196,7 +196,7 @@ indicators_dic = [
              MAVR is the simple moving average of VR
             stock["vr_6_sma"]
         """,
-        "dic": ["close", "vr", "vr_6_sma"]
+        "dic": [("close",), ("vr", "vr_6_sma")]
     }
 ]
 
@@ -218,6 +218,8 @@ class GetDataIndicatorsHandler(webBase.BaseHandler, ABC):
             if stockStat is None:
                 return
             comp_list.append(add_kline(stock, date))
+
+            stockStat['date'] = pd.to_datetime(stockStat.index.values)
             batch_add(comp_list, stockStat)
         except Exception as e:
             logging.debug("{}处理异常：{}".format('dataIndicatorsHandler.GetDataIndicatorsHandler', e))
@@ -230,27 +232,20 @@ class GetDataIndicatorsHandler(webBase.BaseHandler, ABC):
 # 批量添加数据。
 def batch_add(comp_list, stockStat):
     for conf in indicators_dic:
-        # logging.info(conf)
         comp_list.append(add_plot(stockStat, conf))
 
 
 # 增加画图方法
 def add_plot(stockStat, conf):
     p_list = []
-    # logging.info("############################", type(conf["dic"]))
     # 循环 多个line 信息。
-    for key, val in enumerate(conf["dic"]):
+    for val in conf["dic"]:
         p = figure(width=1000, height=150, x_axis_type="datetime")
-        # add renderers
-        stockStat['date'] = pd.to_datetime(stockStat.index.values)
-        # ["volume","volume_delta"]
-        # 设置20个颜色循环，显示0 2 4 6 号序列。
-        p.line(stockStat['date'], stockStat[val], color=Category20[20][key * 2])
-
-        # Set date format for x axis 格式化。
+        for name, color in zip(val, Spectral11):
+            p.line(stockStat['date'], stockStat[name], legend_label=name, color=color, line_width=1.5, alpha=0.8)
         p.xaxis[0].formatter = DatetimeTickFormatter(days="%Y-%m-%d")
-        # p1.xaxis.major_label_orientation = radians(30) #可以旋转一个角度。
-
+        p.legend.location = "top_left"
+        p.legend.click_policy = "hide"
         p_list.append([p])
 
     gp = gridplot(p_list)
@@ -301,8 +296,8 @@ def add_kline(stock, date):
                                     ('最高', '@high'), ('最低', '@low'),
                                     ('收盘', '@close')])
         # 均线图
-        for name, color in zip(average_labels, Spectral7):
-            p.line(x='index', y=name, source=source_1, line_width=1.5, color=color, alpha=0.8, legend_label=name)
+        for name, color in zip(average_labels, Spectral11):
+            p.line(x='index', y=name, source=source_1, legend_label=name, color=color, line_width=1.5, alpha=0.8)
         p.legend.location = "top_left"
         p.legend.click_policy = "hide"
 
