@@ -12,7 +12,6 @@ from bokeh.plotting import figure
 from bokeh.embed import components
 from bokeh.palettes import Spectral11
 from bokeh.layouts import gridplot, column, row
-from bokeh.palettes import Category20
 from bokeh.models import DatetimeTickFormatter, ColumnDataSource, HoverTool, CheckboxGroup, LabelSet, Button, CustomJS
 import libs.stockfetch as stf
 import libs.common as common
@@ -63,6 +62,7 @@ indicators_dic = [
             http://wiki.mbalib.com/wiki/%E9%9A%8F%E6%9C%BA%E6%8C%87%E6%A0%87
             随机指标(KDJ)一般是根据统计学的原理，通过一个特定的周期（常为9日、9周等）内出现过的最高价、最低价及最后一个计算周期的收盘价及这三者之间的比例关系，来计算最后一个计算周期的未成熟随机值RSV，然后根据平滑移动平均线的方法来计算K值、D值与J值，并绘成曲线图来研判股票走势。
             （3）在使用中，常有J线的指标，即3乘以K值减2乘以D值（3K－2D＝J），其目的是求出K值与D值的最大乖离程度，以领先KD值找出底部和头部。J大于100时为超买，小于10时为超卖。
+            （4）KDJ指标应用法则： 1、K值与D值永远介于0～100。D值>80，行情呈现超买现象;D值<20，行情呈现超卖现象。 2、当K值>D值时，显示趋势是上涨，因而K线向上突破D线时，为买进信号;当K值 3、K线与D线在70以上，30以下发生交叉，进行买卖比较可靠。如果KD黄金交叉发生在20以下时，是最佳买点;如果KD死亡交叉发生在80以上时，是最佳卖点。 4、KD指标不适于发行量小、交易不活跃的股票。但KD指标对大盘和热门大盘股有极高准确性。 5、当KD指标与股价出现背离时，一般为转势信号，中期或短期的走势有可能已见顶或见底。 6、当K值和D值上升或下跌的速度减弱，倾斜度趋于平缓时，这是短期转势的预警信号。 KDJ指标是三条曲线，在应用时主要从五个方面进行考虑： 1、KD的取值的绝对数字; 2、KD曲线的形态; 3、KD指标的交叉; 4、KD指标的背离; 5、J指标的取值大小。
         """,
         "dic": [("close",), ("kdjk", "kdjd", "kdjj")]
     }, {
@@ -217,6 +217,7 @@ class GetDataIndicatorsHandler(webBase.BaseHandler, ABC):
             stockStat = ssd.get_indicators(stock, date)
             if stockStat is None:
                 return
+
             comp_list.append(add_kline(stock, date))
 
             stockStat['date'] = pd.to_datetime(stockStat.index.values)
@@ -240,7 +241,7 @@ def add_plot(stockStat, conf):
     p_list = []
     # 循环 多个line 信息。
     for val in conf["dic"]:
-        p = figure(width=1000, height=150, x_axis_type="datetime")
+        p = figure(width=1000, height=150, x_axis_type="datetime", toolbar_location='right')
         for name, color in zip(val, Spectral11):
             p.line(stockStat['date'], stockStat[name], legend_label=name, color=color, line_width=1.5, alpha=0.8)
         p.xaxis[0].formatter = DatetimeTickFormatter(days="%Y-%m-%d")
@@ -380,7 +381,7 @@ def add_kline(stock, date):
             "script": script,
             "div": div,
             "title": "K线",
-            "desc": "日K线图，K线形态识别"
+            "desc": """日K线图，K线形态识别<a herf= "bbb.html?bianliang=xxx "> </a>"""
         }
     except Exception as e:
         logging.debug("{}处理异常：{}".format('dataIndicatorsHandler.add_kline', e))
