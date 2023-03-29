@@ -13,22 +13,15 @@ import web.base as webBase
 __author__ = 'myh '
 __date__ = '2023/3/10 '
 
-# info 蓝色 云财经
-# success 绿色
-#  danger 红色 东方财富
-#  warning 黄色
 WEB_EASTMONEY_URL = u"""
     <a class='btn btn-danger btn-xs tooltip-danger' data-rel="tooltip" data-placement="right" data-original-title="东方财富，股票详细地址，新窗口跳转。"
     href='http://quote.eastmoney.com/%s.html' target='_blank'>东财</a>
-    
     <a class='btn btn-success btn-xs tooltip-success' data-rel="tooltip" data-placement="right" data-original-title="本地MACD，KDJ等指标，本地弹窗窗口，数据加载中，请稍候。"
-    onclick="showIndicatorsWindow('%s','%s');">指标</a>
-    
+    href='/stock/data/indicators?code=%s&date=%s' target='_blank'>指标</a>
     <a class='btn btn-warning btn-xs tooltip-warning' data-rel="tooltip" data-placement="right" data-original-title="东方财富，研报地址，本地弹窗窗口。"
     onclick="showDFCFWindow('%s');">东研</a>
-    
-    
     """
+
 # 和在dic中的字符串一致。字符串前面都不特别声明是u""
 eastmoney_name = "查看股票"
 
