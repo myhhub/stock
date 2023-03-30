@@ -97,15 +97,12 @@ indicators_dic = [
         "desc": """
             <a href="http://wiki.mbalib.com/wiki/RSI" rel="nofollow" target="_blank">相对强弱指标（Relative Strength Index，简称RSI）</a> 
             ，也称相对强弱指数、相对力度指数
-            6 days RSI
-            stock["rsi_6"]
-            12 days RSI
-            stock["rsi_12"]
+            6日、12日、24日
             （2）强弱指标保持高于50表示为强势市场，反之低于50表示为弱势市场。
             （3）强弱指标多在70与30之间波动。当六日指标上升到达80时，表示股市已有超买现象，如果一旦继续上升，超过90以上时，则表示已到严重超买的警戒区，股价已形成头部，极可能在短期内反转回转。
             （4）当六日强弱指标下降至20时，表示股市有超卖现象，如果一旦继续下降至10以下时则表示已到严重超卖区域，股价极可能有止跌回升的机会。
         """,
-        "dic": [("close",), ("rsi_6", "rsi_12")]
+        "dic": [("close",), ("rsi_6", "rsi_12", "rsi_24")]
     }, {
         "title": "11，WR指标",
         "desc": """
