@@ -87,7 +87,7 @@ indicators_dic = [
             MACD 则可发挥其应有的功能，但当市场呈牛皮盘整格局，股价不上不下时，MACD买卖讯号较不明显。
             当用MACD作分析时，亦可运用其他的技术分析指标如短期 K，D图形作为辅助工具，而且也可对买卖讯号作双重的确认。
         """,
-        "dic": [("close",), ("macd", "macds", "macdh")]
+        "dic": [("close",), ("macd", "macds"), ("macdh",)]
     }, {
         "title": "9，BOLL指标",
         "desc": """
