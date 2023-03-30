@@ -1,4 +1,8 @@
-<font color=red>*当前开发计划：1.添加OBV、SAR、PSY、BRAR......等重要指标；2.对指标进行精准运用；3.所有指标计算采用talib,stockstats有点慢。**指标是最有价值的东西！！！***</font>
+<font color=red>*当前开发计划：
+    1.添加OBV、SAR、PSY、BRAR......等重要指标；
+    2.对指标进行精准运用；
+    3.所有指标计算采用talib,stockstats有点慢。
+    **指标是最有价值的东西！！！***</font>
 ----------------------------------------------
 <font size=8>**InStock股票系统**</font>
 
