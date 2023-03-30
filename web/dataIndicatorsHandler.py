@@ -71,12 +71,12 @@ indicators_dic = [
             <a href="http://wiki.mbalib.com/wiki/Sma" rel="nofollow" target="_blank">简单移动平均线（Simple Moving Average，SMA）</a> 
             可以动态输入参数，获得几天的移动平均。
         """,
-        "dic": [("close",), ("close_5_sma", "close_10_sma")]
+        "dic": [("close", "close_10_sma", "close_20_sma", "close_50_sma", "close_200_sma")]
     }, {
         "title": "8，MACD指标",
         "desc": """
             <a href="http://wiki.mbalib.com/wiki/MACD" rel="nofollow" target="_blank">平滑异同移动平均线(Moving Average Convergence Divergence，简称MACD指标)</a>
-            也称移动平均聚散指标
+            也称移动平均聚散指标。
             DIF(macd)、MACD(macds)、Histogram(macdh)
             MACD技术分析，运用DIF线与MACD线之相交型态及直线棒高低点与背离现象，作为买卖讯号，尤其当市场股价走势呈一较为明确波段趋势时，
             MACD 则可发挥其应有的功能，但当市场呈牛皮盘整格局，股价不上不下时，MACD买卖讯号较不明显。
@@ -87,14 +87,11 @@ indicators_dic = [
         "title": "9，BOLL指标",
         "desc": """
             <a href="http://wiki.mbalib.com/wiki/BOLL" rel="nofollow" target="_blank">布林线指标(Bollinger Bands)</a>
-            bolling, including upper band and lower band
-            stock["boll"]
-            stock["boll_ub"]
-            stock["boll_lb"]
+            上轨线(boll_ub)、中轨线(boll)、下轨线(boll_lb)
             1、当布林线开口向上后，只要股价K线始终运行在布林线的中轨上方的时候，说明股价一直处在一个中长期上升轨道之中，这是BOLL指标发出的持股待涨信号，如果TRIX指标也是发出持股信号时，这种信号更加准确。此时，投资者应坚决持股待涨。
             2、当布林线开口向下后，只要股价K线始终运行在布林线的中轨下方的时候，说明股价一直处在一个中长期下降轨道之中，这是BOLL指标发出的持币观望信号，如果TRIX指标也是发出持币信号时，这种信号更加准确。此时，投资者应坚决持币观望。
         """,
-        "dic": [("close",), ("boll", "boll_ub", "boll_lb")]
+        "dic": [("close", "boll", "boll_ub", "boll_lb")]
     }, {
         "title": "10，RSI指标",
         "desc": """
