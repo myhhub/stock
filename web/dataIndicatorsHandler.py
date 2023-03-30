@@ -77,12 +77,7 @@ indicators_dic = [
         "desc": """
             <a href="http://wiki.mbalib.com/wiki/MACD" rel="nofollow" target="_blank">平滑异同移动平均线(Moving Average Convergence Divergence，简称MACD指标)</a>
             也称移动平均聚散指标
-            MACD
-            stock["macd"]
-            MACD signal line
-            stock["macds"]
-            MACD histogram
-            stock["macdh"]
+            DIF(macd)、MACD(macds)、Histogram(macdh)
             MACD技术分析，运用DIF线与MACD线之相交型态及直线棒高低点与背离现象，作为买卖讯号，尤其当市场股价走势呈一较为明确波段趋势时，
             MACD 则可发挥其应有的功能，但当市场呈牛皮盘整格局，股价不上不下时，MACD买卖讯号较不明显。
             当用MACD作分析时，亦可运用其他的技术分析指标如短期 K，D图形作为辅助工具，而且也可对买卖讯号作双重的确认。
