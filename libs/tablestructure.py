@@ -268,7 +268,10 @@ TABLE_CN_STOCK_KLINE_PATTERN['columns'].update(STOCK_KLINE_PATTERN_DATA['columns
 def get_field_cn(key, table):
     f = table.get('columns').get(key)
     if f is None:
-        return key
+        if key == 'close':
+            return '股价'
+        else:
+            return key
     return f.get('cn')
 
 
