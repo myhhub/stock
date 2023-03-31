@@ -12,7 +12,8 @@ from bokeh.plotting import figure
 from bokeh.embed import components
 from bokeh.palettes import Spectral11
 from bokeh.layouts import gridplot, column, row
-from bokeh.models import DatetimeTickFormatter, ColumnDataSource, HoverTool, CheckboxGroup, LabelSet, Button, CustomJS
+from bokeh.models import DatetimeTickFormatter, ColumnDataSource, HoverTool, CheckboxGroup, LabelSet, Button, CustomJS, \
+    CDSView, BooleanFilter
 import libs.stockfetch as stf
 import libs.common as common
 import libs.tablestructure as tbs
@@ -52,7 +53,7 @@ indicators_dic = [
         "desc": """
         <a href="http://wiki.mbalib.com/wiki/MACD" rel="nofollow" target="_blank">平滑异同移动平均线(Moving Average Convergence Divergence，简称MACD指标)</a>
     """,
-        "dic": [("close",), ("macd", "macds"), ("macdh",)]
+        "dic": [("close",), ("macd", "macds", "macdh")]
     }, {
         "title": "2、KDJ指标",
         "desc": """
@@ -213,20 +214,27 @@ def add_indicators(stock, date, threshold):
     data_list = []
     for conf in indicators_dic:
         data_list.append(add_plot(data, conf))
-    for conf in stats_dic:
-        data_list.append(add_plot(data, conf))
+    # for conf in stats_dic:
+    #     data_list.append(add_plot(data, conf))
     return data_list
 
 
-# 增加画图方法
 def add_plot(data, conf):
     p_list = []
     # 循环 多个line 信息。
     for val in conf["dic"]:
         p = figure(width=1000, height=180, x_axis_type="datetime", toolbar_location='right')
         for name, color in zip(val, Spectral11):
-            p.line(data['date'], data[name], legend_label=tbs.get_field_cn(name, tbs.STOCK_STATS_DATA), color=color,
-                   line_width=1.5, alpha=0.8)
+            if name == 'macdh':
+                up = [True if val > 0 else False for val in data[name]]
+                down = [True if val < 0 else False for val in data[name]]
+                view_upper = CDSView(filter=BooleanFilter(up))
+                view_lower = CDSView(filter=BooleanFilter(down))
+                p.vbar(x='date', top=0, bottom=name, legend_label=tbs.get_field_cn(name, tbs.STOCK_STATS_DATA), color='green', source=data, view=view_lower)
+                p.vbar(x='date', top=name, legend_label=tbs.get_field_cn(name, tbs.STOCK_STATS_DATA), bottom=0, color='red', source=data, view=view_upper)
+            else:
+                p.line(x=data['date'], y=data[name], legend_label=tbs.get_field_cn(name, tbs.STOCK_STATS_DATA), color=color,
+                       line_width=1.5, alpha=0.8)
         p.xaxis[0].formatter = DatetimeTickFormatter(days="%Y-%m-%d")
         p.legend.location = "top_left"
         p.legend.click_policy = "hide"

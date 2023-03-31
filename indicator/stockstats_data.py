@@ -15,7 +15,7 @@ def get_indicators(data, end_date=None, threshold=60):
     if end_date is not None:
         mask = (data['date'] <= end_date)
         data = data.loc[mask]
-    data = data.tail(n=threshold)
+    data = data.tail(n=threshold).copy()
     data.loc[:, "volume"] = data["volume"] * 100  # 成交量单位从手变成股。
     data_stat = stockstats.StockDataFrame.retype(data)
 
