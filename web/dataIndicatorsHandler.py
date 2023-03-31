@@ -78,12 +78,6 @@ indicators_dic = [
     """,
         "dic": ("cr", "cr-ma1", "cr-ma2", "cr-ma3")
     }, {
-        "title": "SMA",
-        "desc": """
-            <a href="http://wiki.mbalib.com/wiki/Sma" rel="nofollow" target="_blank">简单移动平均线（Simple Moving Average，SMA）</a> 
-        """,
-        "dic": ("close", "close_10_sma", "close_20_sma", "close_50_sma", "close_200_sma")
-    }, {
         "title": "RSI",
         "desc": """
             <a href="http://wiki.mbalib.com/wiki/RSI" rel="nofollow" target="_blank">相对强弱指标（Relative Strength Index，简称RSI）</a> 
@@ -188,13 +182,17 @@ class GetDataIndicatorsHandler(webBase.BaseHandler, ABC):
             if stock is None:
                 return
 
-            r_k = add_kline(stock, date, threshold)
-            if r_k is not None:
-                comp_list.append(r_k)
+            data = ssd.get_indicators(stock, date, threshold=threshold)
+            if data is None:
+                return
+            data['index'] = list(np.arange(len(data)))
 
-            r_i = add_indicators(stock, date, threshold)
-            if r_i is not None:
-                comp_list.append(r_i)
+            comp_list.append(add_indicators(data))
+
+            r_k = add_kline(data, date, threshold)
+            if r_k is not None:
+                comp_list.insert(0, r_k)
+
         except Exception as e:
             logging.debug("{}处理异常：{}".format('dataIndicatorsHandler.GetDataIndicatorsHandler', e))
 
@@ -204,14 +202,7 @@ class GetDataIndicatorsHandler(webBase.BaseHandler, ABC):
 
 
 # 批量添加数据。
-def add_indicators(stock, date, threshold):
-    data = ssd.get_indicators(stock, date, threshold=threshold)
-    if data is None:
-        return None
-
-    data['date'] = data.index.values
-    data['index'] = list(np.arange(len(data)))
-
+def add_indicators(data):
     length = len(data)
     tabs = []
     for conf in indicators_dic:
@@ -245,51 +236,29 @@ def add_indicators(stock, date, threshold):
 
 
 def add_kline(stock, date, threshold):
-    def moving_average(data_arg, selection):
-        selection_mapping = {k: int(k.split('_')[-1]) for k in selection}
-        for k, v in selection_mapping.items():
-            data_arg.loc[:, k] = data_arg['close'].rolling(window=v).mean()
-        return data_arg
-
     try:
-        # day_num = 100
-        # tmp_year, tmp_month, tmp_day = date.split("-")
-        # start_date = datetime.datetime(int(tmp_year), int(tmp_month), int(tmp_day))
-        # _day = (datetime.datetime.now() - start_date).days - day_num
-        # if _day < 0:
-        #     run_date = (start_date + datetime.timedelta(days=_day))
-        # run_date_str = run_date.strftime("%Y-%m-%d")
-        # mask = (stock['date'] >= run_date_str)
-        # data = stock.loc[mask]
+        length = len(stock)
+        p = figure(width=1000, height=320, x_range=(0, length + 1), toolbar_location=None)
+        hover = HoverTool(tooltips=[('日期', '@date'), ('开盘', '@open'),
+                                    ('最高', '@high'), ('最低', '@low'),
+                                    ('收盘', '@close')])
+        # 均线图
+        average_labels = ("close", "close_10_sma", "close_20_sma", "close_50_sma", "close_200_sma")
+        for name, color in zip(average_labels, Spectral11):
+            p.line(x='index', y=name, source=stock, legend_label=tbs.get_field_cn(name, tbs.STOCK_STATS_DATA), color=color, line_width=1.5, alpha=0.8)
+        p.legend.location = "top_left"
+        p.legend.click_policy = "hide"
 
         stock_column = tbs.STOCK_KLINE_PATTERN_DATA['columns']
         data = kpr.get_pattern_recognitions(stock, stock_column, threshold=threshold)
         if data is None:
             return None
 
-        data['index'] = list(np.arange(len(data)))
-
-        average_labels = ["MA_1", "MA_5", "MA_10", "MA_20", 'MA_30', 'MA_60', 'MA_90']
-        # 均线计算
-        data_1 = moving_average(data, average_labels)  # 计算各种长度的均线
-        source_1 = ColumnDataSource(data_1)
-
         inc = data['close'] >= data['open']
         dec = data['open'] > data['close']
 
-        inc_source = ColumnDataSource(data.loc[inc])
-        dec_source = ColumnDataSource(data.loc[dec])
-
-        length = len(data)
-        p = figure(width=1000, height=320, x_range=(0, length + 1), toolbar_location=None)
-        hover = HoverTool(tooltips=[('日期', '@date'), ('开盘', '@open'),
-                                    ('最高', '@high'), ('最低', '@low'),
-                                    ('收盘', '@close')])
-        # 均线图
-        for name, color in zip(average_labels, Spectral11):
-            p.line(x='index', y=name, source=source_1, legend_label=name, color=color, line_width=1.5, alpha=0.8)
-        p.legend.location = "top_left"
-        p.legend.click_policy = "hide"
+        inc_source = data.loc[inc]
+        dec_source = data.loc[dec]
 
         p.segment(x0='index', y0='high', x1='index', y1='low', color='red', source=inc_source)
         p.segment(x0='index', y0='high', x1='index', y1='low', color='green', source=dec_source)
@@ -345,7 +314,7 @@ def add_kline(stock, date, threshold):
         p1 = figure(width=p.width, height=150, x_range=p.x_range, toolbar_location=None)
         p1.vbar('index', 0.5, 0, 'volume', color='red', source=inc_source)
         p1.vbar('index', 0.5, 0, 'volume', color='green', source=dec_source)
-        p1.xaxis.major_label_overrides = {i: date for i, date in enumerate(data['date'])}
+        p1.xaxis.major_label_overrides = {i: date for i, date in enumerate(data.index.values)}
         # p1.xaxis.major_label_orientation = pi / 4
 
         pattern_checkboxes = CheckboxGroup(labels=pattern_labels, active=list(range(len(pattern_labels))))
