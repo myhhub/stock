@@ -89,23 +89,36 @@ _tmp_data_.pop('date')
 TABLE_CN_STOCK_HIST['columns'].update(_tmp_data_)
 
 STOCK_STATS_DATA = {'name': 'stockstats', 'cn': '股票统计/指标计算助手库',
-                    'columns': {'adx': {'type': FLOAT, 'cn': 'adx'}, 'adxr': {'type': FLOAT, 'cn': 'adxr'},
-                                'boll': {'type': FLOAT, 'cn': 'BOLL中轨线'}, 'boll_ub': {'type': FLOAT, 'cn': 'BOLL上轨线'},
-                                'boll_lb': {'type': FLOAT, 'cn': 'BOLL下轨线'}, 'cci': {'type': FLOAT, 'cn': 'cci'},
-                                'cci_20': {'type': FLOAT, 'cn': 'cci_20'},
-                                'close_-1_r': {'type': FLOAT, 'cn': 'close_-1_r'},
-                                'close_-2_r': {'type': FLOAT, 'cn': 'close_-2_r'}, 'cr': {'type': FLOAT, 'cn': 'cr'},
-                                'cr-ma1': {'type': FLOAT, 'cn': 'cr-a'}, 'cr-ma2': {'type': FLOAT, 'cn': 'cr-b'},
-                                'cr-ma3': {'type': FLOAT, 'cn': 'cr-c '}, 'dma': {'type': FLOAT, 'cn': 'dma'},
-                                'dx': {'type': FLOAT, 'cn': 'dx'}, 'kdjk': {'type': FLOAT, 'cn': 'kdjk'},
-                                'kdjd': {'type': FLOAT, 'cn': 'kdjd'}, 'kdjj': {'type': FLOAT, 'cn': 'kdjj'},
-                                'macd': {'type': FLOAT, 'cn': 'DIF'}, 'macds': {'type': FLOAT, 'cn': 'MACD'},
-                                'macdh': {'type': FLOAT, 'cn': 'Histogram'}, 'mdi': {'type': FLOAT, 'cn': 'mdi'},
-                                'pdi': {'type': FLOAT, 'cn': 'pdi'}, 'rsi_12': {'type': FLOAT, 'cn': 'rsi_12'},
-                                'rsi_6': {'type': FLOAT, 'cn': 'rsi_6'}, 'trix': {'type': FLOAT, 'cn': 'trix'},
-                                'trix_9_sma': {'type': FLOAT, 'cn': 'trix_9_sma'}, 'vr': {'type': FLOAT, 'cn': 'vr'},
-                                'vr_6_sma': {'type': FLOAT, 'cn': 'vr_6_sma'}, 'wr_10': {'type': FLOAT, 'cn': 'wr_10'},
-                                'wr_6': {'type': FLOAT, 'cn': 'wr_6'}}}
+                    'columns': {'macd': {'type': FLOAT, 'cn': 'dif'}, 'macds': {'type': FLOAT, 'cn': 'macd'},
+                                'macdh': {'type': FLOAT, 'cn': 'histogram'},
+                                'kdjk': {'type': FLOAT, 'cn': 'kdjk'}, 'kdjd': {'type': FLOAT, 'cn': 'kdjd'},
+                                'kdjj': {'type': FLOAT, 'cn': 'kdjj'},
+                                'boll_ub': {'type': FLOAT, 'cn': 'boll上轨线'},
+                                'boll': {'type': FLOAT, 'cn': 'boll中轨线'},
+                                'boll_lb': {'type': FLOAT, 'cn': 'boll下轨线'},
+                                'trix': {'type': FLOAT, 'cn': 'trix'}, 'trix_20_sma': {'type': FLOAT, 'cn': 'trma'},
+                                'cr': {'type': FLOAT, 'cn': 'cr'}, 'cr-ma1': {'type': FLOAT, 'cn': 'cr-a'},
+                                'cr-ma2': {'type': FLOAT, 'cn': 'cr-b'}, 'cr-ma3': {'type': FLOAT, 'cn': 'cr-c '},
+                                'rsi_6': {'type': FLOAT, 'cn': 'rsi_6'}, 'rsi_12': {'type': FLOAT, 'cn': 'rsi_12'},
+                                'rsi': {'type': FLOAT, 'cn': 'rsi'}, 'rsi_24': {'type': FLOAT, 'cn': 'rsi_24'},
+                                'vr': {'type': FLOAT, 'cn': 'vr'}, 'vr_6_sma': {'type': FLOAT, 'cn': 'mavr'},
+                                'roc': {'type': FLOAT, 'cn': 'roc'}, 'rocma': {'type': FLOAT, 'cn': 'rocma'},
+                                'rocema': {'type': FLOAT, 'cn': 'rocema'},
+                                'pdi': {'type': FLOAT, 'cn': 'pdi'}, 'mdi': {'type': FLOAT, 'cn': 'mdi'},
+                                'dx': {'type': FLOAT, 'cn': 'dx'},
+                                'adx': {'type': FLOAT, 'cn': 'adx'}, 'adxr': {'type': FLOAT, 'cn': 'adxr'},
+                                'wr_6': {'type': FLOAT, 'cn': 'wr_6'}, 'wr_10': {'type': FLOAT, 'cn': 'wr_10'},
+                                'wr_14': {'type': FLOAT, 'cn': 'wr_14'},
+                                'cci': {'type': FLOAT, 'cn': 'cci'}, 'cci_84': {'type': FLOAT, 'cn': 'cci_84'},
+                                'tr': {'type': FLOAT, 'cn': 'tr'}, 'atr': {'type': FLOAT, 'cn': 'atr'},
+                                'dma': {'type': FLOAT, 'cn': 'dma'}, 'dma_10_sma': {'type': FLOAT, 'cn': 'ama'},
+                                'obv': {'type': FLOAT, 'cn': 'obv'}, 'sar': {'type': FLOAT, 'cn': 'sar'},
+                                'psy': {'type': FLOAT, 'cn': 'psy'},
+                                'br': {'type': FLOAT, 'cn': 'br'}, 'ar': {'type': FLOAT, 'cn': 'ar'},
+                                'emv': {'type': FLOAT, 'cn': 'emv'}, 'emva': {'type': FLOAT, 'cn': 'emva'},
+                                'bias': {'type': FLOAT, 'cn': 'bias'},
+                                'bias_12': {'type': FLOAT, 'cn': 'bias_12'}, 'bias_24': {'type': FLOAT, 'cn': 'bias_24'}
+                                }}
 
 TABLE_CN_STOCK_INDICATORS = {'name': 'cn_stock_indicators', 'cn': '股票指标数据',
                              'columns': TABLE_CN_STOCK_FOREIGN_KEY['columns'].copy()}
@@ -250,6 +263,13 @@ STOCK_KLINE_PATTERN_DATA = {'name': 'cn_stock_pattern_recognitions', 'cn': 'K线
 TABLE_CN_STOCK_KLINE_PATTERN = {'name': 'cn_stock_pattern', 'cn': '股票K线形态',
                                 'columns': TABLE_CN_STOCK_FOREIGN_KEY['columns'].copy()}
 TABLE_CN_STOCK_KLINE_PATTERN['columns'].update(STOCK_KLINE_PATTERN_DATA['columns'])
+
+
+def get_field_cn(key, table):
+    f = table.get('columns').get(key)
+    if f is None:
+        return key
+    return f.get('cn')
 
 
 def get_field_cns(cols_val):

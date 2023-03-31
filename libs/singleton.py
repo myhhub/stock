@@ -4,7 +4,6 @@
 import logging
 from threading import RLock
 import concurrent.futures
-import talib as tl
 import libs.stockfetch as stf
 import libs.tablestructure as tbs
 
@@ -64,11 +63,10 @@ class stock_hist_data(metaclass=SingletonType):
                 for future in concurrent.futures.as_completed(future_to_stock):
                     stock = future_to_stock[future]
                     try:
-                        __data__ = future.result()
-                        if __data__ is not None:
-                            __data__.loc[:, 'p_change'] = tl.ROC(__data__['close'], 1)
-                            __data__ = __data__.astype({'volume': 'double'})
-                            _data[stock] = __data__
+                        __data = future.result()
+                        if __data is not None:
+                            # __data = __data.astype({'volume': 'double'})
+                            _data[stock] = __data
                     except Exception as e:
                         logging.debug(
                             "{}处理异常：{}代码{}".format('singleton.stock_hist_data', stock[1], e))

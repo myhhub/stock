@@ -7,6 +7,7 @@ import datetime
 import numpy as np
 import pandas as pd
 import akshare as ak
+import talib as tl
 import libs.tablestructure as cons
 
 __author__ = 'myh '
@@ -87,6 +88,7 @@ def fetch_stocks(date):
         # .loc[data["name"].apply(runtmp.stock_a_filter_st)]
 
         data.insert(0, 'date', date.strftime("%Y-%m-%d"))
+
         # 删除index
         data.drop('index', axis=1, inplace=True)
 
@@ -180,6 +182,8 @@ def fetch_stock_hist(data_base):
     # date_end = date_end.strftime("%Y%m%d")
     try:
         data = stock_hist_cache(code, date_start, None, 'qfq')
+        if data is not None:
+            data.loc[:, 'p_change'] = tl.ROC(data['close'], 1)
     except Exception as e:
         logging.debug("{}处理异常：{}".format('stockfetch.fetch_stock_hist', e))
 
