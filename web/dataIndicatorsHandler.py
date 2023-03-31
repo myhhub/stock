@@ -235,9 +235,9 @@ def add_indicators(data):
     }
 
 
-def add_kline(stock, date, threshold):
+def add_kline(data, date, threshold):
     try:
-        length = len(stock)
+        length = len(data)
         p = figure(width=1000, height=320, x_range=(0, length + 1), toolbar_location=None)
         hover = HoverTool(tooltips=[('日期', '@date'), ('开盘', '@open'),
                                     ('最高', '@high'), ('最低', '@low'),
@@ -245,12 +245,12 @@ def add_kline(stock, date, threshold):
         # 均线图
         average_labels = ("close", "close_10_sma", "close_20_sma", "close_50_sma", "close_200_sma")
         for name, color in zip(average_labels, Spectral11):
-            p.line(x='index', y=name, source=stock, legend_label=tbs.get_field_cn(name, tbs.STOCK_STATS_DATA), color=color, line_width=1.5, alpha=0.8)
+            p.line(x=data['index'], y=data[name], legend_label=tbs.get_field_cn(name, tbs.STOCK_STATS_DATA), color=color, line_width=1.5, alpha=0.8)
         p.legend.location = "top_left"
         p.legend.click_policy = "hide"
 
         stock_column = tbs.STOCK_KLINE_PATTERN_DATA['columns']
-        data = kpr.get_pattern_recognitions(stock, stock_column, threshold=threshold)
+        data = kpr.get_pattern_recognitions(data, stock_column, threshold=threshold)
         if data is None:
             return None
 
