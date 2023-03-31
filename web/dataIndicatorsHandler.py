@@ -215,7 +215,7 @@ def add_indicators(stock, date, threshold):
     length = len(data)
     tabs = []
     for conf in indicators_dic:
-        p = figure(width=1000, height=200, x_range=(0, length + 1), toolbar_location=None)
+        p = figure(width=1000, height=180, x_range=(0, length + 1), toolbar_location=None)
         for name, color in zip(conf["dic"], Spectral11):
             if name == 'macdh':
                 up = [True if val > 0 else False for val in data[name]]
@@ -235,8 +235,9 @@ def add_indicators(stock, date, threshold):
         p.min_border_bottom = 0
 
         tabs.append(TabPanel(child=p, title=conf["title"]))
+        layouts = column(row(Tabs(tabs=tabs, tabs_location='below')))
 
-    script, div = components(Tabs(tabs=tabs, tabs_location='below', width=1050, height=230))
+    script, div = components(layouts)
     return {
         "script": script,
         "div": div
@@ -346,7 +347,6 @@ def add_kline(stock, date, threshold):
         p1.vbar('index', 0.5, 0, 'volume', color='green', source=dec_source)
         p1.xaxis.major_label_overrides = {i: date for i, date in enumerate(data['date'])}
         # p1.xaxis.major_label_orientation = pi / 4
-        p1.min_border_bottom = 0
 
         pattern_checkboxes = CheckboxGroup(labels=pattern_labels, active=list(range(len(pattern_labels))))
         # pattern_selection.inline = True
