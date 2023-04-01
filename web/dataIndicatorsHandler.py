@@ -210,7 +210,7 @@ def get_plot_kline(stock, date):
         length = len(data.index)
         data['index'] = list(np.arange(length))
         # K线
-        p_kline = figure(width=1000, height=300, x_range=(0, length + 1), toolbar_location=None)
+        p_kline = figure(width=1000, height=300, x_range=(0, length + 1), min_border_left=80, toolbar_location=None)
         hover = HoverTool(tooltips=[('日期', '@date'), ('开盘', '@open'),
                                     ('最高', '@high'), ('最低', '@low'),
                                     ('收盘', '@close')])
@@ -280,7 +280,7 @@ def get_plot_kline(stock, date):
         p_kline.min_border_bottom = 0
 
         # 交易量柱
-        p_volume = figure(width=p_kline.width, height=120, x_range=p_kline.x_range, toolbar_location=None)
+        p_volume = figure(width=p_kline.width, height=120, x_range=p_kline.x_range, min_border_left=80, toolbar_location=None)
         vol_labels = ("vol_5", "vol_10")
         for name, color in zip(vol_labels, Spectral11):
             p_volume.line(x=data['index'], y=data[name], legend_label=name, color=color, line_width=1.5, alpha=0.8)
@@ -310,7 +310,7 @@ def get_plot_kline(stock, date):
         # 指标
         tabs = []
         for conf in indicators_dic:
-            p_indicator = figure(width=p_kline.width, height=150, x_range=p_kline.x_range, toolbar_location=None)
+            p_indicator = figure(width=p_kline.width, height=150, x_range=p_kline.x_range, min_border_left=80, toolbar_location=None)
             for name, color in zip(conf["dic"], Spectral11):
                 if name == 'macdh':
                     up = [True if val > 0 else False for val in source.data[name]]
