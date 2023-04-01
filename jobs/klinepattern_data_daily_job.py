@@ -63,7 +63,7 @@ def run_check(stocks, date=None, workers=40):
     data_column = columns
     try:
         with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
-            future_to_data = {executor.submit(kpr.get_pattern_recognition_tail, k, v, data_column, date=date): k for k, v in
+            future_to_data = {executor.submit(kpr.get_pattern_recognition, k, v, data_column, date=date): k for k, v in
                               stocks.items()}
             for future in concurrent.futures.as_completed(future_to_data):
                 stock = future_to_data[future]

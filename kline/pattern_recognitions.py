@@ -7,11 +7,17 @@ __author__ = 'myh '
 __date__ = '2023/3/24 '
 
 
-def get_pattern_recognitions(data, stock_column, end_date=None, threshold=60):
+def get_pattern_recognitions(data, stock_column, end_date=None, threshold=120, calc_threshold=None):
+    isCopy = False
     if end_date is not None:
         mask = (data['date'] <= end_date)
-        data = data.loc[mask].copy()
-    data = data.tail(n=threshold).copy()
+        data = data.loc[mask]
+        isCopy = True
+    if calc_threshold is not None:
+        data = data.tail(n=calc_threshold)
+        isCopy = True
+    if isCopy:
+        data = data.copy()
 
     if len(data.index) <= 1:
         return None
@@ -22,10 +28,13 @@ def get_pattern_recognitions(data, stock_column, end_date=None, threshold=60):
     if data is None or len(data.index) == 0:
         return None
 
+    if threshold is not None:
+        data = data.tail(n=threshold).copy()
+
     return data
 
 
-def get_pattern_recognition_tail(code_name, data, stock_column, date=None, threshold=60):
+def get_pattern_recognition(code_name, data, stock_column, date=None, threshold=1):
     try:
         # 增加空判断，如果是空返回 0 数据。
         if date is None:
@@ -45,8 +54,6 @@ def get_pattern_recognition_tail(code_name, data, stock_column, date=None, thres
 
         if stockStat is None:
             return None
-
-        stockStat = stockStat.tail(1)
 
         isHas = False
         for k in stock_column.keys():
