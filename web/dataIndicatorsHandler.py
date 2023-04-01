@@ -14,7 +14,7 @@ from bokeh.layouts import column, row
 from bokeh.models import DatetimeTickFormatter, ColumnDataSource, HoverTool, CheckboxGroup, LabelSet, Button, CustomJS, \
     CDSView, BooleanFilter, TabPanel, Tabs
 import libs.stockfetch as stf
-import libs.common as common
+import libs.version as version
 import libs.tablestructure as tbs
 import indicator.stockstats_data as ssd
 import kline.pattern_recognitions as kpr
@@ -190,7 +190,7 @@ class GetDataIndicatorsHandler(webBase.BaseHandler, ABC):
             logging.debug("{}处理异常：{}".format('dataIndicatorsHandler.GetDataIndicatorsHandler', e))
 
         self.render("stock_indicators.html", comp_list=comp_list,
-                    stockVersion=common.__version__,
+                    stockVersion=version.__version__,
                     leftMenu=webBase.GetLeftMenu(self.request.uri))
 
 

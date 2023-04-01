@@ -67,7 +67,7 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
     data.loc[:, 'cvs'] = data['cv'].rolling(min_periods=1, window=26, center=False).sum()
     data.loc[:, 'vr'] = ((data['avs'] + data['cvs'] / 2) / (data['bvs'] + data['cvs'] / 2)).replace(np.nan, 0).replace(np.inf, 0) * 100
     data.loc[:, 'vr_6_sma'] = tl.MA(data['vr'], timeperiod=6)
-    # DMI 计算方法和结果和stockstats不同，stockstats采用每天均价计算
+    # DMI 计算方法和结果和stockstats不同
     data.loc[:, 'pdi'] = tl.PLUS_DI(data['high'], data['low'], data['close'], timeperiod=14)
     data.loc[:, 'mdi'] = tl.MINUS_DI(data['high'], data['low'], data['close'], timeperiod=14)
     data.loc[:, 'dx'] = tl.DX(data['high'], data['low'], data['close'], timeperiod=14)
@@ -83,7 +83,7 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
     data.loc[:, 'h_14'] = data['high'].rolling(window=14).max()
     data.loc[:, 'l_14'] = data['low'].rolling(window=14).min()
     data.loc[:, 'wr_14'] = ((data['h_14'] - data['close']) / (data['h_14'] - data['l_14'])) * 100
-    # cci
+    # cci 计算方法和结果和stockstats不同，stockstats典型价采用均价计算
     data.loc[:, 'cci'] = tl.CCI(data['high'], data['low'], data['close'], timeperiod=14)
     data.loc[:, 'cci_84'] = tl.CCI(data['high'], data['low'], data['close'], timeperiod=84)
     # atr

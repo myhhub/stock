@@ -6,7 +6,7 @@ from abc import ABC
 from tornado import gen
 import logging
 import datetime
-import libs.common as common
+import libs.version as version
 import libs.stock_web_dic as stock_web_dic
 import web.base as webBase
 
@@ -62,7 +62,7 @@ class GetStockHtmlHandler(webBase.BaseHandler, ABC):
             logging.debug("{}处理异常：{}代码{}".format('dataTableHandler.GetStockHtmlHandler', e))
 
         self.render("stock_web.html", stockWeb=stockWeb, date_now=date_now_str,
-                    stockVersion=common.__version__,
+                    stockVersion=version.__version__,
                     leftMenu=webBase.GetLeftMenu(self.request.uri))
 
 

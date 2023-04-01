@@ -20,7 +20,7 @@ logging.basicConfig(format='%(asctime)s %(message)s', filename=os.path.join(cpat
 
 import torndb.torndb as torndb
 import libs.database as mdb
-import libs.common as common
+import libs.version as version
 import web.dataTableHandler as dataTableHandler
 import web.dataIndicatorsHandler as dataIndicatorsHandler
 import web.base as webBase
@@ -59,7 +59,7 @@ class HomeHandler(webBase.BaseHandler, ABC):
     @gen.coroutine
     def get(self):
         self.render("index.html",
-                    stockVersion=common.__version__,
+                    stockVersion=version.__version__,
                     leftMenu=webBase.GetLeftMenu(self.request.uri))
 
 
