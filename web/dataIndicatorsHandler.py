@@ -175,24 +175,17 @@ class GetDataIndicatorsHandler(webBase.BaseHandler, ABC):
         date = self.get_argument("date", default=None, strip=False)
         # self.uri_ = ("self.request.url:", self.request.uri)
         # print self.uri_
-        threshold = 120
         comp_list = []
         try:
             stock = stf.fetch_stock_hist((date, code))
             if stock is None:
                 return
 
-            data = ssd.get_indicators(stock, date, threshold=threshold)
-            if data is None:
+            pk = get_plot_kline(stock, date)
+            if pk is None:
                 return
-            data['index'] = list(np.arange(len(data)))
 
-            comp_list.append(add_indicators(data))
-
-            r_k = add_kline(data, date, threshold)
-            if r_k is not None:
-                comp_list.insert(0, r_k)
-
+            comp_list.append(pk)
         except Exception as e:
             logging.debug("{}处理异常：{}".format('dataIndicatorsHandler.GetDataIndicatorsHandler', e))
 
@@ -201,74 +194,49 @@ class GetDataIndicatorsHandler(webBase.BaseHandler, ABC):
                     leftMenu=webBase.GetLeftMenu(self.request.uri))
 
 
-# 批量添加数据。
-def add_indicators(data):
-    length = len(data)
-    tabs = []
-    for conf in indicators_dic:
-        p = figure(width=1000, height=180, x_range=(0, length + 1), toolbar_location=None)
-        for name, color in zip(conf["dic"], Spectral11):
-            if name == 'macdh':
-                up = [True if val > 0 else False for val in data[name]]
-                down = [True if val < 0 else False for val in data[name]]
-                view_upper = CDSView(filter=BooleanFilter(up))
-                view_lower = CDSView(filter=BooleanFilter(down))
-                p.vbar('index', 0.1, 0, name, legend_label=tbs.get_field_cn(name, tbs.STOCK_STATS_DATA),
-                       color='green', source=data, view=view_lower)
-                p.vbar('index', 0.1, name, 0, legend_label=tbs.get_field_cn(name, tbs.STOCK_STATS_DATA),
-                       color='red', source=data, view=view_upper)
-            else:
-                p.line(x=data['index'], y=data[name], legend_label=tbs.get_field_cn(name, tbs.STOCK_STATS_DATA),
-                       color=color, line_width=1.5, alpha=0.8)
-        p.legend.location = "top_left"
-        p.legend.click_policy = "hide"
-        p.xaxis.visible = False
-        p.min_border_bottom = 0
-
-        tabs.append(TabPanel(child=p, title=conf["title"]))
-        layouts = column(row(Tabs(tabs=tabs, tabs_location='below')))
-
-    script, div = components(layouts)
-    return {
-        "script": script,
-        "div": div
-    }
-
-
-def add_kline(data, date, threshold):
+def get_plot_kline(stock, date):
+    plot_list = []
+    threshold = 120
     try:
-        length = len(data)
-        p = figure(width=1000, height=320, x_range=(0, length + 1), toolbar_location=None)
-        hover = HoverTool(tooltips=[('日期', '@date'), ('开盘', '@open'),
-                                    ('最高', '@high'), ('最低', '@low'),
-                                    ('收盘', '@close')])
-        # 均线图
-        average_labels = ("close", "close_10_sma", "close_20_sma", "close_50_sma", "close_200_sma")
-        for name, color in zip(average_labels, Spectral11):
-            p.line(x=data['index'], y=data[name], legend_label=tbs.get_field_cn(name, tbs.STOCK_STATS_DATA), color=color, line_width=1.5, alpha=0.8)
-        p.legend.location = "top_left"
-        p.legend.click_policy = "hide"
-
-        stock_column = tbs.STOCK_KLINE_PATTERN_DATA['columns']
-        data = kpr.get_pattern_recognitions(data, stock_column, threshold=threshold)
+        data = ssd.get_indicators(stock, date, threshold=threshold)
         if data is None:
             return None
 
+        stock_column = tbs.STOCK_KLINE_PATTERN_DATA['columns']
+        data = kpr.get_pattern_recognitions(data, stock_column)
+        if data is None:
+            return None
+
+        length = len(data.index)
+        data['index'] = list(np.arange(length))
+        # K线
+        p_kline = figure(width=1000, height=300, x_range=(0, length + 1), toolbar_location=None)
+        hover = HoverTool(tooltips=[('日期', '@date'), ('开盘', '@open'),
+                                    ('最高', '@high'), ('最低', '@low'),
+                                    ('收盘', '@close')])
+        source = ColumnDataSource(data)
+        # 均线
+        sam_labels = ("close", "ma10", "ma20", "ma50", "ma200")
+        for name, color in zip(sam_labels, Spectral11):
+            p_kline.line(x='index', y=name, source=source, legend_label=tbs.get_field_cn(name, tbs.STOCK_STATS_DATA),
+                         color=color, line_width=1.5, alpha=0.8)
+        p_kline.legend.location = "top_left"
+        p_kline.legend.click_policy = "hide"
+
         inc = data['close'] >= data['open']
         dec = data['open'] > data['close']
-
         inc_source = data.loc[inc]
         dec_source = data.loc[dec]
-
-        p.segment(x0='index', y0='high', x1='index', y1='low', color='red', source=inc_source)
-        p.segment(x0='index', y0='high', x1='index', y1='low', color='green', source=dec_source)
-        p.vbar('index', 0.5, 'open', 'close', fill_color='red', line_color='red', source=inc_source,
-               hover_fill_alpha=0.5)
-        p.vbar('index', 0.5, 'open', 'close', fill_color='green', line_color='green', source=dec_source,
-               hover_fill_alpha=0.5)
-        # 提示
-        p.add_tools(hover)
-        # 注释
+        # 股价柱
+        p_kline.segment(x0='index', y0='high', x1='index', y1='low', color='red', source=inc_source)
+        p_kline.segment(x0='index', y0='high', x1='index', y1='low', color='green', source=dec_source)
+        p_kline.vbar('index', 0.5, 'open', 'close', fill_color='red', line_color='red', source=inc_source,
+                     hover_fill_alpha=0.5)
+        p_kline.vbar('index', 0.5, 'open', 'close', fill_color='green', line_color='green', source=dec_source,
+                     hover_fill_alpha=0.5)
+        # 提示信息
+        p_kline.add_tools(hover)
+        # 形态信息
         args = {}
         code = """var acts = cb_obj.active;"""
         pattern_labels = []
@@ -284,7 +252,7 @@ def add_kline(data, date, threshold):
                                                                   source=label_source_u, x_offset=7, y_offset=5,
                                                                   angle=90, angle_units='deg', text_color='red',
                                                                   text_font_style='bold', text_font_size="9pt")
-                p.add_layout(locals()['pattern_labels_u_' + str(i)])
+                p_kline.add_layout(locals()['pattern_labels_u_' + str(i)])
                 args['lsu' + str(i)] = locals()['pattern_labels_u_' + str(i)]
                 code += "lsu{}.visible = acts.includes({});".format(i, i)
                 pattern_labels.append(v['cn'])
@@ -300,7 +268,7 @@ def add_kline(data, date, threshold):
                                                                   angle=270, angle_units='deg',
                                                                   text_color='green',
                                                                   text_font_style='bold', text_font_size="9pt")
-                p.add_layout(locals()['pattern_labels_d_' + str(i)])
+                p_kline.add_layout(locals()['pattern_labels_d_' + str(i)])
                 args['lsd' + str(i)] = locals()['pattern_labels_d_' + str(i)]
                 code += "lsd{}.visible = acts.includes({});".format(i, i)
                 if not isHas:
@@ -308,22 +276,30 @@ def add_kline(data, date, threshold):
                     isHas = True
             if isHas:
                 i += 1
-        p.xaxis.visible = False
-        p.min_border_bottom = 0
+        p_kline.xaxis.visible = False
+        p_kline.min_border_bottom = 0
 
-        p1 = figure(width=p.width, height=150, x_range=p.x_range, toolbar_location=None)
-        p1.vbar('index', 0.5, 0, 'volume', color='red', source=inc_source)
-        p1.vbar('index', 0.5, 0, 'volume', color='green', source=dec_source)
-        p1.xaxis.major_label_overrides = {i: date for i, date in enumerate(data.index.values)}
-        # p1.xaxis.major_label_orientation = pi / 4
+        # 交易量柱
+        p_volume = figure(width=p_kline.width, height=120, x_range=p_kline.x_range, toolbar_location=None)
+        vol_labels = ("vol_5", "vol_10")
+        for name, color in zip(vol_labels, Spectral11):
+            p_volume.line(x=data['index'], y=data[name], legend_label=name, color=color, line_width=1.5, alpha=0.8)
+        p_volume.legend.location = "top_left"
+        p_volume.legend.click_policy = "hide"
+        p_volume.vbar('index', 0.5, 0, 'volume', color='red', source=inc_source)
+        p_volume.vbar('index', 0.5, 0, 'volume', color='green', source=dec_source)
+        p_volume.xaxis.major_label_overrides = {i: date for i, date in enumerate(data['date'])}
+        # p_volume.xaxis.major_label_orientation = pi / 4
 
+        # 形态复选框
         pattern_checkboxes = CheckboxGroup(labels=pattern_labels, active=list(range(len(pattern_labels))))
         # pattern_selection.inline = True
-        pattern_checkboxes.height = p.height + p1.height
+        pattern_checkboxes.height = p_kline.height + p_volume.height
         if args:
             pattern_checkboxes.js_on_change('active', CustomJS(args=args, code=code))
         ck = column(row(pattern_checkboxes))
 
+        # 按钮
         select_all = Button(label="全选(形态)")
         select_none = Button(label='全不选(形态)')
         select_all.js_on_event("button_click", CustomJS(args={'pcs': pattern_checkboxes, 'pls': pattern_labels},
@@ -331,12 +307,35 @@ def add_kline(data, date, threshold):
         select_none.js_on_event("button_click", CustomJS(args={'pcs': pattern_checkboxes},
                                                          code="pcs.active = [];"))
 
-        layouts = row(column(row(select_all, select_none), p, p1), ck)
+        # 指标
+        tabs = []
+        for conf in indicators_dic:
+            p_indicator = figure(width=p_kline.width, height=150, x_range=p_kline.x_range, toolbar_location=None)
+            for name, color in zip(conf["dic"], Spectral11):
+                if name == 'macdh':
+                    up = [True if val > 0 else False for val in source.data[name]]
+                    down = [True if val < 0 else False for val in source.data[name]]
+                    view_upper = CDSView(filter=BooleanFilter(up))
+                    view_lower = CDSView(filter=BooleanFilter(down))
+                    p_indicator.vbar('index', 0.1, 0, name, legend_label=tbs.get_field_cn(name, tbs.STOCK_STATS_DATA),
+                                     color='green', source=source, view=view_lower)
+                    p_indicator.vbar('index', 0.1, name, 0, legend_label=tbs.get_field_cn(name, tbs.STOCK_STATS_DATA),
+                                     color='red', source=source, view=view_upper)
+                else:
+                    p_indicator.line(x='index', y=name, legend_label=tbs.get_field_cn(name, tbs.STOCK_STATS_DATA),
+                                     color=color, source=source, line_width=1.5, alpha=0.8)
+            p_indicator.legend.location = "top_left"
+            p_indicator.legend.click_policy = "hide"
+            p_indicator.xaxis.visible = False
+            p_indicator.min_border_bottom = 0
+            tabs.append(TabPanel(child=p_indicator, title=conf["title"]))
+        tabs_indicators = Tabs(tabs=tabs, tabs_location='below')
 
+        # 组合图
+        layouts = row(column(row(select_all, select_none), p_kline, p_volume, tabs_indicators), ck)
         script, div = components(layouts)
-        return {
-            "script": script,
-            "div": div
-        }
+
+        return {"script": script, "div": div}
     except Exception as e:
-        logging.debug("{}处理异常：{}".format('dataIndicatorsHandler.add_kline', e))
+        logging.debug("{}处理异常：{}".format('dataIndicatorsHandler.get_plot_kline', e))
+    return None
