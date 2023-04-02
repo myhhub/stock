@@ -22,11 +22,11 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
 
     if isCopy:
         data = data.copy()
-    data.loc[:, "volume"] = data["volume"] * 100  # 成交量单位从手变成股。
+    data["volume"] = data["volume"] * 100  # 成交量单位从手变成股。
 
-    # import stockstats
-    # test = data.copy()
-    # test = stockstats.StockDataFrame.retype(test) #验证计算结果
+    import stockstats
+    test = data.copy()
+    test = stockstats.StockDataFrame.retype(test) #验证计算结果
 
     # macd
     data.loc[:, 'macd'], data.loc[:, 'macds'], data.loc[:, 'macdh'] = tl.MACD(
@@ -36,7 +36,7 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
         data['high'], data['low'], data['close'], fastk_period=9,
         slowk_period=5, slowk_matype=1, slowd_period=5, slowd_matype=1)
     data.loc[:, 'kdjj'] = 3 * data['kdjk'] - 2 * data['kdjd']
-    # boll
+    # boll 计算结果和stockstats不同boll_ub,boll_lb
     data.loc[:, 'boll_ub'], data.loc[:, 'boll'], data.loc[:, 'boll_lb'] = tl.BBANDS \
         (data['close'], timeperiod=20, nbdevup=2, nbdevdn=2, matype=0)
     # trix
@@ -92,12 +92,94 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
     data.loc[:, 'h_pc'] = (data['high'] - data['prev_close']).abs()
     data.loc[:, 'l_pc'] = (data['prev_close'] - data['low']).abs()
     data.loc[:, 'tr'] = data.loc[:, ['h_l', 'h_pc', 'l_pc']].T.max()
-    data.loc[:, 'atr'] = data['tr'].ewm(ignore_na=False, alpha=1.0 / 14, min_periods=0, adjust=True).mean()
+    data.loc[:, 'atr'] = data['tr'].ewm(alpha=1.0 / 14).mean()
     # dma
     data.loc[:, 'ma10'] = tl.MA(data['close'], timeperiod=10)
     data.loc[:, 'ma50'] = tl.MA(data['close'], timeperiod=50)
     data.loc[:, 'dma'] = data['ma10'] - data['ma50']
     data.loc[:, 'dma_10_sma'] = tl.MA(data['dma'], timeperiod=10)
+    # tema
+    data.loc[:, 'single5'] = tl.EMA(data['close'], timeperiod=5)
+    data.loc[:, 'double5'] = tl.EMA(data['single5'], timeperiod=5)
+    data.loc[:, 'triple5'] = tl.EMA(data['double5'], timeperiod=5)
+    data.loc[:, 'tema'] = 3 * data['single5'] - 3 * data['double5'] + data['triple5']
+    # mfi 计算方法和结果和stockstats不同
+    data.loc[:, 'mfi'] = tl.MFI(data['high'], data['low'], data['close'], data['volume'], timeperiod=14)
+    # vwma
+    data.loc[:, 'tpv_14'] = data['amount'].rolling(window=14).sum()
+    data.loc[:, 'vol_14'] = data['volume'].rolling(window=14).sum()
+    data.loc[:, 'vwma'] = data['tpv_14'] / data['vol_14']
+    # ppo
+    data.loc[:, 'ppo_short'] = tl.EMA(data['close'], timeperiod=12)
+    data.loc[:, 'ppo_long'] = tl.EMA(data['close'], timeperiod=26)
+    data.loc[:, 'ppo'] = (data['ppo_short'] - data['ppo_long']) / data['ppo_long'] * 100
+    data.loc[:, 'ppos'] = tl.EMA(data['ppo'], timeperiod=9)
+    data.loc[:, 'ppoh'] = data['ppo'] - data['ppos']
+    data = data.copy()
+    # stochrsi
+    data.loc[:, 'rsi_min'] = data['rsi'].rolling(window=14).min()
+    data.loc[:, 'rsi_max'] = data['rsi'].rolling(window=14).max()
+    data.loc[:, 'stochrsi'] = (data['rsi'] - data['rsi_min']) / (data['rsi_max'] - data['rsi_min']) * 100
+    # wt
+    data.loc[:, 'esa'] = tl.EMA(data['m_price'], timeperiod=10)
+    data.loc[:, 'esa_d'] = tl.EMA((data['m_price'] - data['esa']).abs(), timeperiod=10)
+    data.loc[:, 'esa_ci'] = (data['m_price'] - data['esa']) / (0.015 * data['esa_d'])
+    data.loc[:, 'wt1'] = tl.EMA(data['esa_ci'], timeperiod=21)
+    data.loc[:, 'wt2'] = tl.MA(data['wt1'], timeperiod=4)
+    # Supertrend
+    data.loc[:, 'm_atr'] = data['atr'] * 3
+    data.loc[:, 'hl_avg'] = (data['high'] + data['low']) / 2.0
+    data.loc[:, 'b_ub'] = data['hl_avg'] + data['m_atr']
+    data.loc[:, 'b_lb'] = data['hl_avg'] - data['m_atr']
+    size = len(data.index)
+    ub = np.empty(size, dtype=np.float64)
+    lb = np.empty(size, dtype=np.float64)
+    st = np.empty(size, dtype=np.float64)
+    for i in range(size):
+        if i == 0:
+            ub[i] = data['b_ub'].iloc[i]
+            lb[i] = data['b_lb'].iloc[i]
+            if data['close'].iloc[i] <= ub[i]:
+                st[i] = ub[i]
+            else:
+                st[i] = lb[i]
+            continue
+
+        last_close = data['close'].iloc[i - 1]
+        curr_close = data['close'].iloc[i]
+        last_ub = ub[i - 1]
+        last_lb = lb[i - 1]
+        last_st = st[i - 1]
+        curr_b_ub = data['b_ub'].iloc[i]
+        curr_b_lb = data['b_lb'].iloc[i]
+
+        # calculate current upper band
+        if curr_b_ub < last_ub or last_close > last_ub:
+            ub[i] = curr_b_ub
+        else:
+            ub[i] = last_ub
+
+        # calculate current lower band
+        if curr_b_lb > last_lb or last_close < last_lb:
+            lb[i] = curr_b_lb
+        else:
+            lb[i] = last_lb
+
+        # calculate supertrend
+        if last_st == last_ub:
+            if curr_close <= ub[i]:
+                st[i] = ub[i]
+            else:
+                st[i] = lb[i]
+        elif last_st == last_lb:
+            if curr_close > lb[i]:
+                st[i] = lb[i]
+            else:
+                st[i] = ub[i]
+
+    data.loc[:, 'supertrend_ub'] = ub
+    data.loc[:, 'supertrend_lb'] = lb
+    data.loc[:, 'supertrend'] = st
     # ----------stockstats没有以下指标-----------------
     # roc
     data.loc[:, 'roc'] = tl.ROC(data['close'], timeperiod=12)

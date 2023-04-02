@@ -10,9 +10,9 @@ import pandas as pd
 from bokeh.plotting import figure
 from bokeh.embed import components
 from bokeh.palettes import Spectral11
-from bokeh.layouts import column, row
+from bokeh.layouts import column, row, layout
 from bokeh.models import DatetimeTickFormatter, ColumnDataSource, HoverTool, CheckboxGroup, LabelSet, Button, CustomJS, \
-    CDSView, BooleanFilter, TabPanel, Tabs
+    CDSView, BooleanFilter, TabPanel, Tabs, Div
 import libs.stockfetch as stf
 import libs.version as version
 import libs.tablestructure as tbs
@@ -23,34 +23,12 @@ import web.base as webBase
 __author__ = 'myh '
 __date__ = '2023/3/10 '
 
-# 全部统计数据汇总
-stats_dic = [
-    {
-        "title": "1、交易量delta",
-        "desc": "The Volume Delta (Vol ∆) 与前一天交易量的增量。",
-        "dic": [("volume", "volume_delta")]
-    }, {
-        "title": "2、计算n天价差",
-        "desc": "可以计算，向前n天，和向后n天的价差。",
-        "dic": [("close",), ("close_1_d", "close_2_d", "close_-1_d", "close_-2_d")]
-    }, {
-        "title": "3、n天涨跌百分百计算",
-        "desc": "可以看到，-n天数据和今天数据的百分比。",
-        "dic": [("close",), ("close_-1_r", "close_-2_r")]
-    }, {
-        "title": "4、最大值，最小值",
-        "desc": """
-                计算区间最大值
-            """,
-        "dic": [("volume", "volume_-2~2_max", "volume_-2~2_min")]
-    }]
-
 # 全部指标数据汇总
 indicators_dic = [
     {
         "title": "MACD",
         "desc": """
-        <a href="http://wiki.mbalib.com/wiki/MACD" rel="nofollow" target="_blank">平滑异同移动平均线(Moving Average Convergence Divergence，简称MACD指标)</a>
+        <a href="http://wiki.mbalib.com/wiki/MACD" rel="nofollow" target="_blank">平滑异同移动平均指标(MACD)</a>
     """,
         "dic": ("macd", "macds", "macdh")
     }, {
@@ -62,15 +40,21 @@ indicators_dic = [
     }, {
         "title": "BOLL",
         "desc": """
-        <a href="http://wiki.mbalib.com/wiki/BOLL" rel="nofollow" target="_blank">布林线指标(Bollinger Bands)</a>
+        <a href="http://wiki.mbalib.com/wiki/BOLL" rel="nofollow" target="_blank">布林线指标(BOLL)</a>
     """,
         "dic": ("close", "boll_ub", "boll", "boll_lb")
     }, {
         "title": "TRIX",
         "desc": """
-        <a href="http://wiki.mbalib.com/wiki/TRIX" rel="nofollow" target="_blank">TRIX指标又叫三重指数平滑移动平均指标（Triple Exponentially Smoothed Average）</a>
+        <a href="http://wiki.mbalib.com/wiki/TRIX" rel="nofollow" target="_blank">三重指数平滑移动平均指标(TRIX)</a>
     """,
         "dic": ("trix", "trix_20_sma")
+    }, {
+        "title": "TEMA",
+        "desc": """
+            <a href="https://www.forextraders.com/forex-education/forex-technical-analysis/triple-exponential-moving-average-the-tema-indicator/" target="_blank">三重指数移动平均指标(TEMA)</a>
+        """,
+        "dic": ("tema",)
     }, {
         "title": "CR",
         "desc": """
@@ -80,33 +64,33 @@ indicators_dic = [
     }, {
         "title": "RSI",
         "desc": """
-            <a href="http://wiki.mbalib.com/wiki/RSI" rel="nofollow" target="_blank">相对强弱指标（Relative Strength Index，简称RSI）</a> 
+            <a href="http://wiki.mbalib.com/wiki/RSI" rel="nofollow" target="_blank">相对强弱指标(RSI)</a> 
         """,
         "dic": ("rsi_6", "rsi_12", "rsi", "rsi_24")
     }, {
         "title": "VR",
         "desc": """
-        <a href="http://wiki.mbalib.com/wiki/%E6%88%90%E4%BA%A4%E9%87%8F%E6%AF%94%E7%8E%87" rel="nofollow" target="_blank">成交量比率（Volumn Ratio，VR）（简称VR）</a>
+        <a href="http://wiki.mbalib.com/wiki/%E6%88%90%E4%BA%A4%E9%87%8F%E6%AF%94%E7%8E%87" rel="nofollow" target="_blank">成交量比率(VR)</a>
     """,
         "dic": ("vr", "vr_6_sma")
     }, {
         "title": "ROC",
         "desc": """
-            <a href="https://wiki.mbalib.com/wiki/ROC" target="_blank">ROC指标</a>
+            <a href="https://wiki.mbalib.com/wiki/ROC" target="_blank">变动率(ROC)</a>
         """,
         "dic": ("roc", "rocma", "rocema")
     }, {
         "title": "DMI",
         "desc": """
-        <a href="http://wiki.mbalib.com/wiki/DMI" rel="nofollow" target="_blank">动向指数Directional Movement Index,DMI）</a>
-        <a href="http://wiki.mbalib.com/wiki/ADX" rel="nofollow" target="_blank">平均趋向指标（Average Directional Indicator，简称ADX）</a>
-        <a href="http://wiki.mbalib.com/wiki/%E5%B9%B3%E5%9D%87%E6%96%B9%E5%90%91%E6%8C%87%E6%95%B0%E8%AF%84%E4%BC%B0" rel="nofollow" target="_blank">平均方向指数评估（ADXR）</a>
+        <a href="http://wiki.mbalib.com/wiki/DMI" rel="nofollow" target="_blank">动向指数(DMI)</a>
+        <a href="http://wiki.mbalib.com/wiki/ADX" rel="nofollow" target="_blank">平均趋向指标(ADX)</a>
+        <a href="http://wiki.mbalib.com/wiki/%E5%B9%B3%E5%9D%87%E6%96%B9%E5%90%91%E6%8C%87%E6%95%B0%E8%AF%84%E4%BC%B0" rel="nofollow" target="_blank">平均方向指数评估(DXR)</a>
     """,
         "dic": ("pdi", "mdi", "dx", "adx", "adxr")
     }, {
         "title": "W&R",
         "desc": """
-            <a href="http://wiki.mbalib.com/wiki/%E5%A8%81%E5%BB%89%E6%8C%87%E6%A0%87" rel="nofollow" target="_blank">威廉指数（Williams%Rate）</a>
+            <a href="http://wiki.mbalib.com/wiki/%E5%A8%81%E5%BB%89%E6%8C%87%E6%A0%87" rel="nofollow" target="_blank">威廉指数(W&R)</a>
         """,
         "dic": ("wr_6", "wr_10", "wr_14")
     }, {
@@ -118,51 +102,81 @@ indicators_dic = [
     }, {
         "title": "ATR",
         "desc": """
-           <a href="http://wiki.mbalib.com/wiki/%E5%9D%87%E5%B9%85%E6%8C%87%E6%A0%87" rel="nofollow" target="_blank">均幅指标（Average True Ranger,ATR）</a>
+           <a href="http://wiki.mbalib.com/wiki/%E5%9D%87%E5%B9%85%E6%8C%87%E6%A0%87" rel="nofollow" target="_blank">均幅指标(ATR)</a>
         """,
         "dic": ("tr", "atr")
     }, {
         "title": "DMA",
         "desc": """
-            <a href="http://wiki.mbalib.com/wiki/DMA" rel="nofollow" target="_blank">DMA指标（Different of Moving Average）又叫平行线差指标</a> 
+            <a href="http://wiki.mbalib.com/wiki/DMA" rel="nofollow" target="_blank">平行线差指标(DMA)</a> 
         """,
         "dic": ("dma", "dma_10_sma")
     }, {
         "title": "OBV",
         "desc": """
-            <a href="https://wiki.mbalib.com/wiki/OBV" rel="nofollow" target="_blank">OBV指标</a>
+            <a href="https://wiki.mbalib.com/wiki/OBV" rel="nofollow" target="_blank">能量潮指标(OBV)</a>
         """,
         "dic": ("obv",)
     }, {
         "title": "SAR",
         "desc": """
-            <a href="https://wiki.mbalib.com/wiki/SAR%E6%8C%87%E6%A0%87" rel="nofollow" target="_blank">SAR指标</a>
+            <a href="https://wiki.mbalib.com/wiki/SAR%E6%8C%87%E6%A0%87" rel="nofollow" target="_blank">抛物线转向指标(SAR)</a>
         """,
         "dic": ("close", "sar")
     }, {
         "title": "PSY",
         "desc": """
-            <a href="https://wiki.mbalib.com/wiki/PSY" rel="nofollow" target="_blank">PSY指标</a>
+            <a href="https://wiki.mbalib.com/wiki/PSY" rel="nofollow" target="_blank">心理线指标(PSY)</a>
         """,
         "dic": ("psy",)
     }, {
         "title": "BRAR",
         "desc": """
-            <a href="https://wiki.mbalib.com/wiki/BRAR%E6%8C%87%E6%A0%87" target="_blank">BRAR指标</a>
+            <a href="https://wiki.mbalib.com/wiki/BRAR%E6%8C%87%E6%A0%87" target="_blank">人气意愿指标(BRAR)</a>
         """,
         "dic": ("br", "ar")
     }, {
         "title": "EMV",
         "desc": """
-            <a href="https://wiki.mbalib.com/wiki/%E7%AE%80%E6%98%93%E6%B3%A2%E5%8A%A8%E6%8C%87%E6%A0%87" target="_blank">EMV指标</a>
+            <a href="https://wiki.mbalib.com/wiki/%E7%AE%80%E6%98%93%E6%B3%A2%E5%8A%A8%E6%8C%87%E6%A0%87" target="_blank">简易波动指标(EMV)</a>
         """,
         "dic": ("emv", "emva")
     }, {
         "title": "BIAS",
         "desc": """
-            <a href="https://wiki.mbalib.com/wiki/BIAS%E6%8C%87%E6%A0%87" target="_blank">BIAS指标</a>
+            <a href="https://wiki.mbalib.com/wiki/BIAS%E6%8C%87%E6%A0%87" target="_blank">乖离率指标(BIAS)</a>
         """,
         "dic": ("bias", "bias_12", "bias_24")
+    }, {
+        "title": "MFI",
+        "desc": """
+            <a href="https://wiki.mbalib.com/wiki/MFI" target="_blank">资金流量指标(MFI)</a>
+        """,
+        "dic": ("mfi",)
+    }, {
+        "title": "VWMA",
+        "desc": """
+            <a href="https://www.investopedia.com/articles/trading/11/trading-with-vwap-mvwap.asp" target="_blank">成交量加权平均指标(VWMA)</a>
+        """,
+        "dic": ("vwma",)
+    }, {
+        "title": "PPO",
+        "desc": """
+            <a href="https://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:price_oscillators_ppo" target="_blank">价格震荡百分比指标(PPO)</a>
+        """,
+        "dic": ("ppo", "ppos", "ppoh")
+    }, {
+        "title": "WT",
+        "desc": """
+            <a href="https://medium.com/@samuel.mcculloch/lets-take-a-look-at-wavetrend-with-crosses-lazybear-s-indicator-2ece1737f72f" target="_blank">LazyBear's Wave Trend指标(WT)</a>
+        """,
+        "dic": ("wt1", "wt2")
+    }, {
+        "title": "Supertrend",
+        "desc": """
+            <a href="https://view.inews.qq.com/a/20221030A05PCH00" target="_blank">超级趋势指标(Supertrend)</a>
+        """,
+        "dic": ("supertrend_ub", "supertrend", "supertrend_lb")
     }
 ]
 
@@ -280,7 +294,8 @@ def get_plot_kline(stock, date):
         p_kline.min_border_bottom = 0
 
         # 交易量柱
-        p_volume = figure(width=p_kline.width, height=120, x_range=p_kline.x_range, min_border_left=80, toolbar_location=None)
+        p_volume = figure(width=p_kline.width, height=120, x_range=p_kline.x_range,
+                          min_border_left=p_kline.min_border_left, toolbar_location=None)
         vol_labels = ("vol_5", "vol_10")
         for name, color in zip(vol_labels, Spectral11):
             p_volume.line(x=data['index'], y=data[name], legend_label=name, color=color, line_width=1.5, alpha=0.8)
@@ -293,7 +308,7 @@ def get_plot_kline(stock, date):
 
         # 形态复选框
         pattern_checkboxes = CheckboxGroup(labels=pattern_labels, active=list(range(len(pattern_labels))))
-        # pattern_selection.inline = True
+        # pattern_checkboxes.inline = True
         pattern_checkboxes.height = p_kline.height + p_volume.height
         if args:
             pattern_checkboxes.js_on_change('active', CustomJS(args=args, code=code))
@@ -310,7 +325,8 @@ def get_plot_kline(stock, date):
         # 指标
         tabs = []
         for conf in indicators_dic:
-            p_indicator = figure(width=p_kline.width, height=150, x_range=p_kline.x_range, min_border_left=80, toolbar_location=None)
+            p_indicator = figure(width=p_kline.width, height=150, x_range=p_kline.x_range,
+                                 min_border_left=p_kline.min_border_left, toolbar_location=None)
             for name, color in zip(conf["dic"], Spectral11):
                 if name == 'macdh':
                     up = [True if val > 0 else False for val in source.data[name]]
@@ -328,11 +344,12 @@ def get_plot_kline(stock, date):
             p_indicator.legend.click_policy = "hide"
             p_indicator.xaxis.visible = False
             p_indicator.min_border_bottom = 0
-            tabs.append(TabPanel(child=p_indicator, title=conf["title"]))
-        tabs_indicators = Tabs(tabs=tabs, tabs_location='below')
+            div = Div(text=conf["desc"], width=p_kline.width)
+            tabs.append(TabPanel(child=column(p_indicator, div), title=conf["title"]))
+        tabs_indicators = Tabs(tabs=tabs, tabs_location='below', width=p_kline.width, sizing_mode='fixed')
 
         # 组合图
-        layouts = row(column(row(select_all, select_none), p_kline, p_volume, tabs_indicators), ck)
+        layouts = layout(row(column(row(select_all, select_none), p_kline, p_volume, tabs_indicators), ck))
         script, div = components(layouts)
 
         return {"script": script, "div": div}

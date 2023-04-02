@@ -9,38 +9,16 @@ InStock股票系统，抓取股票每日关键数据，计算股票各种指标�
 
 ![](img/00.jpg)
 
-## 二：股票统计/计算指标
-统计：
-```
-1、交易量delta指标分析
-2、计算n天价差
-3、n天涨跌百分百计算
-4、计算区间最大值
-```
-
+## 二：股票指标计算
+所有指标基于talib计算，计算结果精确，和同花顺、通信达结果一致。
 指标：
 
 ```
-1、MACD指标
-2、KDJ指标
-3、BOLL指标
-4、TRIX，TRMA指标
-5、CR指标
-6、SMA指标
-7、RSI指标
-8、VR，MAVR指标
-9、ROC指标
-10、DMI，+DI，-DI，DX，ADX，ADXR指标
-11、W&R指标
-12、CCI指标
-13、TR、ATR指标
-14、DMA、AMA指标
-15、OBV指标
-16、SAR指标
-17、PSY指标
-18、BRAR指标
-19、EMV指标
-20、BIAS指标
+1、MACD 2、KDJ 3、BOLL 4、TRIX，TRMA 5、CR 6、SMA 7、RSI 
+8、VR，MAVR 9、ROC 10、DMI，+DI，-DI，DX，ADX，ADXR 11、W&R 
+12、CCI 13、TR、ATR 14、DMA、AMA 15、OBV 16、SAR 17、PSY 
+18、BRAR 19、EMV 20、BIAS 21、TEMA  22、MFI 23、VWMA  24、PPO
+25、WT  26、Supertrend
 ```
 
 ![](img/01.jpg)
