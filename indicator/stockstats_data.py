@@ -24,9 +24,9 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
         data = data.copy()
     data["volume"] = data["volume"] * 100  # 成交量单位从手变成股。
 
-    import stockstats
-    test = data.copy()
-    test = stockstats.StockDataFrame.retype(test) #验证计算结果
+    # import stockstats
+    # test = data.copy()
+    # test = stockstats.StockDataFrame.retype(test) #验证计算结果
 
     # macd
     data.loc[:, 'macd'], data.loc[:, 'macds'], data.loc[:, 'macdh'] = tl.MACD(
