@@ -174,7 +174,7 @@ indicators_dic = [
     }, {
         "title": "SUPERTREND",
         "desc": """
-            <a href="https://view.inews.qq.com/a/20221030A05PCH00" target="_blank">超级趋势指标(Supertrend)</a>
+            <a href="https://view.inews.qq.com/a/20221030A05PCH00" target="_blank">超级趋势指标(SUPERTREND)</a>
         """,
         "dic": ("supertrend_ub", "supertrend", "supertrend_lb")
     }
