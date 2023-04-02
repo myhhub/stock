@@ -97,6 +97,7 @@ STOCK_STATS_DATA = {'name': 'stockstats', 'cn': '股票统计/指标计算助手
                                 'boll': {'type': FLOAT, 'cn': 'boll中轨线'},
                                 'boll_lb': {'type': FLOAT, 'cn': 'boll下轨线'},
                                 'trix': {'type': FLOAT, 'cn': 'trix'}, 'trix_20_sma': {'type': FLOAT, 'cn': 'trma'},
+                                'tema': {'type': FLOAT, 'cn': 'tema'},
                                 'cr': {'type': FLOAT, 'cn': 'cr'}, 'cr-ma1': {'type': FLOAT, 'cn': 'cr-ma1'},
                                 'cr-ma2': {'type': FLOAT, 'cn': 'cr-ma2'}, 'cr-ma3': {'type': FLOAT, 'cn': 'cr-ma3'},
                                 'rsi_6': {'type': FLOAT, 'cn': 'rsi_6'}, 'rsi_12': {'type': FLOAT, 'cn': 'rsi_12'},
@@ -117,7 +118,13 @@ STOCK_STATS_DATA = {'name': 'stockstats', 'cn': '股票统计/指标计算助手
                                 'br': {'type': FLOAT, 'cn': 'br'}, 'ar': {'type': FLOAT, 'cn': 'ar'},
                                 'emv': {'type': FLOAT, 'cn': 'emv'}, 'emva': {'type': FLOAT, 'cn': 'emva'},
                                 'bias': {'type': FLOAT, 'cn': 'bias'},
-                                'bias_12': {'type': FLOAT, 'cn': 'bias_12'}, 'bias_24': {'type': FLOAT, 'cn': 'bias_24'}
+                                'mfi': {'type': FLOAT, 'cn': 'mfi'}, 'vwma': {'type': FLOAT, 'cn': 'vwma'},
+                                'ppo': {'type': FLOAT, 'cn': 'ppo'}, 'ppos': {'type': FLOAT, 'cn': 'ppos'},
+                                'ppoh': {'type': FLOAT, 'cn': 'ppoh'},
+                                'wt1': {'type': FLOAT, 'cn': 'wt1'}, 'wt2': {'type': FLOAT, 'cn': 'wt2'},
+                                'supertrend_ub': {'type': FLOAT, 'cn': 'supertrend_ub'},
+                                'supertrend': {'type': FLOAT, 'cn': 'supertrend'},
+                                'supertrend_lb': {'type': FLOAT, 'cn': 'supertrend_lb'}
                                 }}
 
 TABLE_CN_STOCK_INDICATORS = {'name': 'cn_stock_indicators', 'cn': '股票指标数据',

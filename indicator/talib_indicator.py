@@ -263,6 +263,6 @@ def get_indicator(code_name, data, stock_column, date=None, calc_threshold=250):
             else:
                 stock_data_list.append(tmp_val)
     except Exception as e:
-        logging.debug("{}处理异常：{}代码{}".format('stockstats_data.get_indicator_tail指标计算', code, e))
+        logging.debug("{}处理异常：{}代码{}".format('talib_indicator.get_indicator', code, e))
 
     return pd.Series(stock_data_list, index=stock_column)

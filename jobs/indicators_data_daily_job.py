@@ -16,7 +16,7 @@ import libs.run_template as runt
 import libs.tablestructure as tbs
 import libs.database as mdb
 from libs.singleton import stock_hist_data
-import indicator.stockstats_data as ssd
+import indicator.talib_indicator as ssd
 
 __author__ = 'myh '
 __date__ = '2023/3/10 '

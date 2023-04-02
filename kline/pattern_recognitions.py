@@ -66,6 +66,6 @@ def get_pattern_recognition(code_name, data, stock_column, date=None, threshold=
             return stockStat.iloc[0, -(len(stock_column) + 1):]
 
     except Exception as e:
-        logging.debug("{}处理异常：{}代码{}".format('pattern_recognitions.get_pattern_recognition_tail', code, e))
+        logging.debug("{}处理异常：{}代码{}".format('pattern_recognitions.get_pattern_recognition', code, e))
 
     return None

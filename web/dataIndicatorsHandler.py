@@ -16,7 +16,7 @@ from bokeh.models import DatetimeTickFormatter, ColumnDataSource, HoverTool, Che
 import libs.stockfetch as stf
 import libs.version as version
 import libs.tablestructure as tbs
-import indicator.stockstats_data as ssd
+import indicator.talib_indicator as ssd
 import kline.pattern_recognitions as kpr
 import web.base as webBase
 
