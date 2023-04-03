@@ -124,7 +124,11 @@ STOCK_STATS_DATA = {'name': 'talib_indicator', 'cn': '股票统计/指标计算�
                                 'wt1': {'type': FLOAT, 'cn': 'wt1'}, 'wt2': {'type': FLOAT, 'cn': 'wt2'},
                                 'supertrend_ub': {'type': FLOAT, 'cn': 'supertrend_ub'},
                                 'supertrend': {'type': FLOAT, 'cn': 'supertrend'},
-                                'supertrend_lb': {'type': FLOAT, 'cn': 'supertrend_lb'}
+                                'supertrend_lb': {'type': FLOAT, 'cn': 'supertrend_lb'},
+                                'dpo': {'type': FLOAT, 'cn': 'dpo'}, 'madpo': {'type': FLOAT, 'cn': 'madpo'},
+                                'vhf': {'type': FLOAT, 'cn': 'vhf'}, 'rvi': {'type': FLOAT, 'cn': 'rvi'},
+                                'fi': {'type': FLOAT, 'cn': 'fi'}, 'force_2': {'type': FLOAT, 'cn': 'force_2'},
+                                'force_13': {'type': FLOAT, 'cn': 'force_13'}
                                 }}
 
 TABLE_CN_STOCK_INDICATORS = {'name': 'cn_stock_indicators', 'cn': '股票指标数据',

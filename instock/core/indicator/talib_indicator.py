@@ -25,9 +25,9 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
             data = data.copy()
         data["volume"] = data["volume"] * 100  # 成交量单位从手变成股。
 
-        # import stockstats
-        # test = data.copy()
-        # test = stockstats.StockDataFrame.retype(test)  # 验证计算结果
+        import stockstats
+        test = data.copy()
+        test = stockstats.StockDataFrame.retype(test)  # 验证计算结果
 
         # macd
         data.loc[:, 'macd'], data.loc[:, 'macds'], data.loc[:, 'macdh'] = tl.MACD(
@@ -112,7 +112,7 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
         data.loc[:, 'h_14'] = data['high'].rolling(window=14).max().fillna(0.0)
         data.loc[:, 'l_14'] = data['low'].rolling(window=14).min().fillna(0.0)
         data.loc[:, 'wr_14'] = ((data['h_14'] - data['close']) / (data['h_14'] - data['l_14'])).fillna(0.0) * 100
-        # cci 计算方法和结果和stockstats不同，stockstats典型价采用均价计算
+        # cci 计算方法和结果和stockstats不同，stockstats典型价采用均价(总额/成交量)计算
         data.loc[:, 'cci'] = tl.CCI(data['high'], data['low'], data['close'], timeperiod=14).fillna(0.0)
         data.loc[:, 'cci_84'] = tl.CCI(data['high'], data['low'], data['close'], timeperiod=84).fillna(0.0)
         # dma
@@ -125,7 +125,7 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
         data.loc[:, 'double5'] = tl.EMA(data['single5'], timeperiod=5).fillna(0.0)
         data.loc[:, 'triple5'] = tl.EMA(data['double5'], timeperiod=5).fillna(0.0)
         data.loc[:, 'tema'] = 3 * data['single5'] - 3 * data['double5'] + data['triple5']
-        # mfi 计算方法和结果和stockstats不同
+        # mfi 计算方法和结果和stockstats不同，stockstats典型价采用均价(总额/成交量)计算
         data.loc[:, 'mfi'] = tl.MFI(data['high'], data['low'], data['close'], data['volume'], timeperiod=14).fillna(0.0)
         # vwma
         data.loc[:, 'tpv_14'] = data['amount'].rolling(window=14).sum().fillna(0.0)
@@ -272,7 +272,7 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
     return None
 
 
-def get_indicator(code_name, data, stock_column, date=None, calc_threshold=250):
+def get_indicator(code_name, data, stock_column, date=None, calc_threshold=60):
     try:
         if date is None:
             end_date = code_name[0]
