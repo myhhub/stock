@@ -11,7 +11,7 @@ from bokeh.embed import components
 from bokeh.palettes import Spectral11
 from bokeh.layouts import column, row, layout
 from bokeh.models import ColumnDataSource, HoverTool, CheckboxGroup, LabelSet, Button, CustomJS, \
-    CDSView, BooleanFilter, TabPanel, Tabs, Div
+    CDSView, BooleanFilter, TabPanel, Tabs, Div, Styles
 import instock.core.stockfetch as stf
 import instock.lib.version as version
 import instock.core.tablestructure as tbs
@@ -369,7 +369,7 @@ def get_plot_kline(stock, date):
             p_indicator.min_border_bottom = 0
             div = Div(text=conf["desc"], width=p_kline.width)
             tabs.append(TabPanel(child=column(p_indicator, div), title=conf["title"]))
-        tabs_indicators = Tabs(tabs=tabs, tabs_location='below', width=p_kline.width)
+        tabs_indicators = Tabs(tabs=tabs, tabs_location='below', width=p_kline.width, stylesheets=[{'.bk-tab': Styles(white_space='pre-wrap'), '.bk-tab.bk-active': Styles(background_color='yellow', color='red')}])
 
         # 组合图
         layouts = layout(row(column(row(select_all, select_none), p_kline, p_volume, tabs_indicators), ck))
