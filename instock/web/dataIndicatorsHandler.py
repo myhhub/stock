@@ -369,7 +369,7 @@ def get_plot_kline(stock, date):
             p_indicator.min_border_bottom = 0
             div = Div(text=conf["desc"], width=p_kline.width)
             tabs.append(TabPanel(child=column(p_indicator, div), title=conf["title"]))
-        tabs_indicators = Tabs(tabs=tabs, tabs_location='below', width=p_kline.width, stylesheets=[{'.bk-tab': Styles(padding='1px 2px'), '.bk-tab.bk-active': Styles(background_color='yellow', color='red')}])
+        tabs_indicators = Tabs(tabs=tabs, tabs_location='below', width=p_kline.width, stylesheets=[{'.bk-tab': Styles(padding='1px 3px'), '.bk-tab.bk-active': Styles(background_color='yellow', color='red')}])
 
         # 组合图
         layouts = layout(row(column(row(select_all, select_none), p_kline, p_volume, tabs_indicators), ck))
