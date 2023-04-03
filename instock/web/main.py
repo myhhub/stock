@@ -14,7 +14,7 @@ import tornado.options
 cpath_current = os.path.dirname(os.path.dirname(__file__))
 cpath = os.path.abspath(os.path.join(cpath_current, os.pardir))
 sys.path.append(cpath)
-log_path = os.path.join(cpath, 'log')
+log_path = os.path.join(cpath_current, 'log')
 if not os.path.exists(log_path):
     os.makedirs(log_path)
 logging.basicConfig(format='%(asctime)s %(message)s', filename=os.path.join(log_path, 'stock_web.log'))
