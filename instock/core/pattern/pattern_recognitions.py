@@ -44,8 +44,6 @@ def get_pattern_recognition(code_name, data, stock_column, date=None, threshold=
 
         code = code_name[1]
         # 设置返回数组。
-        if code == '600601':
-            pass
         # 增加空判断，如果是空返回 0 数据。
         if len(data.index) == 0:
             return None
