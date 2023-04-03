@@ -268,8 +268,8 @@ def get_plot_kline(stock, date):
 
         inc = data['close'] >= data['open']
         dec = data['open'] > data['close']
-        inc_source = data.loc[inc]
-        dec_source = data.loc[dec]
+        inc_source = ColumnDataSource(data.loc[inc])
+        dec_source = ColumnDataSource(data.loc[dec])
         # 股价柱
         p_kline.segment(x0='index', y0='high', x1='index', y1='low', color='red', source=inc_source)
         p_kline.segment(x0='index', y0='high', x1='index', y1='low', color='green', source=dec_source)
