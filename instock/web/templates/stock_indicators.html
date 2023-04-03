@@ -1,25 +1,17 @@
 {% extends "layout/indicators.html" %}
-
-
 {% block main_content %}
-
 <!-- 增加 bokeh 样式。-->
 <link rel="stylesheet" href="/static/css/bokeh.min.css" type="text/css"/>
 <link rel="stylesheet" href="/static/css/bokeh-widgets.min.css" type="text/css"/>
 <link rel="stylesheet" href="/static/css/bokeh-tables.min.css" type="text/css"/>
-
 <script type="text/javascript" src="/static/js/bokeh-3.1.0.min.js"></script>
 <script type="text/javascript" src="/static/js/bokeh-widgets-3.1.0.min.js"></script>
 <script type="text/javascript" src="/static/js/bokeh-tables-3.1.0.min.js"></script>
 <script type="text/javascript" src="/static/js/bokeh-gl-3.1.0.min.js"></script>
 <script type="text/javascript" src="/static/js/bokeh-mathjax-3.1.0.min.js"></script>
-
-
-
 <script type="text/javascript">
     Bokeh.set_log_level("error");
 </script>
-
 {% for index,element in enumerate(comp_list) %}
 {#<h4 class="header smaller lighter blue">{{ element["title"] }}</h4>#}
 {#<div class="row">{% raw element["desc"] %}</div>#}
@@ -28,5 +20,4 @@
     {% raw element["script"] %}
 </div>
 {% end %}
-
 {% end %}
