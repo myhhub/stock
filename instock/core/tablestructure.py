@@ -88,7 +88,7 @@ _tmp_data_ = CN_STOCK_HIST_DATA['columns'].copy()
 _tmp_data_.pop('date')
 TABLE_CN_STOCK_HIST['columns'].update(_tmp_data_)
 
-STOCK_STATS_DATA = {'name': 'talib_indicator', 'cn': '股票统计/指标计算助手库',
+STOCK_STATS_DATA = {'name': 'calculate_indicator', 'cn': '股票统计/指标计算助手库',
                     'columns': {'macd': {'type': FLOAT, 'cn': 'dif'}, 'macds': {'type': FLOAT, 'cn': 'macd'},
                                 'macdh': {'type': FLOAT, 'cn': 'histogram'},
                                 'kdjk': {'type': FLOAT, 'cn': 'kdjk'}, 'kdjd': {'type': FLOAT, 'cn': 'kdjd'},

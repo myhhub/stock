@@ -15,7 +15,7 @@ from bokeh.models import ColumnDataSource, HoverTool, CheckboxGroup, LabelSet, B
 import instock.core.stockfetch as stf
 import instock.lib.version as version
 import instock.core.tablestructure as tbs
-import instock.core.indicator.talib_indicator as idr
+import instock.core.indicator.calculate_indicator as idr
 import instock.core.pattern.pattern_recognitions as kpr
 import instock.web.base as webBase
 

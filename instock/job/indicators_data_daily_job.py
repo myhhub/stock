@@ -13,7 +13,7 @@ sys.path.append(cpath)
 import instock.lib.run_template as runt
 import instock.core.tablestructure as tbs
 import instock.lib.database as mdb
-import instock.core.indicator.talib_indicator as idr
+import instock.core.indicator.calculate_indicator as idr
 from instock.core.singleton import stock_hist_data
 
 
