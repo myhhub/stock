@@ -93,9 +93,9 @@ STOCK_STATS_DATA = {'name': 'calculate_indicator', 'cn': '股票统计/指标计
                                 'macdh': {'type': FLOAT, 'cn': 'histogram'},
                                 'kdjk': {'type': FLOAT, 'cn': 'kdjk'}, 'kdjd': {'type': FLOAT, 'cn': 'kdjd'},
                                 'kdjj': {'type': FLOAT, 'cn': 'kdjj'},
-                                'boll_ub': {'type': FLOAT, 'cn': 'boll上轨线'},
-                                'boll': {'type': FLOAT, 'cn': 'boll中轨线'},
-                                'boll_lb': {'type': FLOAT, 'cn': 'boll下轨线'},
+                                'boll_ub': {'type': FLOAT, 'cn': 'boll上轨'},
+                                'boll': {'type': FLOAT, 'cn': 'boll'},
+                                'boll_lb': {'type': FLOAT, 'cn': 'boll下轨'},
                                 'trix': {'type': FLOAT, 'cn': 'trix'}, 'trix_20_sma': {'type': FLOAT, 'cn': 'trma'},
                                 'tema': {'type': FLOAT, 'cn': 'tema'},
                                 'cr': {'type': FLOAT, 'cn': 'cr'}, 'cr-ma1': {'type': FLOAT, 'cn': 'cr-ma1'},
@@ -128,7 +128,9 @@ STOCK_STATS_DATA = {'name': 'calculate_indicator', 'cn': '股票统计/指标计
                                 'dpo': {'type': FLOAT, 'cn': 'dpo'}, 'madpo': {'type': FLOAT, 'cn': 'madpo'},
                                 'vhf': {'type': FLOAT, 'cn': 'vhf'}, 'rvi': {'type': FLOAT, 'cn': 'rvi'},
                                 'fi': {'type': FLOAT, 'cn': 'fi'}, 'force_2': {'type': FLOAT, 'cn': 'force_2'},
-                                'force_13': {'type': FLOAT, 'cn': 'force_13'}
+                                'force_13': {'type': FLOAT, 'cn': 'force_13'},
+                                'ene_ue': {'type': FLOAT, 'cn': 'ene上轨'}, 'ene': {'type': FLOAT, 'cn': 'ene'},
+                                'ene_le': {'type': FLOAT, 'cn': 'ene下轨'}
                                 }}
 
 TABLE_CN_STOCK_INDICATORS = {'name': 'cn_stock_indicators', 'cn': '股票指标数据',

@@ -266,6 +266,10 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
         data.loc[:, 'fi'] = data['close'].diff(1) * data['volume'].fillna(0.0)
         data.loc[:, 'force_2'] = tl.EMA(data['fi'], timeperiod=2).fillna(0.0)
         data.loc[:, 'force_13'] = tl.EMA(data['fi'], timeperiod=13).fillna(0.0)
+        # ENE
+        data.loc[:, 'ene_ue'] = (1 + 11 / 100) * data['ma10']
+        data.loc[:, 'ene_le'] = (1 - 9 / 100) * data['ma10']
+        data.loc[:, 'ene'] = (data['ene_ue'] + data['ene_le']) / 2
         # VOL
         data.loc[:, 'vol_5'] = tl.MA(data['volume'], timeperiod=5).fillna(0.0)
         data.loc[:, 'vol_10'] = tl.MA(data['volume'], timeperiod=10).fillna(0.0)

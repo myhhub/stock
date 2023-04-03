@@ -43,6 +43,12 @@ indicators_dic = [
     """,
         "dic": ("close", "boll_ub", "boll", "boll_lb")
     }, {
+        "title": "ENE",
+        "desc": """
+            <a href="https://wiki.mbalib.com/wiki/Ene%E6%8C%87%E6%A0%87" target="_blank">轨道线(ENE)</a>
+        """,
+        "dic": ("close", "ene_ue", "ene", "ene_le")
+    }, {
         "title": "TRIX",
         "desc": """
         <a href="http://wiki.mbalib.com/wiki/TRIX" rel="nofollow" target="_blank">三重指数平滑移动平均指标(TRIX)</a>
