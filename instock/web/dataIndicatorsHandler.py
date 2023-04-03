@@ -179,19 +179,19 @@ indicators_dic = [
     }, {
         "title": "DPO",
         "desc": """
-            <a href="https://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:price_oscillators_ppo" target="_blank">价格震荡百分比指标(DPO)</a>
+            <a href="https://wiki.mbalib.com/wiki/DPO%E6%8C%87%E6%A0%87" target="_blank">区间震荡线(DPO)</a>
         """,
         "dic": ("dpo", "madpo")
     }, {
         "title": "VHF",
         "desc": """
-            <a href="https://medium.com/@samuel.mcculloch/lets-take-a-look-at-wavetrend-with-crosses-lazybear-s-indicator-2ece1737f72f" target="_blank">LazyBear's Wave Trend指标(VHF)</a>
+            <a href="https://wiki.mbalib.com/wiki/VHF" target="_blank">十字过滤线(VHF)</a>
         """,
         "dic": ("vhf",)
     }, {
         "title": "RVI",
         "desc": """
-            <a href="https://view.inews.qq.com/a/20221030A05PCH00" target="_blank">超级趋势指标(RVI)</a>
+            <a href="https://wiki.mbalib.com/wiki/%E7%9B%B8%E5%AF%B9%E7%A6%BB%E6%95%A3%E6%8C%87%E6%95%B0" target="_blank">相对离散指数(RVI)</a>
         """,
         "dic": ("rvi",)
     }, {
