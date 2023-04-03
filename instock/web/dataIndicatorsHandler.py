@@ -161,7 +161,7 @@ indicators_dic = [
     }, {
         "title": "PPO",
         "desc": """
-            <a href="https://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:price_oscillators_ppo" target="_blank">价格震荡百分比指标(PPO)</a>
+            <a href="https://zhuanlan.zhihu.com/p/38245957" target="_blank">价格震荡百分比指标(PPO)</a>
         """,
         "dic": ("ppo", "ppos", "ppoh")
     }, {
