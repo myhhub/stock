@@ -166,7 +166,7 @@ def fetch_stock_blocktrade_data(date):
         data.drop('index', axis=1, inplace=True)
         return data
     except TypeError:
-        logging.debug("{}".format('目前还没有大宗交易数据，请17:00点后再获取！'))
+        logging.debug("处理异常：{}".format('目前还没有大宗交易数据，请17:00点后再获取！'))
         return None
     except Exception as e:
         logging.debug("{}处理异常：{}".format('stockfetch.fetch_stock_blocktrade_data', e))
