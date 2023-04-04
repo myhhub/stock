@@ -172,10 +172,14 @@ python pip config --global set  global.index-url https://mirrors.aliyun.com/pypi
 3.安装库文件，库都是目前最新版本
 
 ```
-dos切换到本系统的根目录，执行下面命令：
+#dos切换到本系统的根目录，执行下面命令：
 python pip install -r requirements.txt
 
-通过使用pipreqs生成项目相关依赖的requirements.txt
+```
+若扩展了本项目，可以通过下面方法生成项目依赖：
+```
+#使用pipreqs生成项目相关依赖的requirements.txt
+
 python pip install pipreqs
 # 安装pipreqs，安装过跳过
 
@@ -183,7 +187,7 @@ pipreqs --encoding utf-8 ./
 # 本项目是utf-8编码
 ```
 
-4.安装 talib，安装见以下：
+4.安装 talib：
 
 ```
 第一种方法. pip 下安装
