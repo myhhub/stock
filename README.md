@@ -171,18 +171,27 @@ python pip config --global set  global.index-url https://mirrors.aliyun.com/pypi
 ```
 3.安装库文件，库都是目前最新版本
 
+a.安装依赖库：
+
 ```
 #dos切换到本系统的根目录，执行下面命令：
 python pip install -r requirements.txt
 ```
-若扩展了本项目，可以通过下面方法生成项目依赖：
+b.若想升级项目依赖库至最新版，可以通过下面方法：
+```
+python pip install --upgrade -r requirements.txt 
+
+```
+
+c.若扩展了本项目，可以通过下面方法生成项目依赖：
+
 ```
 #使用pipreqs生成项目相关依赖的requirements.txt
 
 python pip install pipreqs
 # 安装pipreqs，安装过跳过
 
-pipreqs --encoding utf-8 ./ 
+python pipreqs --encoding utf-8 ./ 
 # 本项目是utf-8编码
 ```
 
