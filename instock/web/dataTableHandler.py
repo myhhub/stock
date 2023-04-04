@@ -13,18 +13,6 @@ import instock.web.base as webBase
 __author__ = 'myh '
 __date__ = '2023/3/10 '
 
-WEB_EASTMONEY_URL = u"""
-    <a class='btn btn-danger btn-xs tooltip-danger' data-rel="tooltip" data-placement="right" data-original-title="东方财富，股票详细地址，新窗口跳转。"
-    href='http://quote.eastmoney.com/%s.html' target='_blank'>东财</a>
-    <a class='btn btn-success btn-xs tooltip-success' data-rel="tooltip" data-placement="right" data-original-title="本地MACD，KDJ等指标，本地弹窗窗口，数据加载中，请稍候。"
-    href='/stock/data/indicators?code=%s&date=%s' target='_blank'>指标</a>
-    <a class='btn btn-warning btn-xs tooltip-warning' data-rel="tooltip" data-placement="right" data-original-title="东方财富，研报地址，本地弹窗窗口。"
-    onclick="showDFCFWindow('%s');">东研</a>
-    """
-
-# 和在dic中的字符串一致。字符串前面都不特别声明是u""
-eastmoney_name = "查看股票"
-
 
 class MyEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -45,21 +33,8 @@ class GetStockHtmlHandler(webBase.BaseHandler, ABC):
         date_now = datetime.datetime.now()
         date_now_str = date_now.strftime("%Y-%m-%d")
         # 每天的 16 点前显示昨天数据。
-        if date_now.hour < 16:
+        if date_now.hour < 15:
             date_now_str = (date_now + datetime.timedelta(days=-1)).strftime("%Y-%m-%d")
-
-        try:
-            # 增加columns 字段中的【查看股票 东方财富】
-            # logging.info(eastmoney_name in stockWeb.column_names)
-            if eastmoney_name in stockWeb.column_names:
-                tmp_idx = stockWeb.column_names.index(eastmoney_name)
-                # logging.info(tmp_idx)
-                # 防止重复插入数据。可能会报错。
-                if "eastmoney_url" in stockWeb.columns:
-                    stockWeb.columns.remove("eastmoney_url")
-                stockWeb.columns.insert(tmp_idx, "eastmoney_url")
-        except Exception as e:
-            logging.debug("{}处理异常：{}代码{}".format('dataTableHandler.GetStockHtmlHandler', e))
 
         self.render("stock_web.html", stockWeb=stockWeb, date_now=date_now_str,
                     stockVersion=version.__version__,
@@ -144,25 +119,6 @@ class GetStockDataHandler(webBase.BaseHandler, ABC):
 
         stock_web_list = self.db.query(sql)
         self.db.close()
-
-        for tmp_obj in (stock_web_list):
-            try:
-                # 增加columns 字段中的【东方财富】
-                # logging.info("eastmoney_name : %s " % eastmoney_name)
-                if eastmoney_name in stock_web.column_names:
-                    tmp_idx = stock_web.column_names.index(eastmoney_name)
-
-                    code_tmp = tmp_obj["code"]
-                    # 判断上海还是 深圳，东方财富 接口要求。
-                    if code_tmp.startswith("6"):
-                        code_tmp = "SH" + code_tmp
-                    else:
-                        code_tmp = "SZ" + code_tmp
-
-                    tmp_url = WEB_EASTMONEY_URL % (tmp_obj["code"], tmp_obj["code"], tmp_obj["date"], code_tmp)
-                    tmp_obj["eastmoney_url"] = tmp_url
-            except Exception as e:
-                logging.debug("{}处理异常：{}代码{}".format('dataTableHandler.GetStockDataHandler', e))
 
         stock_web_size = self.db.query(count_sql)
         self.db.close()

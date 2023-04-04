@@ -42,62 +42,11 @@
 		</table>
 	</div>
 
-	<!-- 定义一个窗口的Div 东方财富股票数据页面 -->
-	<div id="dfcf-window-modal" class="modal fade">
-		<div class="modal-dialog" style="width:1010px;">
-			<div class="modal-content">
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-					<h3 class="smaller lighter blue no-margin">东方财富分析</h3>
-				</div>
-				<div class="modal-body" id="dfcf-iframe-body" >
-				</div>
-			</div>
-		</div>
-	</div>
-
-	<!-- 定义一个窗口的Div 指标分析数据页面 -->
-	<div id="indicators-window-modal" class="modal fade">
-		<div class="modal-dialog" style="width:1050px;">
-			<div class="modal-content">
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-					<h3 class="smaller lighter blue no-margin">股票数据详细指标分析</h3>
-				</div>
-				<div class="modal-body" id="indicators-window-body" >
-
-				</div>
-			</div>
-		</div>
-	</div>
 
 <!-- inline scripts related to this page -->
 <script type="text/javascript">
 
-	//每次动态加载 指标分析窗口
-	function showIndicatorsWindow(code,date) {
-		var baseUrl = '/stock/data/indicators?code='+code+'&date='+date; // 没有跨域问题，直接加载
-		$('#indicators-window-body').html( "<h5>数据加载中...请稍候.</h5>" );
-		$('#indicators-window-body').context = $("#indicators-window-body").load(baseUrl);
-		$('#indicators-window-modal').modal('show');
-	}
-
-	//每次动态加载 东方财富窗口
-	function showDFCFWindow(code) {
-		var iframe = document.createElement('iframe')
-		// var baseUrl = 'https://emweb.eastmoney.com/PC_HSF10/ShareholderResearch/Index?type=soft&code='+code;
-		var baseUrl = 'https://emweb.eastmoney.com/PC_HSF10/OperationsRequired/Index?type=soft&code='+code;
-		iframe.src = baseUrl;
-		iframe.width = '980px';
-		iframe.height = '700px';
-		iframe.frameborder = '0';
-		$('#dfcf-iframe-body').empty(); // 先清空数据
-		document.getElementById("dfcf-iframe-body").appendChild(iframe)
-		$('#dfcf-window-modal').modal('show');
-	}
-
 	jQuery(function($) {
-
 
 		$( ".date-picker" ).datepicker({
 			language: 'zh-CN', //设置语言
@@ -131,7 +80,11 @@
 			"ajax": "/stock/api_data?name="+nameParam,
 			"columns": [
 				{% for column in stockWeb.columns %}
-					{ "data": "{{ column }}" },
+                    {% if column == 'code' %}
+                        { "data": "{{ column }}","render": function(data, type, row, meta){data = '<a href="/stock/data/indicators?code=' + data + '&date=' + row.date + '" target="_blank">' + data + '</a>';return data;}},
+                    {% else %}
+					    { "data": "{{ column }}" },
+                    {% end %}
 				{% end %}
         	]
 		} );
