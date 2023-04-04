@@ -174,7 +174,6 @@ python pip config --global set  global.index-url https://mirrors.aliyun.com/pypi
 ```
 #dos切换到本系统的根目录，执行下面命令：
 python pip install -r requirements.txt
-
 ```
 若扩展了本项目，可以通过下面方法生成项目依赖：
 ```
