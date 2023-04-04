@@ -224,7 +224,7 @@ class GetDataIndicatorsHandler(webBase.BaseHandler, ABC):
             if stock is None:
                 return
 
-            pk = get_plot_kline(stock, date)
+            pk = get_plot_kline(code, stock, date)
             if pk is None:
                 return
 
@@ -237,7 +237,7 @@ class GetDataIndicatorsHandler(webBase.BaseHandler, ABC):
                     leftMenu=webBase.GetLeftMenu(self.request.uri))
 
 
-def get_plot_kline(stock, date):
+def get_plot_kline(code, stock, date):
     plot_list = []
     threshold = 120
     try:
@@ -252,6 +252,7 @@ def get_plot_kline(stock, date):
 
         length = len(data.index)
         data['index'] = list(np.arange(length))
+
         # K线
         p_kline = figure(width=1000, height=300, x_range=(0, length + 1), min_border_left=80, toolbar_location=None)
         hover = HoverTool(tooltips=[('日期', '@date'), ('开盘', '@open'),
@@ -280,8 +281,8 @@ def get_plot_kline(stock, date):
         # 提示信息
         p_kline.add_tools(hover)
         # 形态信息
-        args = {}
-        code = """var acts = cb_obj.active;"""
+        checkboxes_args = {}
+        checkboxes_code = """var acts = cb_obj.active;"""
         pattern_labels = []
         i = 0
         for k, v in stock_column.items():
@@ -296,8 +297,8 @@ def get_plot_kline(stock, date):
                                                                   angle=90, angle_units='deg', text_color='red',
                                                                   text_font_style='bold', text_font_size="9pt")
                 p_kline.add_layout(locals()['pattern_labels_u_' + str(i)])
-                args['lsu' + str(i)] = locals()['pattern_labels_u_' + str(i)]
-                code += "lsu{}.visible = acts.includes({});".format(i, i)
+                checkboxes_args['lsu' + str(i)] = locals()['pattern_labels_u_' + str(i)]
+                checkboxes_code += "lsu{}.visible = acts.includes({});".format(i, i)
                 pattern_labels.append(v['cn'])
                 isHas = True
 
@@ -312,8 +313,8 @@ def get_plot_kline(stock, date):
                                                                   text_color='green',
                                                                   text_font_style='bold', text_font_size="9pt")
                 p_kline.add_layout(locals()['pattern_labels_d_' + str(i)])
-                args['lsd' + str(i)] = locals()['pattern_labels_d_' + str(i)]
-                code += "lsd{}.visible = acts.includes({});".format(i, i)
+                checkboxes_args['lsd' + str(i)] = locals()['pattern_labels_d_' + str(i)]
+                checkboxes_code += "lsd{}.visible = acts.includes({});".format(i, i)
                 if not isHas:
                     pattern_labels.append(v['cn'])
                     isHas = True
@@ -339,8 +340,8 @@ def get_plot_kline(stock, date):
         pattern_checkboxes = CheckboxGroup(labels=pattern_labels, active=list(range(len(pattern_labels))))
         # pattern_checkboxes.inline = True
         pattern_checkboxes.height = p_kline.height + p_volume.height
-        if args:
-            pattern_checkboxes.js_on_change('active', CustomJS(args=args, code=code))
+        if checkboxes_args:
+            pattern_checkboxes.js_on_change('active', CustomJS(args=checkboxes_args, code=checkboxes_code))
         ck = column(row(pattern_checkboxes))
 
         # 按钮
@@ -373,12 +374,20 @@ def get_plot_kline(stock, date):
             p_indicator.legend.click_policy = "hide"
             p_indicator.xaxis.visible = False
             p_indicator.min_border_bottom = 0
-            div = Div(text=conf["desc"], width=p_kline.width)
-            tabs.append(TabPanel(child=column(p_indicator, div), title=conf["title"]))
+            div_indicator = Div(text=conf["desc"], width=p_kline.width)
+            tabs.append(TabPanel(child=column(p_indicator, div_indicator), title=conf["title"]))
         tabs_indicators = Tabs(tabs=tabs, tabs_location='below', width=p_kline.width, stylesheets=[{'.bk-tab': Styles(padding='1px 3px'), '.bk-tab.bk-active': Styles(background_color='yellow', color='red')}])
 
+        # 东方财富股票页面
+        if code.startswith("6"):
+            code_name = "SH" + code
+        else:
+            code_name = "SZ" + code
+        div_dfcf_hq = Div(text="""<a href="http://quote.eastmoney.com/{}.html" target="_blank">{}行情</a>""".format(code_name, code), width=80)
+        div_dfcf_zl = Div(text="""<a href="https://emweb.eastmoney.com/PC_HSF10/OperationsRequired/Index?code={}" target="_blank">{}资料</a>""".format(code_name, code), width=80)
+
         # 组合图
-        layouts = layout(row(column(row(select_all, select_none), p_kline, p_volume, tabs_indicators), ck))
+        layouts = layout(row(column(row(children=[div_dfcf_hq, div_dfcf_zl, select_all, select_none], align='end'), p_kline, p_volume, tabs_indicators), ck))
         script, div = components(layouts)
 
         return {"script": script, "div": div}

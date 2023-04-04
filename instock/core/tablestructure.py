@@ -89,7 +89,8 @@ _tmp_data_.pop('date')
 TABLE_CN_STOCK_HIST['columns'].update(_tmp_data_)
 
 STOCK_STATS_DATA = {'name': 'calculate_indicator', 'cn': '股票统计/指标计算助手库',
-                    'columns': {'macd': {'type': FLOAT, 'cn': 'dif'}, 'macds': {'type': FLOAT, 'cn': 'macd'},
+                    'columns': {'close': {'type': FLOAT, 'cn': '价格'},
+                                'macd': {'type': FLOAT, 'cn': 'dif'}, 'macds': {'type': FLOAT, 'cn': 'macd'},
                                 'macdh': {'type': FLOAT, 'cn': 'histogram'},
                                 'kdjk': {'type': FLOAT, 'cn': 'kdjk'}, 'kdjd': {'type': FLOAT, 'cn': 'kdjd'},
                                 'kdjj': {'type': FLOAT, 'cn': 'kdjj'},
@@ -281,10 +282,7 @@ TABLE_CN_STOCK_KLINE_PATTERN['columns'].update(STOCK_KLINE_PATTERN_DATA['columns
 def get_field_cn(key, table):
     f = table.get('columns').get(key)
     if f is None:
-        if key == 'close':
-            return '股价'
-        else:
-            return key
+        return key
     return f.get('cn')
 
 
