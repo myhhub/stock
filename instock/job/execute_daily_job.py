@@ -8,6 +8,7 @@ import concurrent.futures
 import logging
 import os.path
 import sys
+
 # 在项目运行时，临时将项目路径添加到环境变量
 cpath_current = os.path.dirname(os.path.dirname(__file__))
 cpath = os.path.abspath(os.path.join(cpath_current, os.pardir))

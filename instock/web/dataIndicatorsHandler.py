@@ -27,19 +27,19 @@ indicators_dic = [
     {
         "title": "MACD",
         "desc": """
-        <a href="http://wiki.mbalib.com/wiki/MACD" rel="nofollow" target="_blank">平滑异同移动平均指标(MACD)</a>
+        <a href="https://wiki.mbalib.com/wiki/MACD" rel="nofollow" target="_blank">平滑异同移动平均指标(MACD)</a>
     """,
         "dic": ("macd", "macds", "macdh")
     }, {
         "title": "KDJ",
         "desc": """
-        <a href="http://wiki.mbalib.com/wiki/%E9%9A%8F%E6%9C%BA%E6%8C%87%E6%A0%87" rel="nofollow" target="_blank">随机指标(KDJ)</a>
+        <a href="https://wiki.mbalib.com/wiki/%E9%9A%8F%E6%9C%BA%E6%8C%87%E6%A0%87" rel="nofollow" target="_blank">随机指标(KDJ)</a>
     """,
         "dic": ("kdjk", "kdjd", "kdjj")
     }, {
         "title": "BOLL",
         "desc": """
-        <a href="http://wiki.mbalib.com/wiki/BOLL" rel="nofollow" target="_blank">布林线指标(BOLL)</a>
+        <a href="https://wiki.mbalib.com/wiki/BOLL" rel="nofollow" target="_blank">布林线指标(BOLL)</a>
     """,
         "dic": ("close", "boll_ub", "boll", "boll_lb")
     }, {
@@ -51,7 +51,7 @@ indicators_dic = [
     }, {
         "title": "TRIX",
         "desc": """
-        <a href="http://wiki.mbalib.com/wiki/TRIX" rel="nofollow" target="_blank">三重指数平滑移动平均指标(TRIX)</a>
+        <a href="https://wiki.mbalib.com/wiki/TRIX" rel="nofollow" target="_blank">三重指数平滑移动平均指标(TRIX)</a>
     """,
         "dic": ("trix", "trix_20_sma")
     }, {
@@ -63,19 +63,19 @@ indicators_dic = [
     }, {
         "title": "CR",
         "desc": """
-        <a href="http://wiki.mbalib.com/wiki/CR%E6%8C%87%E6%A0%87" rel="nofollow" target="_blank">价格动量指标(CR)</a>
+        <a href="https://wiki.mbalib.com/wiki/CR%E6%8C%87%E6%A0%87" rel="nofollow" target="_blank">价格动量指标(CR)</a>
     """,
         "dic": ("cr", "cr-ma1", "cr-ma2", "cr-ma3")
     }, {
         "title": "RSI",
         "desc": """
-            <a href="http://wiki.mbalib.com/wiki/RSI" rel="nofollow" target="_blank">相对强弱指标(RSI)</a> 
+            <a href="https://wiki.mbalib.com/wiki/RSI" rel="nofollow" target="_blank">相对强弱指标(RSI)</a> 
         """,
         "dic": ("rsi_6", "rsi_12", "rsi", "rsi_24")
     }, {
         "title": "VR",
         "desc": """
-        <a href="http://wiki.mbalib.com/wiki/%E6%88%90%E4%BA%A4%E9%87%8F%E6%AF%94%E7%8E%87" rel="nofollow" target="_blank">成交量比率(VR)</a>
+        <a href="https://wiki.mbalib.com/wiki/%E6%88%90%E4%BA%A4%E9%87%8F%E6%AF%94%E7%8E%87" rel="nofollow" target="_blank">成交量比率(VR)</a>
     """,
         "dic": ("vr", "vr_6_sma")
     }, {
@@ -87,33 +87,33 @@ indicators_dic = [
     }, {
         "title": "DMI",
         "desc": """
-        <a href="http://wiki.mbalib.com/wiki/DMI" rel="nofollow" target="_blank">动向指数(DMI)</a>
-        <a href="http://wiki.mbalib.com/wiki/ADX" rel="nofollow" target="_blank">平均趋向指标(ADX)</a>
-        <a href="http://wiki.mbalib.com/wiki/%E5%B9%B3%E5%9D%87%E6%96%B9%E5%90%91%E6%8C%87%E6%95%B0%E8%AF%84%E4%BC%B0" rel="nofollow" target="_blank">平均方向指数评估(DXR)</a>
+        <a href="https://wiki.mbalib.com/wiki/DMI" rel="nofollow" target="_blank">动向指数(DMI)</a>
+        <a href="https://wiki.mbalib.com/wiki/ADX" rel="nofollow" target="_blank">平均趋向指标(ADX)</a>
+        <a href="https://wiki.mbalib.com/wiki/%E5%B9%B3%E5%9D%87%E6%96%B9%E5%90%91%E6%8C%87%E6%95%B0%E8%AF%84%E4%BC%B0" rel="nofollow" target="_blank">平均方向指数评估(DXR)</a>
     """,
         "dic": ("pdi", "mdi", "dx", "adx", "adxr")
     }, {
         "title": "W&R",
         "desc": """
-            <a href="http://wiki.mbalib.com/wiki/%E5%A8%81%E5%BB%89%E6%8C%87%E6%A0%87" rel="nofollow" target="_blank">威廉指数(W&R)</a>
+            <a href="https://wiki.mbalib.com/wiki/%E5%A8%81%E5%BB%89%E6%8C%87%E6%A0%87" rel="nofollow" target="_blank">威廉指数(W&R)</a>
         """,
         "dic": ("wr_6", "wr_10", "wr_14")
     }, {
         "title": "CCI",
         "desc": """
-            <a href="http://wiki.mbalib.com/wiki/%E9%A1%BA%E5%8A%BF%E6%8C%87%E6%A0%87" rel="nofollow" target="_blank">顺势指标(CCI)</a>
+            <a href="https://wiki.mbalib.com/wiki/%E9%A1%BA%E5%8A%BF%E6%8C%87%E6%A0%87" rel="nofollow" target="_blank">顺势指标(CCI)</a>
         """,
         "dic": ("cci", "cci_84")
     }, {
         "title": "ATR",
         "desc": """
-           <a href="http://wiki.mbalib.com/wiki/%E5%9D%87%E5%B9%85%E6%8C%87%E6%A0%87" rel="nofollow" target="_blank">均幅指标(ATR)</a>
+           <a href="https://wiki.mbalib.com/wiki/%E5%9D%87%E5%B9%85%E6%8C%87%E6%A0%87" rel="nofollow" target="_blank">均幅指标(ATR)</a>
         """,
         "dic": ("tr", "atr")
     }, {
         "title": "DMA",
         "desc": """
-            <a href="http://wiki.mbalib.com/wiki/DMA" rel="nofollow" target="_blank">平行线差指标(DMA)</a> 
+            <a href="https://wiki.mbalib.com/wiki/DMA" rel="nofollow" target="_blank">平行线差指标(DMA)</a> 
         """,
         "dic": ("dma", "dma_10_sma")
     }, {
@@ -298,7 +298,7 @@ def get_plot_kline(code, stock, date):
                                                                   text_font_style='bold', text_font_size="9pt")
                 p_kline.add_layout(locals()['pattern_labels_u_' + str(i)])
                 checkboxes_args['lsu' + str(i)] = locals()['pattern_labels_u_' + str(i)]
-                checkboxes_code += "lsu{}.visible = acts.includes({});".format(i, i)
+                checkboxes_code += f"lsu{i}.visible = acts.includes({i});"
                 pattern_labels.append(v['cn'])
                 isHas = True
 
@@ -314,7 +314,7 @@ def get_plot_kline(code, stock, date):
                                                                   text_font_style='bold', text_font_size="9pt")
                 p_kline.add_layout(locals()['pattern_labels_d_' + str(i)])
                 checkboxes_args['lsd' + str(i)] = locals()['pattern_labels_d_' + str(i)]
-                checkboxes_code += "lsd{}.visible = acts.includes({});".format(i, i)
+                checkboxes_code += f"lsd{i}.visible = acts.includes({i});"
                 if not isHas:
                     pattern_labels.append(v['cn'])
                     isHas = True
@@ -376,18 +376,26 @@ def get_plot_kline(code, stock, date):
             p_indicator.min_border_bottom = 0
             div_indicator = Div(text=conf["desc"], width=p_kline.width)
             tabs.append(TabPanel(child=column(p_indicator, div_indicator), title=conf["title"]))
-        tabs_indicators = Tabs(tabs=tabs, tabs_location='below', width=p_kline.width, stylesheets=[{'.bk-tab': Styles(padding='1px 3px'), '.bk-tab.bk-active': Styles(background_color='yellow', color='red')}])
+        tabs_indicators = Tabs(tabs=tabs, tabs_location='below', width=p_kline.width, stylesheets=[
+            {'.bk-tab': Styles(padding='1px 3px'),
+             '.bk-tab.bk-active': Styles(background_color='yellow', color='red')}])
 
         # 东方财富股票页面
         if code.startswith("6"):
             code_name = "SH" + code
         else:
             code_name = "SZ" + code
-        div_dfcf_hq = Div(text="""<a href="http://quote.eastmoney.com/{}.html" target="_blank">{}行情</a>""".format(code_name, code), width=80)
-        div_dfcf_zl = Div(text="""<a href="https://emweb.eastmoney.com/PC_HSF10/OperationsRequired/Index?code={}" target="_blank">{}资料</a>""".format(code_name, code), width=80)
+        div_dfcf_hq = Div(
+            text=f"""<a href="https://quote.eastmoney.com/{code_name}.html" target="_blank">{code}行情</a>""",
+            width=80)
+        div_dfcf_zl = Div(
+            text=f"""<a href="https://emweb.eastmoney.com/PC_HSF10/OperationsRequired/Index?code={code_name}" target="_blank">{code}资料</a>""",
+            width=80)
 
         # 组合图
-        layouts = layout(row(column(row(children=[div_dfcf_hq, div_dfcf_zl, select_all, select_none], align='end'), p_kline, p_volume, tabs_indicators), ck))
+        layouts = layout(
+            row(column(row(children=[div_dfcf_hq, div_dfcf_zl, select_all, select_none], align='end'), p_kline,
+                       p_volume, tabs_indicators), ck))
         script, div = components(layouts)
 
         return {"script": script, "div": div}

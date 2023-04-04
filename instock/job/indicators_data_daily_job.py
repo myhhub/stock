@@ -7,6 +7,7 @@ import concurrent.futures
 import pandas as pd
 import os.path
 import sys
+
 cpath_current = os.path.dirname(os.path.dirname(__file__))
 cpath = os.path.abspath(os.path.join(cpath_current, os.pardir))
 sys.path.append(cpath)
@@ -15,7 +16,6 @@ import instock.core.tablestructure as tbs
 import instock.lib.database as mdb
 import instock.core.indicator.calculate_indicator as idr
 from instock.core.singleton import stock_hist_data
-
 
 __author__ = 'myh '
 __date__ = '2023/3/10 '
