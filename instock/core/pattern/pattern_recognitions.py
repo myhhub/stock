@@ -34,7 +34,7 @@ def get_pattern_recognitions(data, stock_column, end_date=None, threshold=120, c
     return data
 
 
-def get_pattern_recognition(code_name, data, stock_column, date=None, calc_threshold=90):
+def get_pattern_recognition(code_name, data, stock_column, date=None, calc_threshold=12):
     try:
         # 增加空判断，如果是空返回 0 数据。
         if date is None:
