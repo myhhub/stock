@@ -68,10 +68,10 @@ def fetch_stocks_trade_date():
         if data is None or len(data.index) == 0:
             return None
         data_date = set(data['trade_date'].tolist())
+        return data_date
     except Exception as e:
         logging.debug("{}处理异常：{}".format('stockfetch.fetch_stocks_trade_date', e))
-
-    return data_date
+    return None
 
 
 # 读取当天股票数据
@@ -91,11 +91,10 @@ def fetch_stocks(date):
 
         # 删除index
         data.drop('index', axis=1, inplace=True)
-
+        return data
     except Exception as e:
         logging.debug("{}处理异常：{}".format('stockfetch.fetch_stocks', e))
-
-    return data
+    return None
 
 
 # 股票近三月上龙虎榜且必须有2次以上机构参与的
@@ -127,6 +126,7 @@ def fetch_stock_top_entity_data(date):
         return data_code
     except Exception as e:
         logging.debug("{}处理异常：{}".format('stockfetch.fetch_stock_top_entity_data', e))
+    return None
 
 
 # 描述: 获取新浪财经-龙虎榜-个股上榜统计
@@ -142,10 +142,10 @@ def fetch_stock_top_data(date):
         data = data.loc[data["code"].apply(stock_a)]
         # .loc[data["name"].apply(stock_a_filter_st)]
         data.insert(0, 'date', date)
+        return data
     except Exception as e:
         logging.debug("{}处理异常：{}".format('stockfetch.fetch_stock_top_data', e))
-
-    return data
+    return None
 
 
 # 描述: 获取东方财富网-数据中心-大宗交易-每日统计
@@ -186,10 +186,10 @@ def fetch_stock_hist(data_base):
         data = stock_hist_cache(code, date_start, None, 'qfq')
         if data is not None:
             data.loc[:, 'p_change'] = tl.ROC(data['close'], 1)
+        return data
     except Exception as e:
         logging.debug("{}处理异常：{}".format('stockfetch.fetch_stock_hist', e))
-
-    return data
+    return None
 
 
 # 增加读取股票缓存方法。加快处理速度。多线程解决效率
@@ -225,3 +225,4 @@ def stock_hist_cache(code, date_start, date_end=None, adjust=''):
             return stock
     except Exception as e:
         logging.debug("{}处理异常：{}代码{}".format('stockfetch.stock_hist_cache', code, e))
+    return None
