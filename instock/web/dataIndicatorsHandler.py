@@ -358,7 +358,7 @@ def get_plot_kline(code, stock, date):
             p_indicator = figure(width=p_kline.width, height=150, x_range=p_kline.x_range,
                                  min_border_left=p_kline.min_border_left, toolbar_location=None)
             for name, color in zip(conf["dic"], Spectral11):
-                if name == 'macdh':
+                if name == 'macdh' or name == 'ppoh':
                     up = [True if val > 0 else False for val in source.data[name]]
                     down = [True if val < 0 else False for val in source.data[name]]
                     view_upper = CDSView(filter=BooleanFilter(up))
