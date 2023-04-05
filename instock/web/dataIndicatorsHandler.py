@@ -374,7 +374,7 @@ def get_plot_kline(code, stock, date):
             p_indicator.legend.click_policy = "hide"
             p_indicator.xaxis.visible = False
             p_indicator.min_border_bottom = 0
-            div_indicator = Div(text="""★★★★★★该指标详细介绍：""" + conf["desc"], width=p_kline.width)
+            div_indicator = Div(text="""★★★★★★指标详细解读：""" + conf["desc"], width=p_kline.width)
             tabs.append(TabPanel(child=column(p_indicator, row(div_indicator)), title=conf["title"]))
         tabs_indicators = Tabs(tabs=tabs, tabs_location='below', width=p_kline.width, stylesheets=[
             {'.bk-tab': Styles(padding='1px 3px'),
