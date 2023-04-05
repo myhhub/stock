@@ -391,10 +391,13 @@ def get_plot_kline(code, stock, date):
         div_dfcf_zl = Div(
             text=f"""<a href="https://emweb.eastmoney.com/PC_HSF10/OperationsRequired/Index?code={code_name}" target="_blank">{code}资料</a>""",
             width=80)
+        div_dfcf_pr = Div(
+            text=f"""<a href="https://www.ljjyy.com/archives/2023/03/100685.html#%E5%9B%9B%EF%BC%9AK%E7%BA%BF%E5%BD%A2%E6%80%81%E8%AF%86%E5%88%AB" target="_blank">K线形态解读</a>""",
+            width=80)
 
         # 组合图
         layouts = layout(
-            row(column(row(children=[div_dfcf_hq, div_dfcf_zl, select_all, select_none], align='end'), p_kline,
+            row(column(row(children=[div_dfcf_hq, div_dfcf_zl, div_dfcf_pr, select_all, select_none], align='end'), p_kline,
                        p_volume, tabs_indicators), ck))
         script, div = components(layouts)
 
