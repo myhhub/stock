@@ -205,5 +205,5 @@ def get_plot_kline(code, stock, date):
 
         return {"script": script, "div": div}
     except Exception as e:
-        logging.debug("{}处理异常：{}".format('dataIndicatorsHandler.get_plot_kline', e))
+        logging.debug("{}处理异常：{}".format('visualization.get_plot_kline', e))
     return None
