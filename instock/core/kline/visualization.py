@@ -1,0 +1,202 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+
+import numpy as np
+import logging
+# 首映 bokeh 画图。
+from bokeh.plotting import figure
+from bokeh.embed import components
+from bokeh.palettes import Spectral11
+from bokeh.layouts import column, row, layout
+from bokeh.models import ColumnDataSource, HoverTool, CheckboxGroup, LabelSet, Button, CustomJS, \
+    CDSView, BooleanFilter, TabPanel, Tabs, Div, Styles, CrosshairTool, Span
+import instock.core.tablestructure as tbs
+import instock.core.indicator.calculate_indicator as idr
+import instock.core.pattern.pattern_recognitions as kpr
+import instock.core.kline.indicator_web_dic as iwd
+
+__author__ = 'myh '
+__date__ = '2023/4/6 '
+
+
+def get_plot_kline(code, stock, date):
+    plot_list = []
+    threshold = 120
+    try:
+        data = idr.get_indicators(stock, date, threshold=threshold)
+        if data is None:
+            return None
+
+        stock_column = tbs.STOCK_KLINE_PATTERN_DATA['columns']
+        data = kpr.get_pattern_recognitions(data, stock_column)
+        if data is None:
+            return None
+
+        length = len(data.index)
+        data['index'] = list(np.arange(length))
+
+        # K线
+        tools = "box_select,box_zoom,lasso_select,wheel_zoom,zoom_in,zoom_out,redo,reset,save"
+        p_kline = figure(width=1000, height=300, x_range=(0, length + 1), min_border_left=80,
+                         tools=tools, toolbar_location='above')
+        # 提示信息
+        tooltips = [('日期', '@date'), ('开盘', '@open'),
+                    ('最高', '@high'), ('最低', '@low'),
+                    ('收盘', '@close')]
+        hover = HoverTool(tooltips=tooltips)
+
+        # 跨图十字光标
+        crosshair = CrosshairTool(overlay=[Span(dimension="width", line_dash="dashed", line_width=2),
+                                           Span(dimension="height", line_dash="dotted", line_width=2)])
+
+        source = ColumnDataSource(data)
+        # 均线
+        sam_labels = ("close", "ma10", "ma20", "ma50", "ma200")
+        for name, color in zip(sam_labels, Spectral11):
+            p_kline.line(x='index', y=name, source=source, legend_label=tbs.get_field_cn(name, tbs.STOCK_STATS_DATA),
+                         color=color, line_width=1.5, alpha=0.8)
+        p_kline.legend.location = "top_left"
+        p_kline.legend.click_policy = "hide"
+
+        inc = data['close'] >= data['open']
+        dec = data['open'] > data['close']
+        inc_source = ColumnDataSource(data.loc[inc])
+        dec_source = ColumnDataSource(data.loc[dec])
+        # 股价柱
+        p_kline.segment(x0='index', y0='high', x1='index', y1='low', color='red', source=inc_source)
+        p_kline.segment(x0='index', y0='high', x1='index', y1='low', color='green', source=dec_source)
+        p_kline.vbar('index', 0.5, 'open', 'close', fill_color='red', line_color='red', source=inc_source,
+                     hover_fill_alpha=0.5)
+        p_kline.vbar('index', 0.5, 'open', 'close', fill_color='green', line_color='green', source=dec_source,
+                     hover_fill_alpha=0.5)
+        # 提示信息
+        p_kline.add_tools(hover, crosshair)
+        # 形态信息
+        checkboxes_args = {}
+        checkboxes_code = """var acts = cb_obj.active;"""
+        pattern_labels = []
+        i = 0
+        for k, v in stock_column.items():
+            label_mask_u = (data[k] > 0)
+            label_data_u = data.loc[label_mask_u].copy()
+            isHas = False
+            if len(label_data_u.index) > 0:
+                label_data_u.loc[:, 'label_cn'] = v['cn']
+                label_source_u = ColumnDataSource(label_data_u)
+                locals()['pattern_labels_u_' + str(i)] = LabelSet(x='index', y='high', text="label_cn",
+                                                                  source=label_source_u, x_offset=7, y_offset=5,
+                                                                  angle=90, angle_units='deg', text_color='red',
+                                                                  text_font_style='bold', text_font_size="9pt")
+                p_kline.add_layout(locals()['pattern_labels_u_' + str(i)])
+                checkboxes_args['lsu' + str(i)] = locals()['pattern_labels_u_' + str(i)]
+                checkboxes_code += f"lsu{i}.visible = acts.includes({i});"
+                pattern_labels.append(v['cn'])
+                isHas = True
+
+            label_mask_d = (data[k] < 0)
+            label_data_d = data.loc[label_mask_d].copy()
+            if len(label_data_d.index) > 0:
+                label_data_d.loc[:, 'label_cn'] = v['cn']
+                label_source_d = ColumnDataSource(label_data_d)
+                locals()['pattern_labels_d_' + str(i)] = LabelSet(x='index', y='low', text='label_cn',
+                                                                  source=label_source_d, x_offset=-7, y_offset=-5,
+                                                                  angle=270, angle_units='deg',
+                                                                  text_color='green',
+                                                                  text_font_style='bold', text_font_size="9pt")
+                p_kline.add_layout(locals()['pattern_labels_d_' + str(i)])
+                checkboxes_args['lsd' + str(i)] = locals()['pattern_labels_d_' + str(i)]
+                checkboxes_code += f"lsd{i}.visible = acts.includes({i});"
+                if not isHas:
+                    pattern_labels.append(v['cn'])
+                    isHas = True
+            if isHas:
+                i += 1
+        p_kline.xaxis.visible = False
+        p_kline.min_border_bottom = 0
+
+        # 交易量柱
+        p_volume = figure(width=p_kline.width, height=120, x_range=p_kline.x_range,
+                          min_border_left=p_kline.min_border_left, tools=tools, toolbar_location=None)
+        vol_labels = ("vol_5", "vol_10")
+        for name, color in zip(vol_labels, Spectral11):
+            p_volume.line(x=data['index'], y=data[name], legend_label=name, color=color, line_width=1.5, alpha=0.8)
+        p_volume.legend.location = "top_left"
+        p_volume.legend.click_policy = "hide"
+        p_volume.vbar('index', 0.5, 0, 'volume', color='red', source=inc_source)
+        p_volume.vbar('index', 0.5, 0, 'volume', color='green', source=dec_source)
+        p_volume.add_tools(crosshair)
+        p_volume.xaxis.major_label_overrides = {i: date for i, date in enumerate(data['date'])}
+        # p_volume.xaxis.major_label_orientation = pi / 4
+
+        # 形态复选框
+        pattern_checkboxes = CheckboxGroup(labels=pattern_labels, active=list(range(len(pattern_labels))))
+        # pattern_checkboxes.inline = True
+        pattern_checkboxes.height = p_kline.height + p_volume.height
+        if checkboxes_args:
+            pattern_checkboxes.js_on_change('active', CustomJS(args=checkboxes_args, code=checkboxes_code))
+        ck = column(row(pattern_checkboxes))
+
+        # 按钮
+        select_all = Button(label="全选(形态)")
+        select_none = Button(label='全不选(形态)')
+        select_all.js_on_event("button_click", CustomJS(args={'pcs': pattern_checkboxes, 'pls': pattern_labels},
+                                                        code="pcs.active = Array.from(pls, (x, i) => i);"))
+        select_none.js_on_event("button_click", CustomJS(args={'pcs': pattern_checkboxes},
+                                                         code="pcs.active = [];"))
+
+        # 指标
+        tabs = []
+        for conf in iwd.indicators_dic:
+            p_indicator = figure(width=p_kline.width, height=150, x_range=p_kline.x_range,
+                                 min_border_left=p_kline.min_border_left, tools=tools, toolbar_location=None)
+            for name, color in zip(conf["dic"], Spectral11):
+                if name == 'macdh' or name == 'ppoh':
+                    up = [True if val > 0 else False for val in source.data[name]]
+                    down = [True if val < 0 else False for val in source.data[name]]
+                    view_upper = CDSView(filter=BooleanFilter(up))
+                    view_lower = CDSView(filter=BooleanFilter(down))
+                    p_indicator.vbar('index', 0.1, 0, name, legend_label=tbs.get_field_cn(name, tbs.STOCK_STATS_DATA),
+                                     color='green', source=source, view=view_lower)
+                    p_indicator.vbar('index', 0.1, name, 0, legend_label=tbs.get_field_cn(name, tbs.STOCK_STATS_DATA),
+                                     color='red', source=source, view=view_upper)
+                else:
+                    p_indicator.line(x='index', y=name, legend_label=tbs.get_field_cn(name, tbs.STOCK_STATS_DATA),
+                                     color=color, source=source, line_width=1.5, alpha=0.8)
+            p_indicator.legend.location = "top_left"
+            p_indicator.legend.click_policy = "hide"
+            p_indicator.add_tools(crosshair)
+            p_indicator.xaxis.visible = False
+            p_indicator.min_border_bottom = 0
+            div_indicator = Div(text="""★★★★★指标详细解读：""" + conf["desc"], width=p_kline.width)
+            tabs.append(TabPanel(child=column(p_indicator, row(div_indicator)), title=conf["title"]))
+        tabs_indicators = Tabs(tabs=tabs, tabs_location='below', width=p_kline.width, stylesheets=[
+            {'.bk-tab': Styles(padding='1px 3px'),
+             '.bk-tab.bk-active': Styles(background_color='yellow', color='red')}])
+
+        # 东方财富股票页面
+        if code.startswith("6"):
+            code_name = "SH" + code
+        else:
+            code_name = "SZ" + code
+        div_dfcf_hq = Div(
+            text=f"""<a href="https://quote.eastmoney.com/{code_name}.html" target="_blank">{code}行情</a>""",
+            width=80)
+        div_dfcf_zl = Div(
+            text=f"""<a href="https://emweb.eastmoney.com/PC_HSF10/OperationsRequired/Index?code={code_name}" target="_blank">{code}资料</a>""",
+            width=80)
+        div_dfcf_pr = Div(
+            text=f"""<a href="https://www.ljjyy.com/archives/2023/03/100685.html#%E5%9B%9B%EF%BC%9AK%E7%BA%BF%E5%BD%A2%E6%80%81%E8%AF%86%E5%88%AB" target="_blank">K线形态解读</a>""",
+            width=80)
+
+        # 组合图
+        layouts = layout(
+            row(column(row(children=[div_dfcf_hq, div_dfcf_zl, div_dfcf_pr, select_all, select_none], align='end'),
+                       p_kline,
+                       p_volume, tabs_indicators), ck))
+        script, div = components(layouts)
+
+        return {"script": script, "div": div}
+    except Exception as e:
+        logging.debug("{}处理异常：{}".format('dataIndicatorsHandler.get_plot_kline', e))
+    return None
