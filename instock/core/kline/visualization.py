@@ -42,7 +42,8 @@ def get_plot_kline(code, stock, date):
         tools = pan, box_select, box_zoom, wheel_zoom, zoom_in, zoom_out, undo, redo, reset, save = \
             PanTool(description="平移"), BoxSelectTool(description="方框选取"), BoxZoomTool(description="方框缩放"), \
             WheelZoomTool(description="滚轮缩放"), ZoomInTool(description="放大"), ZoomOutTool(description="缩小"), \
-            UndoTool(description="撤销"), RedoTool(description="重做"), ResetTool(description="重置"), SaveTool(description="保存")
+            UndoTool(description="撤销"), RedoTool(description="重做"), ResetTool(description="重置"),\
+            SaveTool(description="保存", filename=f"instock_{code}({date})")
         # 悬停
         tooltips = [('日期', '@date'), ('开盘', '@open'),
                     ('最高', '@high'), ('最低', '@low'),
