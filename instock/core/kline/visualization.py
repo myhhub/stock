@@ -37,7 +37,7 @@ def get_plot_kline(code, stock, date):
         data['index'] = list(np.arange(length))
 
         # K线
-        tools = "box_select,box_zoom,lasso_select,wheel_zoom,zoom_in,zoom_out,redo,reset,save"
+        tools = "pan,box_select,box_zoom,wheel_zoom,zoom_in,zoom_out,redo,reset,save"
         p_kline = figure(width=1000, height=300, x_range=(0, length + 1), min_border_left=80,
                          tools=tools, toolbar_location='above')
         # 提示信息
