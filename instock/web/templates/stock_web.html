@@ -9,7 +9,7 @@
 	<div class="row">&nbsp;</div>
 	<div class="row">
 		{% for index,element in enumerate(stockWeb.columns) %}
-		{% if index <= 3 %}
+		{% if index <= 2 %}
 			{% if element != 'eastmoney_url' %}
 			<div class="col-md-4" id="filter_col{{ index + 1 }}" data-column="{{ index }}">
 				{{ stockWeb.column_names[index] }} &nbsp;
