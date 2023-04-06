@@ -36,7 +36,13 @@ def get_plot_kline(code, stock, date):
 
         length = len(data.index)
         data['index'] = list(np.arange(length))
+
         source = ColumnDataSource(data)
+
+        inc = data['close'] >= data['open']
+        dec = data['open'] > data['close']
+        inc_source = ColumnDataSource(data.loc[inc])
+        dec_source = ColumnDataSource(data.loc[dec])
 
         # 工具条
         tools = pan, box_select, box_zoom, wheel_zoom, zoom_in, zoom_out, undo, redo, reset, save = \
@@ -64,11 +70,6 @@ def get_plot_kline(code, stock, date):
                          color=color, line_width=1.5, alpha=0.8)
         p_kline.legend.location = "top_left"
         p_kline.legend.click_policy = "hide"
-
-        inc = data['close'] >= data['open']
-        dec = data['open'] > data['close']
-        inc_source = ColumnDataSource(data.loc[inc])
-        dec_source = ColumnDataSource(data.loc[dec])
 
         # 股价柱
         p_kline.segment(x0='index', y0='high', x1='index', y1='low', color='red', source=inc_source)
