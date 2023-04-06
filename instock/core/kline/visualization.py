@@ -11,7 +11,7 @@ from bokeh.palettes import Spectral11
 from bokeh.layouts import column, row, layout
 from bokeh.models import ColumnDataSource, HoverTool, CheckboxGroup, LabelSet, Button, CustomJS, \
     CDSView, BooleanFilter, TabPanel, Tabs, Div, Styles, CrosshairTool, Span, BoxSelectTool, WheelZoomTool, PanTool, \
-    BoxZoomTool, ZoomInTool, ZoomOutTool, RedoTool, ResetTool, SaveTool
+    BoxZoomTool, ZoomInTool, ZoomOutTool, RedoTool, ResetTool, SaveTool, UndoTool
 import instock.core.tablestructure as tbs
 import instock.core.indicator.calculate_indicator as idr
 import instock.core.pattern.pattern_recognitions as kpr
@@ -39,10 +39,10 @@ def get_plot_kline(code, stock, date):
         source = ColumnDataSource(data)
 
         # 工具条
-        tools = pan, box_select, box_zoom, wheel_zoom, zoom_in, zoom_out, redo, reset, save = \
+        tools = pan, box_select, box_zoom, wheel_zoom, zoom_in, zoom_out, undo, redo, reset, save = \
             PanTool(description="平移"), BoxSelectTool(description="方框选取"), BoxZoomTool(description="方框缩放"), \
             WheelZoomTool(description="滚轮缩放"), ZoomInTool(description="放大"), ZoomOutTool(description="缩小"), \
-            RedoTool(description="重做"), ResetTool(description="重置"), SaveTool(description="保存")
+            UndoTool(description="撤销"), RedoTool(description="重做"), ResetTool(description="重置"), SaveTool(description="保存")
         # 悬停
         tooltips = [('日期', '@date'), ('开盘', '@open'),
                     ('最高', '@high'), ('最低', '@low'),
