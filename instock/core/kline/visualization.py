@@ -10,7 +10,8 @@ from bokeh.embed import components
 from bokeh.palettes import Spectral11
 from bokeh.layouts import column, row, layout
 from bokeh.models import ColumnDataSource, HoverTool, CheckboxGroup, LabelSet, Button, CustomJS, \
-    CDSView, BooleanFilter, TabPanel, Tabs, Div, Styles, CrosshairTool, Span
+    CDSView, BooleanFilter, TabPanel, Tabs, Div, Styles, CrosshairTool, Span, BoxSelectTool, WheelZoomTool, PanTool, \
+    BoxZoomTool, ZoomInTool, ZoomOutTool, RedoTool, ResetTool, SaveTool
 import instock.core.tablestructure as tbs
 import instock.core.indicator.calculate_indicator as idr
 import instock.core.pattern.pattern_recognitions as kpr
@@ -35,22 +36,26 @@ def get_plot_kline(code, stock, date):
 
         length = len(data.index)
         data['index'] = list(np.arange(length))
+        source = ColumnDataSource(data)
 
-        # K线
-        tools = "pan,box_select,box_zoom,wheel_zoom,zoom_in,zoom_out,redo,reset,save"
-        p_kline = figure(width=1000, height=300, x_range=(0, length + 1), min_border_left=80,
-                         tools=tools, toolbar_location='above')
-        # 提示信息
+        # 工具条
+        tools = pan, box_select, box_zoom, wheel_zoom, zoom_in, zoom_out, redo, reset, save = \
+            PanTool(description="平移"), BoxSelectTool(description="方框选取"), BoxZoomTool(description="方框缩放"), \
+            WheelZoomTool(description="滚轮缩放"), ZoomInTool(description="放大"), ZoomOutTool(description="缩小"), \
+            RedoTool(description="重做"), ResetTool(description="重置"), SaveTool(description="保存")
+        # 悬停
         tooltips = [('日期', '@date'), ('开盘', '@open'),
                     ('最高', '@high'), ('最低', '@low'),
                     ('收盘', '@close')]
-        hover = HoverTool(tooltips=tooltips)
+        hover = HoverTool(tooltips=tooltips, description="悬停")
 
-        # 跨图十字光标
+        # 十字瞄准线
         crosshair = CrosshairTool(overlay=[Span(dimension="width", line_dash="dashed", line_width=2),
-                                           Span(dimension="height", line_dash="dotted", line_width=2)])
-
-        source = ColumnDataSource(data)
+                                           Span(dimension="height", line_dash="dotted", line_width=2)],
+                                  description="十字瞄准线")
+        # K线图
+        p_kline = figure(width=1000, height=300, x_range=(0, length + 1), min_border_left=80,
+                         tools=tools, toolbar_location='above')
         # 均线
         sam_labels = ("close", "ma10", "ma20", "ma50", "ma200")
         for name, color in zip(sam_labels, Spectral11):
@@ -63,6 +68,7 @@ def get_plot_kline(code, stock, date):
         dec = data['open'] > data['close']
         inc_source = ColumnDataSource(data.loc[inc])
         dec_source = ColumnDataSource(data.loc[dec])
+
         # 股价柱
         p_kline.segment(x0='index', y0='high', x1='index', y1='low', color='red', source=inc_source)
         p_kline.segment(x0='index', y0='high', x1='index', y1='low', color='green', source=dec_source)
@@ -70,8 +76,8 @@ def get_plot_kline(code, stock, date):
                      hover_fill_alpha=0.5)
         p_kline.vbar('index', 0.5, 'open', 'close', fill_color='green', line_color='green', source=dec_source,
                      hover_fill_alpha=0.5)
-        # 提示信息
         p_kline.add_tools(hover, crosshair)
+
         # 形态信息
         checkboxes_args = {}
         checkboxes_code = """var acts = cb_obj.active;"""
