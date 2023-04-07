@@ -4,7 +4,7 @@
 import json
 from abc import ABC
 from tornado import gen
-import logging
+# import logging
 import datetime
 import instock.lib.version as version
 import instock.core.stock_web_dic as stock_web_dic
@@ -28,8 +28,6 @@ class GetStockHtmlHandler(webBase.BaseHandler, ABC):
     def get(self):
         name = self.get_argument("table_name", default=None, strip=False)
         stockWeb = stock_web_dic.STOCK_WEB_DATA_MAP[name]
-        # self.uri_ = ("self.request.url:", self.request.uri)
-        # print self.uri_
         date_now = datetime.datetime.now()
         date_now_str = date_now.strftime("%Y-%m-%d")
         # 每天的 16 点前显示昨天数据。
@@ -47,9 +45,8 @@ class GetStockDataHandler(webBase.BaseHandler, ABC):
         # 获得分页参数。
         start_param = self.get_argument("start", default=0, strip=False)
         length_param = self.get_argument("length", default=10, strip=False)
-
         name_param = self.get_argument("name", default=None, strip=False)
-        type_param = self.get_argument("type", default=None, strip=False)
+        # type_param = self.get_argument("type", default=None, strip=False)
         stock_web = stock_web_dic.STOCK_WEB_DATA_MAP[name_param]
         # https://datatables.net/manual/server-side
         self.set_header('Content-Type', 'application/json;charset=UTF-8')
@@ -57,9 +54,6 @@ class GetStockDataHandler(webBase.BaseHandler, ABC):
         order_by_dir = []
         # 支持多排序。使用shift+鼠标左键。
         for item, val in self.request.arguments.items():
-            # logging.info("item: %s, val: %s" % (item, val) )
-            if str(item).startswith("order["):
-                print("order:", item, ",val:", val[0])
             if str(item).startswith("order[") and str(item).endswith("[column]"):
                 order_by_column.append(int(val[0]))
             if str(item).startswith("order[") and str(item).endswith("[dir]"):
@@ -70,9 +64,7 @@ class GetStockDataHandler(webBase.BaseHandler, ABC):
 
         # 返回search字段。
         for item, val in self.request.arguments.items():
-            # logging.info("item: %s, val: %s" % (item, val))
             if str(item).startswith("columns[") and str(item).endswith("[search][value]"):
-                # logging.info("item: %s, val: %s" % (item, val))
                 str_idx = item.replace("columns[", "").replace("][search][value]", "")
                 int_idx = int(str_idx)
                 # 找到字符串
@@ -86,15 +78,13 @@ class GetStockDataHandler(webBase.BaseHandler, ABC):
         search_idx = 0
         for item in search_by_column:
             val = search_by_data[search_idx]
-            # logging.info("idx: %s, column: %s, value: %s " % (search_idx, item, val))
             # 查询sql
             if search_idx == 0:
-                search_sql = " WHERE `%s` = '%s' " % (item, val)
+                search_sql = f" WHERE `{item}` = '{val}'"
             else:
-                search_sql = search_sql + " AND `%s` = '%s' " % (item, val)
+                search_sql = f"{search_sql} AND `{item}` = '{val}'"
             search_idx = search_idx + 1
 
-        # print("stockWeb :", stock_web)
         order_by_sql = ""
         # 增加排序。
         if len(order_by_column) != 0 and len(order_by_dir) != 0:
@@ -105,16 +95,15 @@ class GetStockDataHandler(webBase.BaseHandler, ABC):
                 col_tmp = stock_web.columns[key]
                 dir_tmp = order_by_dir[idx]
                 if idx != 0:
-                    order_by_sql += " ,`%s` %s" % (col_tmp, dir_tmp)
+                    order_by_sql = f"{order_by_sql} ,`{col_tmp}` {dir_tmp}"
                 else:
-                    order_by_sql += " `%s` %s" % (col_tmp, dir_tmp)
+                    order_by_sql = f"{order_by_sql} `{col_tmp}` {dir_tmp}"
                 idx += 1
         # 查询数据库。
         limit_sql = ""
         if int(length_param) > 0:
             limit_sql = " LIMIT %s , %s " % (start_param, length_param)
-        sql = " SELECT * FROM `%s` %s %s %s " % (
-            stock_web.table_name, search_sql, order_by_sql, limit_sql)
+        sql = " SELECT * FROM `%s` %s %s %s " % (stock_web.table_name, search_sql, order_by_sql, limit_sql)
         count_sql = " SELECT count(1) as num FROM `%s` %s " % (stock_web.table_name, search_sql)
 
         stock_web_list = self.db.query(sql)

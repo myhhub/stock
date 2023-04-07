@@ -27,38 +27,19 @@ if not os.path.exists(stock_hist_cache_path):
 # 其中002开头的股票是深证A股中小企业股票；
 # 200开头的股票是深证B股；
 # 300开头的股票是创业板股票；400开头的股票是三板市场股票。
-def stock_a(code):
+def is_a_stock(code):
     # 上证A股  # 深证A股
-    if code is None:
-        return False
-    if code.startswith('600') or code.startswith('601') or \
-            code.startswith('000') or code.startswith('001') or \
-            code.startswith('002'):
-        return True
-    else:
-        return False
+    return code.startswith(('600', '601', '000', '001', '002'))
 
 
 # 过滤掉 st 股票。
-def stock_a_filter_st(name):
-    # 上证A股  # 深证A股
-    if name is None:
-        return False
-    if name.find("ST") == -1:
-        return True
-    else:
-        return False
+def is_not_st(name):
+    return not name.startswith(('*ST', 'ST'))
 
 
 # 过滤价格，如果没有基本上是退市了。
-def stock_a_filter_price(latest_price):
-    # float 在 pandas 里面判断 空。
-    if latest_price is None:
-        return False
-    if np.isnan(latest_price):
-        return False
-    else:
-        return True
+def is_open(latest_price):
+    return not np.isnan(latest_price)
 
 
 # 读取股票交易日历数据
@@ -67,7 +48,7 @@ def fetch_stocks_trade_date():
         data = ak.tool_trade_date_hist_sina()
         if data is None or len(data.index) == 0:
             return None
-        data_date = set(data['trade_date'].tolist())
+        data_date = set(data['trade_date'].values.tolist())
         return data_date
     except Exception as e:
         logging.debug("{}处理异常：{}".format('stockfetch.fetch_stocks_trade_date', e))
@@ -83,9 +64,7 @@ def fetch_stocks(date):
         columns = list(cons.TABLE_CN_STOCK_SPOT['columns'].keys())
         columns[0] = 'index'
         data.columns = columns
-        data = data.loc[data["code"].apply(stock_a)].loc[
-            data["latest_price"].apply(stock_a_filter_price)]
-        # .loc[data["name"].apply(runtmp.stock_a_filter_st)]
+        data = data.loc[data['code'].apply(is_a_stock)].loc[data['latest_price'].apply(is_open)]
         if date is None:
             data.insert(0, 'date', datetime.datetime.now().strftime("%Y-%m-%d"))
         else:
@@ -140,9 +119,7 @@ def fetch_stock_top_data(date):
         _columns = list(cons.TABLE_CN_STOCK_TOP['columns'].keys())
         _columns.pop(0)
         data.columns = _columns
-
-        data = data.loc[data["code"].apply(stock_a)]
-        # .loc[data["name"].apply(stock_a_filter_st)]
+        data = data.loc[data['code'].apply(is_a_stock)]
         data.insert(0, 'date', date)
         return data
     except Exception as e:
@@ -161,10 +138,7 @@ def fetch_stock_blocktrade_data(date):
         columns = list(cons.TABLE_CN_STOCK_BLOCKTRADE['columns'].keys())
         columns.insert(0, 'index')
         data.columns = columns
-
-        data = data.loc[data["code"].apply(stock_a)]
-        # .loc[data["name"].apply(stock_a_filter_st)]
-        # data.set_index('code', inplace=True)
+        data = data.loc[data['code'].apply(is_a_stock)]
         data.drop('index', axis=1, inplace=True)
         return data
     except TypeError:
@@ -188,7 +162,7 @@ def fetch_stock_hist(data_base):
         data = stock_hist_cache(code, date_start, None, 'qfq')
         if data is not None:
             data.loc[:, 'p_change'] = tl.ROC(data['close'].values, 1)
-            data = data.astype({'volume': 'double'})
+            data['volume'] = data['volume'].values.astype('double')
         return data
     except Exception as e:
         logging.debug("{}处理异常：{}".format('stockfetch.fetch_stock_hist', e))

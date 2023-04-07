@@ -33,7 +33,7 @@ def prepare(date, strategy):
 
         # 删除老数据。
         if mdb.checkTableIsExist(table_name):
-            del_sql = " DELETE FROM `" + table_name + "` WHERE `date` = '%s' " % date
+            del_sql = f"DELETE FROM `{table_name}` where `date` = '{date}'"
             mdb.executeSql(del_sql)
             cols_type = None
         else:

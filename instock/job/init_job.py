@@ -22,7 +22,7 @@ def create_new_database():
     _MYSQL_CONN_DBAPI['database'] = "mysql"
     with pymysql.connect(**_MYSQL_CONN_DBAPI) as db:
         try:
-            create_sql = " CREATE DATABASE IF NOT EXISTS %s CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci " % mdb.db_database
+            create_sql = f"CREATE DATABASE IF NOT EXISTS `{mdb.db_database}` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci"
             db.cursor().execute(create_sql)
         except Exception as e:
             logging.debug("{}处理异常：{}".format('init_job.create_new_database', e))

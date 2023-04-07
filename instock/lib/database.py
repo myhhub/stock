@@ -25,7 +25,7 @@ logging.info("{}执行信息：{}".format('数据库链接', MYSQL_CONN_URL))
 MYSQL_CONN_DBAPI = {'host': db_host, 'user': db_user, 'password': db_password, 'database': db_database,
                     'charset': db_charset, 'port': db_port, 'autocommit': True}
 
-MYSQL_CONN_TORNDB = {'host': db_host + ':' + str(db_port), 'user': db_user, 'password': db_password,
+MYSQL_CONN_TORNDB = {'host': f'{db_host}:{str(db_port)}', 'user': db_user, 'password': db_password,
                      'database': db_database, 'charset': db_charset, 'max_idle_time': 3600, 'connect_timeout': 1000}
 
 
@@ -35,7 +35,7 @@ def engine():
 
 
 def engine_to_db(to_db):
-    _engine = create_engine(MYSQL_CONN_URL.replace("/" + db_database + "?", "/" + to_db + "?"))
+    _engine = create_engine(MYSQL_CONN_URL.replace(f'/{db_database}?', f'/{to_db}?'))
     return _engine
 
 
@@ -91,7 +91,7 @@ def insert_other_db_from_df(to_db, data, table_name, cols_type, write_index, pri
     if not ipt.get_pk_constraint(table_name)['constrained_columns']:
         try:
             # 执行数据库插入数据。
-            conn_with_cursor().execute('ALTER TABLE `%s` ADD PRIMARY KEY (%s);' % (table_name, primary_keys))
+            conn_with_cursor().execute(f'ALTER TABLE `{table_name}` ADD PRIMARY KEY ({primary_keys});')
         except Exception as e:
             logging.debug("{}处理异常：{}表{}".format('database.insert_other_db_from_df', table_name, e))
 
@@ -99,37 +99,38 @@ def insert_other_db_from_df(to_db, data, table_name, cols_type, write_index, pri
 # 更新数据
 def update_db_from_df(data, table_name, where):
     data = data.where(data.notnull(), None)
-    update_string = f'UPDATE {table_name} set '
-    where_string = f' where '
+    update_string = f'UPDATE `{table_name}` set '
+    where_string = ' where '
+    cols = tuple(data.columns)
     with conn_with_cursor() as db:
         try:
-            for idx, row in data.iterrows():
+            for row in data.values:
                 sql = update_string
                 sql_where = where_string
-                for col in list(data.columns):
+                for index, col in enumerate(cols):
                     if col in where:
                         if len(sql_where) == len(where_string):
-                            if type(row[col]) == str:
-                                sql_where += f'''`{col}` = '{row[col]}' '''
+                            if type(row[index]) == str:
+                                sql_where = f'''{sql_where}`{col}` = '{row[index]}' '''
                             else:
-                                sql_where += f'''`{col}` = {row[col]} '''
+                                sql_where = f'''{sql_where}`{col}` = {row[index]} '''
                         else:
-                            if type(row[col]) == str:
-                                sql_where += f''' and `{col}` = '{row[col]}' '''
+                            if type(row[index]) == str:
+                                sql_where = f'''{sql_where} and `{col}` = '{row[index]}' '''
                             else:
-                                sql_where += f''' and `{col}` = {row[col]} '''
+                                sql_where = f'''{sql_where} and `{col}` = {row[index]} '''
                     else:
-                        if type(row[col]) == str:
-                            if row[col] is None or row[col] != row[col]:
-                                sql += f'''`{col}` = NULL, '''
+                        if type(row[index]) == str:
+                            if row[index] is None or row[index] != row[index]:
+                                sql = f'''{sql}`{col}` = NULL, '''
                             else:
-                                sql += f'''`{col}` = '{row[col]}', '''
+                                sql = f'''{sql}`{col}` = '{row[index]}', '''
                         else:
-                            if row[col] is None or row[col] != row[col]:
-                                sql += f'''`{col}` = NULL, '''
+                            if row[index] is None or row[index] != row[index]:
+                                sql = f'''{sql}`{col}` = NULL, '''
                             else:
-                                sql += f'''`{col}` = {row[col]}, '''
-                sql = sql[:-2] + sql_where
+                                sql = f'''{sql}`{col}` = {row[index]}, '''
+                sql = f'{sql[:-2]}{sql_where}'
                 db.execute(sql)
             db.close()
         except Exception as e:

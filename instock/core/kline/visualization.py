@@ -92,13 +92,13 @@ def get_plot_kline(code, stock, date):
             if len(label_data_u.index) > 0:
                 label_data_u.loc[:, 'label_cn'] = v['cn']
                 label_source_u = ColumnDataSource(label_data_u)
-                locals()['pattern_labels_u_' + str(i)] = LabelSet(x='index', y='high', text="label_cn",
+                locals()[f'pattern_labels_u_{str(i)}'] = LabelSet(x='index', y='high', text="label_cn",
                                                                   source=label_source_u, x_offset=7, y_offset=5,
                                                                   angle=90, angle_units='deg', text_color='red',
                                                                   text_font_style='bold', text_font_size="9pt")
-                p_kline.add_layout(locals()['pattern_labels_u_' + str(i)])
-                checkboxes_args['lsu' + str(i)] = locals()['pattern_labels_u_' + str(i)]
-                checkboxes_code += f"lsu{i}.visible = acts.includes({i});"
+                p_kline.add_layout(locals()[f'pattern_labels_u_{str(i)}'])
+                checkboxes_args['lsu' + str(i)] = locals()[f'pattern_labels_u_{str(i)}']
+                checkboxes_code = f"{checkboxes_code}lsu{i}.visible = acts.includes({i});"
                 pattern_labels.append(v['cn'])
                 isHas = True
 
@@ -107,14 +107,14 @@ def get_plot_kline(code, stock, date):
             if len(label_data_d.index) > 0:
                 label_data_d.loc[:, 'label_cn'] = v['cn']
                 label_source_d = ColumnDataSource(label_data_d)
-                locals()['pattern_labels_d_' + str(i)] = LabelSet(x='index', y='low', text='label_cn',
+                locals()[f'pattern_labels_d_{str(i)}'] = LabelSet(x='index', y='low', text='label_cn',
                                                                   source=label_source_d, x_offset=-7, y_offset=-5,
                                                                   angle=270, angle_units='deg',
                                                                   text_color='green',
                                                                   text_font_style='bold', text_font_size="9pt")
-                p_kline.add_layout(locals()['pattern_labels_d_' + str(i)])
-                checkboxes_args['lsd' + str(i)] = locals()['pattern_labels_d_' + str(i)]
-                checkboxes_code += f"lsd{i}.visible = acts.includes({i});"
+                p_kline.add_layout(locals()[f'pattern_labels_d_{str(i)}'])
+                checkboxes_args[f'lsd{str(i)}'] = locals()[f'pattern_labels_d_{str(i)}']
+                checkboxes_code = f"{checkboxes_code}lsd{i}.visible = acts.includes({i});"
                 if not isHas:
                     pattern_labels.append(v['cn'])
                     isHas = True
@@ -176,7 +176,7 @@ def get_plot_kline(code, stock, date):
             p_indicator.add_tools(crosshair)
             p_indicator.xaxis.visible = False
             p_indicator.min_border_bottom = 0
-            div_indicator = Div(text="""★★★★★指标详细解读：""" + conf["desc"], width=p_kline.width)
+            div_indicator = Div(text=f"""★★★★★指标详细解读：{conf["desc"]}""", width=p_kline.width)
             tabs.append(TabPanel(child=column(p_indicator, row(div_indicator)), title=conf["title"]))
         tabs_indicators = Tabs(tabs=tabs, tabs_location='below', width=p_kline.width, stylesheets=[
             {'.bk-tab': Styles(padding='1px 3px'),

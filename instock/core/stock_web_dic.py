@@ -18,9 +18,9 @@ class StockWebData:
         self.primary_key = primary_key
         self.order_by = order_by
         if mode == "query":
-            self.url = "/stock/data?table_name=" + self.table_name
+            self.url = f"/stock/data?table_name={self.table_name}"
         elif mode == "editor":
-            self.url = "/data/editor?table_name=" + self.table_name
+            self.url = f"/data/editor?table_name={self.table_name}"
 
 
 STOCK_WEB_DATA_LIST = [StockWebData(

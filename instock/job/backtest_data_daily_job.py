@@ -48,14 +48,14 @@ def process(table, data_all, date, backtest_column):
         return
 
     column_tail = list(table['columns'].keys())[-1]
-    sql = "SELECT * FROM `%s` WHERE `date` < '%s' AND `%s` is NULL" % (table_name, runt.get_current_date(), column_tail)
+    sql = f"SELECT * FROM `{table_name}` WHERE `date` < '{runt.get_current_date()}' AND `{column_tail}` is NULL"
     try:
         data = pd.read_sql(sql=sql, con=mdb.conn_not_cursor())
         if data is None or len(data.index) == 0:
             return
 
         subset = data[list(tbs.TABLE_CN_STOCK_FOREIGN_KEY['columns'].keys())]
-        subset = subset.astype({'date': 'string'})
+        subset['date'] = subset['date'].values.astype('str')
         stocks = [tuple(x) for x in subset.values]
 
         results = run_check(stocks, data_all, date, backtest_column)

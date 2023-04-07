@@ -32,7 +32,7 @@ def save_stock_spot_data(date):
         table_name = tbs.TABLE_CN_STOCK_SPOT['name']
         # 删除老数据。
         if mdb.checkTableIsExist(table_name):
-            del_sql = " DELETE FROM `" + table_name + "` where `date` = '%s' " % date
+            del_sql = f"DELETE FROM `{table_name}` where `date` = '{date}'"
             mdb.executeSql(del_sql)
             cols_type = None
         else:
@@ -59,7 +59,7 @@ def save_stock_top_data(date):
         table_name = tbs.TABLE_CN_STOCK_TOP['name']
         # 删除老数据。
         if mdb.checkTableIsExist(table_name):
-            del_sql = " DELETE FROM `" + table_name + "` where `date` = '%s' " % date
+            del_sql = f"DELETE FROM `{table_name}` where `date` = '{date}'"
             mdb.executeSql(del_sql)
             cols_type = None
         else:
@@ -82,7 +82,7 @@ def save_stock_blocktrade_data(date):
         table_name = tbs.TABLE_CN_STOCK_BLOCKTRADE['name']
         # 删除老数据。
         if mdb.checkTableIsExist(table_name):
-            del_sql = " DELETE FROM `" + table_name + "` where `date` = '%s' " % date
+            del_sql = f"DELETE FROM `{table_name}` where `date` = '{date}'"
             mdb.executeSql(del_sql)
             cols_type = None
         else:
