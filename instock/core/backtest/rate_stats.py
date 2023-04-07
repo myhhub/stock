@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import numpy as np
 import pandas as pd
 
 __author__ = 'myh '
@@ -28,8 +29,8 @@ def get_rates(code_name, data, stock_column, threshold=101):
 
         close1 = data.iloc[0]['close']
         # apply(lambda x: (x-close1)/close1)计算累计增长率
-        data.loc[:, 'sum_pct_change'] = data['close'].apply(lambda x: round(100 * (x - close1) / close1, 2))
-
+        # data.loc[:, 'sum_pct_change'] = data['close'].apply(lambda x: round(100 * (x - close1) / close1, 2))
+        data.loc[:, 'sum_pct_change'] = np.around(100 * (data['close'].values - close1) / close1, decimals=2)
         # 计算区间最高、最低价格
         first = True
         for index, row in data.iterrows():

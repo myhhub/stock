@@ -86,8 +86,10 @@ def fetch_stocks(date):
         data = data.loc[data["code"].apply(stock_a)].loc[
             data["latest_price"].apply(stock_a_filter_price)]
         # .loc[data["name"].apply(runtmp.stock_a_filter_st)]
-
-        data.insert(0, 'date', date.strftime("%Y-%m-%d"))
+        if date is None:
+            data.insert(0, 'date', datetime.datetime.now().strftime("%Y-%m-%d"))
+        else:
+            data.insert(0, 'date', date.strftime("%Y-%m-%d"))
 
         # 删除index
         data.drop('index', axis=1, inplace=True)
@@ -185,7 +187,8 @@ def fetch_stock_hist(data_base):
     try:
         data = stock_hist_cache(code, date_start, None, 'qfq')
         if data is not None:
-            data.loc[:, 'p_change'] = tl.ROC(data['close'], 1)
+            data.loc[:, 'p_change'] = tl.ROC(data['close'].values, 1)
+            data = data.astype({'volume': 'double'})
         return data
     except Exception as e:
         logging.debug("{}处理异常：{}".format('stockfetch.fetch_stock_hist', e))

@@ -65,7 +65,6 @@ class stock_hist_data(metaclass=SingletonType):
                     try:
                         __data = future.result()
                         if __data is not None:
-                            __data = __data.astype({'volume': 'double'})
                             _data[stock] = __data
                     except Exception as e:
                         logging.debug(
