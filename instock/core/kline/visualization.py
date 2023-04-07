@@ -23,7 +23,7 @@ __date__ = '2023/4/6 '
 
 def get_plot_kline(code, stock, date):
     plot_list = []
-    threshold = 120
+    threshold = 360
     try:
         data = idr.get_indicators(stock, date, threshold=threshold)
         if data is None:
@@ -194,7 +194,7 @@ def get_plot_kline(code, stock, date):
             text=f"""<a href="https://emweb.eastmoney.com/PC_HSF10/OperationsRequired/Index?code={code_name}" target="_blank">{code}资料</a>""",
             width=80)
         div_dfcf_pr = Div(
-            text=f"""<a href="https://www.ljjyy.com/archives/2023/03/100718.html" target="_blank">K线形态解读</a>""",
+            text=f"""<a href="https://www.ljjyy.com/archives/2023/04/100718.html" target="_blank">K线形态解读</a>""",
             width=80)
 
         # 组合图
