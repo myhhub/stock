@@ -92,6 +92,9 @@ def run_with_args(run_fun, *args):
         # 当前时间作业 python xxx.py
         try:
             run_date = get_stock_trade_date()
-            run_fun(run_date, *args)  # 使用当前时间
+            if run_fun.__name__.startswith('save_nph'):
+                run_fun(run_date, False)
+            else:
+                run_fun(run_date, *args)
         except Exception as e:
             logging.debug("{}处理异常：{}{}{}".format('run_template.run_with_args', run_fun, sys.argv, e))

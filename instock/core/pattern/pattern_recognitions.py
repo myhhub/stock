@@ -22,8 +22,8 @@ def get_pattern_recognitions(data, stock_column, end_date=None, threshold=120, c
     if len(data.index) <= 1:
         return None
 
-    for k, v in stock_column.items():
-        data.loc[:, k] = v['func'](data['open'].values, data['high'].values, data['low'].values, data['close'].values)
+    for k in stock_column:
+        data.loc[:, k] = stock_column[k]['func'](data['open'].values, data['high'].values, data['low'].values, data['close'].values)
 
     if data is None or len(data.index) == 0:
         return None
@@ -55,7 +55,7 @@ def get_pattern_recognition(code_name, data, stock_column, date=None, calc_thres
             return None
 
         isHas = False
-        for k in stock_column.keys():
+        for k in stock_column:
             if stockStat.iloc[0][k] != 0:
                 isHas = True
                 break

@@ -295,6 +295,6 @@ def get_field_cns(cols_val):
 
 def get_field_types(cols):
     data = {}
-    for k, v in cols.items():
-        data[k] = v['type']
+    for k in cols:
+        data[k] = cols[k]['type']
     return data

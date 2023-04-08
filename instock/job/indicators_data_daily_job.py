@@ -40,14 +40,13 @@ def prepare(date):
             cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_INDICATORS['columns'])
 
         dataKey = pd.DataFrame(results.keys())
-        _columns = list(tbs.TABLE_CN_STOCK_FOREIGN_KEY['columns'].keys())
+        _columns = tuple(tbs.TABLE_CN_STOCK_FOREIGN_KEY['columns'])
         dataKey.columns = _columns
 
         dataVal = pd.DataFrame(results.values())
         dataVal.drop('date', axis=1, inplace=True)  # 删除日期字段，然后和原始数据合并。
 
         data = pd.merge(dataKey, dataVal, on=['code'], how='left')
-        # data = data.round(2)  # 数据保留2位小数
         # data.set_index('code', inplace=True)
         # 单例，时间段循环必须改时间
         date_str = date.strftime("%Y-%m-%d")
@@ -61,14 +60,13 @@ def prepare(date):
 
 def run_check(stocks, date=None, workers=40):
     data = {}
-    columns = list(tbs.STOCK_STATS_DATA['columns'].keys())
+    columns = list(tbs.STOCK_STATS_DATA['columns'])
     columns.insert(0, 'code')
     columns.insert(0, 'date')
     data_column = columns
     try:
         with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
-            future_to_data = {executor.submit(idr.get_indicator, k, v, data_column, date=date): k for k, v in
-                              stocks.items()}
+            future_to_data = {executor.submit(idr.get_indicator, k, stocks[k], data_column, date=date): k for k in stocks}
             for future in concurrent.futures.as_completed(future_to_data):
                 stock = future_to_data[future]
                 try:
@@ -94,7 +92,7 @@ def guess_buy(date):
         if not mdb.checkTableIsExist(_table_name):
             return
 
-        _columns = list(tbs.TABLE_CN_STOCK_FOREIGN_KEY['columns'].keys())
+        _columns = tuple(tbs.TABLE_CN_STOCK_FOREIGN_KEY['columns'])
         _selcol = '`,`'.join(_columns)
         sql = f'''SELECT `{_selcol}` FROM `{_table_name}` WHERE `date` = '{date}' and 
                 `kdjk` >= 80 and `kdjd` >= 70 and `kdjj` >= 100 and `rsi_6` >= 80 and 
@@ -115,7 +113,7 @@ def guess_buy(date):
         else:
             cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_INDICATORS_BUY['columns'])
 
-        _columns_backtest = list(tbs.TABLE_CN_STOCK_BACKTEST_DATA['columns'].keys())
+        _columns_backtest = tuple(tbs.TABLE_CN_STOCK_BACKTEST_DATA['columns'])
         data = pd.concat([data, pd.DataFrame(columns=_columns_backtest)])
         mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
     except Exception as e:
@@ -129,7 +127,7 @@ def guess_sell(date):
         if not mdb.checkTableIsExist(_table_name):
             return
 
-        _columns = list(tbs.TABLE_CN_STOCK_FOREIGN_KEY['columns'].keys())
+        _columns = tuple(tbs.TABLE_CN_STOCK_FOREIGN_KEY['columns'])
         _selcol = '`,`'.join(_columns)
         sql = f'''SELECT `{_selcol}` FROM `{_table_name}` WHERE `date` = '{date}' and 
                 `kdjk` < 20 and `kdjd` < 30 and `kdjj` < 10 and `rsi_6` < 20 and 
@@ -149,7 +147,7 @@ def guess_sell(date):
         else:
             cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_INDICATORS_SELL['columns'])
 
-        _columns_backtest = list(tbs.TABLE_CN_STOCK_BACKTEST_DATA['columns'].keys())
+        _columns_backtest = tuple(tbs.TABLE_CN_STOCK_BACKTEST_DATA['columns'])
         data = pd.concat([data, pd.DataFrame(columns=_columns_backtest)])
         mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
     except Exception as e:

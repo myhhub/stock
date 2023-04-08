@@ -50,7 +50,7 @@ class stock_data(metaclass=SingletonType):
 class stock_hist_data(metaclass=SingletonType):
     def __init__(self, date=None, stocks=None, workers=16):
         if stocks is None:
-            _subset = stock_data(date).get_data()[list(tbs.TABLE_CN_STOCK_FOREIGN_KEY['columns'].keys())]
+            _subset = stock_data(date).get_data()[list(tbs.TABLE_CN_STOCK_FOREIGN_KEY['columns'])]
             stocks = [tuple(x) for x in _subset.values]
         if stocks is None:
             self.data = None

@@ -25,7 +25,7 @@ __date__ = '2023/3/10 '
 def prepare():
     tables = [tbs.TABLE_CN_STOCK_INDICATORS_BUY, tbs.TABLE_CN_STOCK_INDICATORS_SELL]
     tables.extend(tbs.TABLE_CN_STOCK_STRATEGIES)
-    backtest_columns = list(tbs.TABLE_CN_STOCK_BACKTEST_DATA['columns'].keys())
+    backtest_columns = list(tbs.TABLE_CN_STOCK_BACKTEST_DATA['columns'])
     backtest_columns.insert(0, 'code')
     backtest_columns.insert(0, 'date')
     backtest_column = backtest_columns
@@ -33,7 +33,7 @@ def prepare():
     stocks_data = stock_hist_data().get_data()
     if stocks_data is None:
         return
-    for k in stocks_data.keys():
+    for k in stocks_data:
         date = k[0]
         break
     # 回归测试表
@@ -47,14 +47,14 @@ def process(table, data_all, date, backtest_column):
     if not mdb.checkTableIsExist(table_name):
         return
 
-    column_tail = list(table['columns'].keys())[-1]
+    column_tail = tuple(table['columns'])[-1]
     sql = f"SELECT * FROM `{table_name}` WHERE `date` < '{runt.get_current_date()}' AND `{column_tail}` is NULL"
     try:
         data = pd.read_sql(sql=sql, con=mdb.conn_not_cursor())
         if data is None or len(data.index) == 0:
             return
 
-        subset = data[list(tbs.TABLE_CN_STOCK_FOREIGN_KEY['columns'].keys())]
+        subset = data[list(tbs.TABLE_CN_STOCK_FOREIGN_KEY['columns'])]
         subset['date'] = subset['date'].values.astype('str')
         stocks = [tuple(x) for x in subset.values]
 

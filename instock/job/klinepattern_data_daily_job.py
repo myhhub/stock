@@ -40,7 +40,7 @@ def prepare(date):
             cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_KLINE_PATTERN['columns'])
 
         dataKey = pd.DataFrame(results.keys())
-        _columns = list(tbs.TABLE_CN_STOCK_FOREIGN_KEY['columns'].keys())
+        _columns = tuple(tbs.TABLE_CN_STOCK_FOREIGN_KEY['columns'])
         dataKey.columns = _columns
 
         dataVal = pd.DataFrame(results.values())
@@ -62,8 +62,7 @@ def run_check(stocks, date=None, workers=40):
     data_column = columns
     try:
         with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
-            future_to_data = {executor.submit(kpr.get_pattern_recognition, k, v, data_column, date=date): k for k, v in
-                              stocks.items()}
+            future_to_data = {executor.submit(kpr.get_pattern_recognition, k, stocks[k], data_column, date=date): k for k in stocks}
             for future in concurrent.futures.as_completed(future_to_data):
                 stock = future_to_data[future]
                 try:

@@ -19,8 +19,6 @@ class GetDataIndicatorsHandler(webBase.BaseHandler, ABC):
     def get(self):
         code = self.get_argument("code", default=None, strip=False)
         date = self.get_argument("date", default=None, strip=False)
-        # self.uri_ = ("self.request.url:", self.request.uri)
-        # print self.uri_
         comp_list = []
         try:
             stock = stf.fetch_stock_hist((date, code))

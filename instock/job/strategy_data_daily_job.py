@@ -40,9 +40,9 @@ def prepare(date, strategy):
             cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_STRATEGIES[0]['columns'])
 
         data = pd.DataFrame(results)
-        columns = list(tbs.TABLE_CN_STOCK_FOREIGN_KEY['columns'].keys())
+        columns = tuple(tbs.TABLE_CN_STOCK_FOREIGN_KEY['columns'])
         data.columns = columns
-        _columns_backtest = list(tbs.TABLE_CN_STOCK_BACKTEST_DATA['columns'].keys())
+        _columns_backtest = tuple(tbs.TABLE_CN_STOCK_BACKTEST_DATA['columns'])
         data = pd.concat([data, pd.DataFrame(columns=_columns_backtest)])
         # 单例，时间段循环必须改时间
         date_str = date.strftime("%Y-%m-%d")
@@ -64,11 +64,9 @@ def run_check(strategy_fun, stocks, date, workers=40):
     try:
         with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
             if is_check_high_tight:
-                future_to_data = {executor.submit(strategy_fun, k, v, date=date, istop=(k[1] in stock_tops)): k for k, v
-                                  in stocks.items()}
+                future_to_data = {executor.submit(strategy_fun, k, stocks[k], date=date, istop=(k[1] in stock_tops)): k for k in stocks}
             else:
-                future_to_data = {executor.submit(strategy_fun, k, v, date=date): k for k, v
-                                  in stocks.items()}
+                future_to_data = {executor.submit(strategy_fun, k, stocks[k], date=date): k for k in stocks}
             for future in concurrent.futures.as_completed(future_to_data):
                 stock = future_to_data[future]
                 try:

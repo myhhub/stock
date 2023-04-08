@@ -61,7 +61,7 @@ def fetch_stocks(date):
         data = ak.stock_zh_a_spot_em()
         if data is None or len(data.index) == 0:
             return None
-        columns = list(cons.TABLE_CN_STOCK_SPOT['columns'].keys())
+        columns = list(cons.TABLE_CN_STOCK_SPOT['columns'])
         columns[0] = 'index'
         data.columns = columns
         data = data.loc[data['code'].apply(is_a_stock)].loc[data['latest_price'].apply(is_open)]
@@ -116,7 +116,7 @@ def fetch_stock_top_data(date):
         data = ak.stock_lhb_ggtj_sina(recent_day="5")
         if data is None or len(data.index) == 0:
             return None
-        _columns = list(cons.TABLE_CN_STOCK_TOP['columns'].keys())
+        _columns = list(cons.TABLE_CN_STOCK_TOP['columns'])
         _columns.pop(0)
         data.columns = _columns
         data = data.loc[data['code'].apply(is_a_stock)]
@@ -135,7 +135,7 @@ def fetch_stock_blocktrade_data(date):
         if data is None or len(data.index) == 0:
             return None
 
-        columns = list(cons.TABLE_CN_STOCK_BLOCKTRADE['columns'].keys())
+        columns = list(cons.TABLE_CN_STOCK_BLOCKTRADE['columns'])
         columns.insert(0, 'index')
         data.columns = columns
         data = data.loc[data['code'].apply(is_a_stock)]
@@ -192,7 +192,7 @@ def stock_hist_cache(code, date_start, date_end=None, adjust=''):
 
             if stock is None or len(stock.index) == 0:
                 return None
-            stock.columns = list(cons.CN_STOCK_HIST_DATA['columns'].keys())
+            stock.columns = tuple(cons.CN_STOCK_HIST_DATA['columns'])
             stock = stock.sort_index()  # 将数据按照日期排序下。
             try:
                 stock.to_pickle(cache_file, compression="gzip")

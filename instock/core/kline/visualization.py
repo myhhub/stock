@@ -85,27 +85,28 @@ def get_plot_kline(code, stock, date):
         checkboxes_code = """var acts = cb_obj.active;"""
         pattern_labels = []
         i = 0
-        for k, v in stock_column.items():
+        for k in stock_column:
+            label_cn = stock_column[k]['cn']
             label_mask_u = (data[k] > 0)
             label_data_u = data.loc[label_mask_u].copy()
             isHas = False
             if len(label_data_u.index) > 0:
-                label_data_u.loc[:, 'label_cn'] = v['cn']
+                label_data_u.loc[:, 'label_cn'] = label_cn
                 label_source_u = ColumnDataSource(label_data_u)
                 locals()[f'pattern_labels_u_{str(i)}'] = LabelSet(x='index', y='high', text="label_cn",
                                                                   source=label_source_u, x_offset=7, y_offset=5,
                                                                   angle=90, angle_units='deg', text_color='red',
                                                                   text_font_style='bold', text_font_size="9pt")
                 p_kline.add_layout(locals()[f'pattern_labels_u_{str(i)}'])
-                checkboxes_args['lsu' + str(i)] = locals()[f'pattern_labels_u_{str(i)}']
+                checkboxes_args[f'lsu{str(i)}'] = locals()[f'pattern_labels_u_{str(i)}']
                 checkboxes_code = f"{checkboxes_code}lsu{i}.visible = acts.includes({i});"
-                pattern_labels.append(v['cn'])
+                pattern_labels.append(label_cn)
                 isHas = True
 
             label_mask_d = (data[k] < 0)
             label_data_d = data.loc[label_mask_d].copy()
             if len(label_data_d.index) > 0:
-                label_data_d.loc[:, 'label_cn'] = v['cn']
+                label_data_d.loc[:, 'label_cn'] = label_cn
                 label_source_d = ColumnDataSource(label_data_d)
                 locals()[f'pattern_labels_d_{str(i)}'] = LabelSet(x='index', y='low', text='label_cn',
                                                                   source=label_source_d, x_offset=-7, y_offset=-5,
@@ -116,7 +117,7 @@ def get_plot_kline(code, stock, date):
                 checkboxes_args[f'lsd{str(i)}'] = locals()[f'pattern_labels_d_{str(i)}']
                 checkboxes_code = f"{checkboxes_code}lsd{i}.visible = acts.includes({i});"
                 if not isHas:
-                    pattern_labels.append(v['cn'])
+                    pattern_labels.append(label_cn)
                     isHas = True
             if isHas:
                 i += 1
@@ -184,9 +185,9 @@ def get_plot_kline(code, stock, date):
 
         # 东方财富股票页面
         if code.startswith("6"):
-            code_name = "SH" + code
+            code_name = f"SH{code}"
         else:
-            code_name = "SZ" + code
+            code_name = f"SZ{code}"
         div_dfcf_hq = Div(
             text=f"""<a href="https://quote.eastmoney.com/{code_name}.html" target="_blank">{code}行情</a>""",
             width=80)

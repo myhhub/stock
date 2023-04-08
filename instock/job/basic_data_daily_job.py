@@ -20,8 +20,8 @@ __date__ = '2023/3/10 '
 
 
 # 股票实时行情数据。
-def save_stock_spot_data(date):
-    if not runt.is_get_data(date):
+def save_nph_stock_spot_data(date, before=True):
+    if before and not runt.is_get_data(date):
         return
     # 股票列表
     try:
@@ -47,8 +47,8 @@ def save_stock_spot_data(date):
 # 接口: stock_lhb_ggtj_sina
 # 目标地址: http://vip.stock.finance.sina.com.cn/q/go.php/vLHBData/kind/ggtj/index.phtml
 # 描述: 获取新浪财经-龙虎榜-个股上榜统计
-def save_stock_top_data(date):
-    if not runt.is_get_data(date):
+def save_nph_stock_top_data(date, before=True):
+    if before and not runt.is_get_data(date):
         return
 
     try:
@@ -97,8 +97,8 @@ def main():
     # 执行数据初始化。
     # 使用方法传递。
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        executor.submit(runt.run_with_args, save_stock_spot_data)
-        executor.submit(runt.run_with_args, save_stock_top_data)
+        executor.submit(runt.run_with_args, save_nph_stock_spot_data)
+        executor.submit(runt.run_with_args, save_nph_stock_top_data)
         executor.submit(runt.run_with_args, save_stock_blocktrade_data)
 
 
