@@ -61,8 +61,7 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
 
             # cr
             data.loc[:, 'm_price'] = data['amount'].values / data['volume'].values
-            data.loc[:, 'm_price_sf1'] = data['m_price'].shift(1).values
-            data['m_price_sf1'].values[np.isnan(data['m_price_sf1'].values)] = 0.0
+            data.loc[:, 'm_price_sf1'] = data['m_price'].shift(1, fill_value=0.0).values
             data.loc[:, 'h_m'] = data['high'].values - data[['m_price_sf1', 'high']].values.min(axis=1)
             data.loc[:, 'm_l'] = data['m_price_sf1'].values - data[['m_price_sf1', 'low']].values.min(axis=1)
             data.loc[:, 'h_m_sum'] = tl.SUM(data['h_m'].values, timeperiod=26)
@@ -103,8 +102,7 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
             data['vr_6_sma'].values[np.isnan(data['vr_6_sma'].values)] = 0.0
 
             # atr
-            data.loc[:, 'prev_close'] = data['close'].shift(1).values
-            data['prev_close'].values[np.isnan(data['prev_close'].values)] = 0.0
+            data.loc[:, 'prev_close'] = data['close'].shift(1, fill_value=0.0).values
             data.loc[:, 'h_l'] = data['high'].values - data['low'].values
             data.loc[:, 'h_pc'] = abs(data['high'].values - data['prev_close'].values)
             data.loc[:, 'l_pc'] = abs(data['prev_close'].values - data['low'].values)
@@ -116,7 +114,7 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
             # DMI
             # talib计算公式和stockstats不同
             # talib计算公式
-            # data.loc[:, 'ti'] = tl.PLUS_DI(data['high'].values, data['low'].values, data['close'].values, timeperiod=14)
+            # data.loc[:, 'pdi'] = tl.PLUS_DI(data['high'].values, data['low'].values, data['close'].values, timeperiod=14)
             # data['pdi'].values[np.isnan(data['pdi'].values)] = 0.0
             # data.loc[:, 'mdi'] = tl.MINUS_DI(data['high'].values, data['low'].values, data['close'].values, timeperiod=14)
             # data['mdi'].values[np.isnan(data['mdi'].values)] = 0.0
@@ -337,10 +335,9 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
             data['br'] = data['br'].values * 100
 
             # EMV
-            data.loc[:, 'prev_high'] = data['high'].shift(1).values
-            data.loc[:, 'prev_low'] = data['low'].shift(1).values
+            data.loc[:, 'prev_high'] = data['high'].shift(1, fill_value=0.0).values
+            data.loc[:, 'prev_low'] = data['low'].shift(1, fill_value=0.0).values
             data.loc[:, 'm_hl'] = (data['prev_high'].values + data['prev_low'].values) / 2
-            data['m_hl'].values[np.isnan(data['m_hl'].values)] = 0.0
             data.loc[:, 'emva_em'] = (data['m_price'].values - data['m_hl'].values) * data['h_l'].values / data['amount'].values
             data.loc[:, 'emv'] = tl.SUM(data['emva_em'].values, timeperiod=14)
             data['emv'].values[np.isnan(data['emv'].values)] = 0.0
@@ -366,8 +363,7 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
 
             # DPO
             data.loc[:, 'c_m_11'] = tl.MA(data['close'].values, timeperiod=11)
-            data.loc[:, 'dpo'] = data['close'].values - data['c_m_11'].shift(1).values
-            data['dpo'].values[np.isnan(data['dpo'].values)] = 0.0
+            data.loc[:, 'dpo'] = data['close'].values - data['c_m_11'].shift(1, fill_value=0.0).values
             data.loc[:, 'madpo'] = tl.MA(data['dpo'].values, timeperiod=6)
             data['madpo'].values[np.isnan(data['madpo'].values)] = 0.0
 
@@ -378,12 +374,10 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
             data['vhf'].values[np.isnan(data['vhf'].values)] = 0.0
 
             # RVI
-            data.loc[:, 'rvi_x'] = data['close'].values - data['open'].values + 2 * (data['prev_close'].values - data['open'].shift(1).values) + 2 * (
-                    data['close'].shift(2).values - data['open'].shift(2).values) * (data['close'].shift(3).values - data['open'].shift(3).values) / 6
+            data.loc[:, 'rvi_x'] = data['close'].values - data['open'].values + 2 * (data['prev_close'].values - data['open'].shift(1, fill_value=0.0).values) + 2 * (
+                    data['close'].shift(2, fill_value=0.0).values - data['open'].shift(2, fill_value=0.0).values) * (data['close'].shift(3, fill_value=0.0).values - data['open'].shift(3, fill_value=0.0).values) / 6
             data.loc[:, 'rvi_y'] = data['high'].values - data['low'].values + 2 * (data['prev_high'].values - data['prev_low'].values) + 2 * (
-                    data['high'].shift(2).values - data['low'].shift(2).values) * (data['high'].shift(3).values - data['low'].shift(3).values) / 6
-            data['rvi_x'].values[np.isnan(data['rvi_x'].values)] = 0.0
-            data['rvi_y'].values[np.isnan(data['rvi_y'].values)] = 0.0
+                    data['high'].shift(2, fill_value=0.0).values - data['low'].shift(2, fill_value=0.0).values) * (data['high'].shift(3, fill_value=0.0).values - data['low'].shift(3, fill_value=0.0).values) / 6
             data.loc[:, 'rvi'] = tl.MA(data['rvi_x'].values, timeperiod=10) / tl.MA(data['rvi_y'].values, timeperiod=10)
             data['rvi'].values[np.isnan(data['rvi'].values)] = 0.0
             data['rvi'].values[np.isinf(data['rvi'].values)] = 0.0
