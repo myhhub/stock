@@ -62,6 +62,7 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
             # cr
             data.loc[:, 'm_price'] = data['amount'].values / data['volume'].values
             data.loc[:, 'm_price_sf1'] = data['m_price'].shift(1).values
+            data['m_price_sf1'].values[np.isnan(data['m_price_sf1'].values)] = 0.0
             data.loc[:, 'h_m'] = data['high'].values - data[['m_price_sf1', 'high']].values.min(axis=1)
             data.loc[:, 'm_l'] = data['m_price_sf1'].values - data[['m_price_sf1', 'low']].values.min(axis=1)
             data.loc[:, 'h_m_sum'] = tl.SUM(data['h_m'].values, timeperiod=26)
@@ -103,6 +104,7 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
 
             # atr
             data.loc[:, 'prev_close'] = data['close'].shift(1).values
+            data['prev_close'].values[np.isnan(data['prev_close'].values)] = 0.0
             data.loc[:, 'h_l'] = data['high'].values - data['low'].values
             data.loc[:, 'h_pc'] = abs(data['high'].values - data['prev_close'].values)
             data.loc[:, 'l_pc'] = abs(data['prev_close'].values - data['low'].values)
@@ -338,6 +340,7 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
             data.loc[:, 'prev_high'] = data['high'].shift(1).values
             data.loc[:, 'prev_low'] = data['low'].shift(1).values
             data.loc[:, 'm_hl'] = (data['prev_high'].values + data['prev_low'].values) / 2
+            data['m_hl'].values[np.isnan(data['m_hl'].values)] = 0.0
             data.loc[:, 'emva_em'] = (data['m_price'].values - data['m_hl'].values) * data['h_l'].values / data['amount'].values
             data.loc[:, 'emv'] = tl.SUM(data['emva_em'].values, timeperiod=14)
             data['emv'].values[np.isnan(data['emv'].values)] = 0.0
@@ -370,6 +373,7 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
 
             # VHF
             data.loc[:, 'hcp_lcp'] = tl.MAX(data['close'].values, timeperiod=28) - tl.MIN(data['close'].values, timeperiod=28)
+            data['hcp_lcp'].values[np.isnan(data['hcp_lcp'].values)] = 0.0
             data.loc[:, 'vhf'] = np.divide(data['hcp_lcp'].values, tl.MA(abs(data['close'].values - data['prev_close'].values), timeperiod=28) * 28)
             data['vhf'].values[np.isnan(data['vhf'].values)] = 0.0
 
@@ -378,6 +382,8 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
                     data['close'].shift(2).values - data['open'].shift(2).values) * (data['close'].shift(3).values - data['open'].shift(3).values) / 6
             data.loc[:, 'rvi_y'] = data['high'].values - data['low'].values + 2 * (data['prev_high'].values - data['prev_low'].values) + 2 * (
                     data['high'].shift(2).values - data['low'].shift(2).values) * (data['high'].shift(3).values - data['low'].shift(3).values) / 6
+            data['rvi_x'].values[np.isnan(data['rvi_x'].values)] = 0.0
+            data['rvi_y'].values[np.isnan(data['rvi_y'].values)] = 0.0
             data.loc[:, 'rvi'] = tl.MA(data['rvi_x'].values, timeperiod=10) / tl.MA(data['rvi_y'].values, timeperiod=10)
             data['rvi'].values[np.isnan(data['rvi'].values)] = 0.0
             data['rvi'].values[np.isinf(data['rvi'].values)] = 0.0
@@ -427,7 +433,7 @@ def get_indicator(code_name, data, stock_column, date=None, calc_threshold=90):
         stock_data_list = [end_date, code]
         columns_num = len(stock_column) - 2
         # 增加空判断，如果是空返回 0 数据。
-        if len(data.index) == 0:
+        if len(data.index) <= 1:
             for i in range(columns_num):
                 stock_data_list.append(0)
             return pd.Series(stock_data_list, index=stock_column)

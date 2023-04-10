@@ -40,8 +40,9 @@ def check(code_name, data, date=None, threshold=60):
     data_front = data.loc[(data['date'] < breakthrough_row['date'])]
     data_end = data.loc[(data['date'] >= breakthrough_row['date'])]
 
-    for index, row in data_front.iterrows():
-        if not (-0.05 < (row['ma60'] - row['close']) / row['ma60'] < 0.2):
+    for row in data_front.itertuples():
+        _ma60 = getattr(row, 'ma60')
+        if not (-0.05 < ((_ma60 - getattr(row, 'close')) / _ma60) < 0.2):
             return False
 
     return True
