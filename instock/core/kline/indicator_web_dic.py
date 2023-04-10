@@ -14,11 +14,23 @@ indicators_dic = [
     """,
         "dic": ("macd", "macds", "macdh")
     }, {
+        "title": "PPO",
+        "desc": """
+            <a href="https://www.ljjyy.com/archives/2023/04/100711.html" target="_blank">价格震荡百分比指标(PPO)</a>
+        """,
+        "dic": ("ppo", "ppos", "ppoh")
+    }, {
         "title": "KDJ",
         "desc": """
         <a href="https://www.ljjyy.com/archives/2023/04/100687.html" rel="nofollow" target="_blank">随机指标(KDJ)</a>
     """,
         "dic": ("kdjk", "kdjd", "kdjj")
+    }, {
+        "title": "W&R",
+        "desc": """
+            <a href="https://www.ljjyy.com/archives/2023/04/100699.html" rel="nofollow" target="_blank">威廉指数(W&R)</a>
+        """,
+        "dic": ("wr_6", "wr_10", "wr_14")
     }, {
         "title": "BOLL",
         "desc": """
@@ -56,6 +68,18 @@ indicators_dic = [
         """,
         "dic": ("rsi_6", "rsi_12", "rsi", "rsi_24")
     }, {
+        "title": "RVI",
+        "desc": """
+            <a href="https://www.ljjyy.com/archives/2023/04/100716.html" target="_blank">相对离散指数(RVI)</a>
+        """,
+        "dic": ("rvi",)
+    }, {
+        "title": "WT",
+        "desc": """
+            <a href="https://www.ljjyy.com/archives/2023/04/100712.html" target="_blank">LazyBear's Wave Trend指标(WT)</a>
+        """,
+        "dic": ("wt1", "wt2")
+    }, {
         "title": "VR",
         "desc": """
         <a href="https://www.ljjyy.com/archives/2023/04/100694.html" rel="nofollow" target="_blank">成交量比率(VR)</a>
@@ -76,11 +100,11 @@ indicators_dic = [
     """,
         "dic": ("pdi", "mdi", "dx", "adx", "adxr")
     }, {
-        "title": "W&R",
+        "title": "VHF",
         "desc": """
-            <a href="https://www.ljjyy.com/archives/2023/04/100699.html" rel="nofollow" target="_blank">威廉指数(W&R)</a>
+            <a href="https://www.ljjyy.com/archives/2023/04/100715.html" target="_blank">十字过滤线(VHF)</a>
         """,
-        "dic": ("wr_6", "wr_10", "wr_14")
+        "dic": ("vhf",)
     }, {
         "title": "CCI",
         "desc": """
@@ -148,18 +172,6 @@ indicators_dic = [
         """,
         "dic": ("close", "vwma")
     }, {
-        "title": "PPO",
-        "desc": """
-            <a href="https://www.ljjyy.com/archives/2023/04/100711.html" target="_blank">价格震荡百分比指标(PPO)</a>
-        """,
-        "dic": ("ppo", "ppos", "ppoh")
-    }, {
-        "title": "WT",
-        "desc": """
-            <a href="https://www.ljjyy.com/archives/2023/04/100712.html" target="_blank">LazyBear's Wave Trend指标(WT)</a>
-        """,
-        "dic": ("wt1", "wt2")
-    }, {
         "title": "SUPERTREND",
         "desc": """
             <a href="https://www.ljjyy.com/archives/2023/04/100713.html" target="_blank">超级趋势指标(SUPERTREND)</a>
@@ -171,18 +183,6 @@ indicators_dic = [
             <a href="https://www.ljjyy.com/archives/2023/04/100714.html" target="_blank">区间震荡线(DPO)</a>
         """,
         "dic": ("dpo", "madpo")
-    }, {
-        "title": "VHF",
-        "desc": """
-            <a href="https://www.ljjyy.com/archives/2023/04/100715.html" target="_blank">十字过滤线(VHF)</a>
-        """,
-        "dic": ("vhf",)
-    }, {
-        "title": "RVI",
-        "desc": """
-            <a href="https://www.ljjyy.com/archives/2023/04/100716.html" target="_blank">相对离散指数(RVI)</a>
-        """,
-        "dic": ("rvi",)
     }, {
         "title": "FI",
         "desc": """

@@ -160,3 +160,4 @@ cython_debug/
 cache/
 log/
 test/
+trade/

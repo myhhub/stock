@@ -113,11 +113,17 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
 
             # DMI
             # talib计算公式和stockstats不同
-            # data.loc[:, 'pdi'] = tl.PLUS_DI(data['high'], data['low'], data['close'], timeperiod=14).fillna(0.0)
-            # data.loc[:, 'mdi'] = tl.MINUS_DI(data['high'], data['low'], data['close'], timeperiod=14).fillna(0.0)
-            # data.loc[:, 'dx'] = tl.DX(data['high'], data['low'], data['close'], timeperiod=14).fillna(0.0)
-            # data.loc[:, 'adx'] = tl.ADX(data['high'], data['low'], data['close'], timeperiod=6).fillna(0.0)
-            # data.loc[:, 'adxr'] = tl.ADXR(data['high'], data['low'], data['close'], timeperiod=6).fillna(0.0)
+            # talib计算公式
+            # data.loc[:, 'ti'] = tl.PLUS_DI(data['high'].values, data['low'].values, data['close'].values, timeperiod=14)
+            # data['pdi'].values[np.isnan(data['pdi'].values)] = 0.0
+            # data.loc[:, 'mdi'] = tl.MINUS_DI(data['high'].values, data['low'].values, data['close'].values, timeperiod=14)
+            # data['mdi'].values[np.isnan(data['mdi'].values)] = 0.0
+            # data.loc[:, 'dx'] = tl.DX(data['high'].values, data['low'].values, data['close'].values, timeperiod=14)
+            # data['dx'].values[np.isnan(data['dx'].values)] = 0.0
+            # data.loc[:, 'adx'] = tl.ADX(data['high'].values, data['low'].values, data['close'].values, timeperiod=6)
+            # data['adx'].values[np.isnan(data['adx'].values)] = 0.0
+            # data.loc[:, 'adxr'] = tl.ADXR(data['high'].values, data['low'].values, data['close'].values, timeperiod=6)
+            # data['adxr'].values[np.isnan(data['adxr'].values)] = 0.0
             # stockstats计算公式
             data.loc[:, 'high_delta'] = np.insert(np.diff(data['high'].values), 0, 0.0)
             data.loc[:, 'high_m'] = (data['high_delta'].values + abs(data['high_delta'].values)) / 2
