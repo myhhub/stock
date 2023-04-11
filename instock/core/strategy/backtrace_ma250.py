@@ -26,7 +26,7 @@ def check(code_name, data, date=None, threshold=60):
         mask = (data['date'] <= end_date)
         data = data.loc[mask]
     if len(data.index) < 250:
-        return
+        return False
 
     data.loc[:, 'ma250'] = tl.MA(data['close'].values, timeperiod=250)
     data['ma250'].values[np.isnan(data['ma250'].values)] = 0.0
