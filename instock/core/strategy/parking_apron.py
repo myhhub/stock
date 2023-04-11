@@ -23,7 +23,6 @@ def check(code_name, data, date=None, threshold=15):
 
     data = data.tail(n=threshold)
 
-    flag = False
     limitup_row = [1000000, '']
     # 找出涨停日
     for _close, _p_change, _date in zip(data['close'].values, data['p_change'].values, data['date'].values):
@@ -32,9 +31,7 @@ def check(code_name, data, date=None, threshold=15):
                 limitup_row[0] = _close
                 limitup_row[1] = _date
                 if check_internal(data, limitup_row):
-                    flag = True
-                    break
-    return flag
+                    return True
 
 
 def check_internal(data, limitup_row):
