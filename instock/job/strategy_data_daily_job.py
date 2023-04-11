@@ -27,7 +27,7 @@ def prepare(date, strategy):
             return
         table_name = strategy['name']
         strategy_func = strategy['func']
-        results = run_check(strategy_func, stocks_data, date)
+        results = run_check(strategy_func, table_name, stocks_data, date)
         if results is None:
             return
 
@@ -54,7 +54,7 @@ def prepare(date, strategy):
         logging.debug("{}处理异常：{}策略{}".format('strategy_data_daily_job.prepare', strategy, e))
 
 
-def run_check(strategy_fun, stocks, date, workers=40):
+def run_check(strategy_fun, table_name, stocks, date, workers=40):
     is_check_high_tight = False
     if strategy_fun.__name__ == 'check_high_tight':
         stock_tops = fetch_stock_top_entity_data(date)
@@ -62,7 +62,7 @@ def run_check(strategy_fun, stocks, date, workers=40):
             is_check_high_tight = True
     data = []
     try:
-        with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
             if is_check_high_tight:
                 future_to_data = {executor.submit(strategy_fun, k, stocks[k], date=date, istop=(k[1] in stock_tops)): k for k in stocks}
             else:
@@ -74,9 +74,9 @@ def run_check(strategy_fun, stocks, date, workers=40):
                         data.append(stock)
                 except Exception as e:
                     logging.debug(
-                        "{}处理异常：{}代码{}".format('strategy_data_daily_job.run_check', stock[1], e))
+                        "{}处理异常：{}代码{}策略{}".format('strategy_data_daily_job.run_check', stock[1], e, table_name))
     except Exception as e:
-        logging.debug("{}处理异常：{}".format('strategy_data_daily_job.run_check', e))
+        logging.debug("{}处理异常：{}策略{}".format('strategy_data_daily_job.run_check', e, table_name))
     if not data:
         return None
     else:
@@ -85,7 +85,7 @@ def run_check(strategy_fun, stocks, date, workers=40):
 
 def main():
     # 使用方法传递。
-    with concurrent.futures.ThreadPoolExecutor() as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
         for strategy in tbs.TABLE_CN_STOCK_STRATEGIES:
             executor.submit(runt.run_with_args, prepare, strategy)
 

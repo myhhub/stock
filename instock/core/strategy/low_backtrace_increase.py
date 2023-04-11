@@ -1,7 +1,6 @@
 #!/usr/local/bin/python
 # -*- coding: utf-8 -*-
 
-import logging
 
 __author__ = 'myh '
 __date__ = '2023/3/10 '
@@ -17,7 +16,6 @@ def check(code_name, data, date=None, threshold=60):
         mask = (data['date'] <= end_date)
         data = data.loc[mask]
     if len(data.index) < threshold:
-        # logging.debug("{0}:样本小于{1}天...\n".format(code_name, threshold))
         return False
 
     data = data.tail(n=threshold)
@@ -27,17 +25,14 @@ def check(code_name, data, date=None, threshold=60):
         return False
 
     # 允许有一次“洗盘”
-    flag = True
-    for i in range(1, len(data)):
+    previous_p_change = 100.0
+    previous_open = -1000000.0
+    for _p_change, _close, _open in zip(data['p_change'].values, data['close'].values, data['open'].values):
         # 单日跌幅超7%；高开低走7%；两日累计跌幅10%；两日高开低走累计10%
-        if data.iloc[i - 1]['p_change'] < -7 \
-                or (data.iloc[i]['close'] - data.iloc[i]['open']) / data.iloc[i]['open'] * 100 < -7 \
-                or data.iloc[i - 1]['p_change'] + data.iloc[i]['p_change'] < -10 \
-                or (data.iloc[i]['close'] - data.iloc[i - 1]['open']) / data.iloc[i - 1]['open'] * 100 < -10:
+        if _p_change < -7 or (_close - _open) / _open * 100 < -7 \
+                or previous_p_change + _p_change < -10 \
+                or (_close - previous_open)/previous_open * 100 < -10:
             return False
-            # if flag:
-            #     flag = False
-            # else:
-            #     return False
-
+        previous_p_change = _p_change
+        previous_open = _open
     return True

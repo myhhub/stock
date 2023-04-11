@@ -1,9 +1,8 @@
 #!/usr/local/bin/python
 # -*- coding: utf-8 -*-
 
+import numpy as np
 import talib as tl
-import pandas as pd
-import logging
 
 __author__ = 'myh '
 __date__ = '2023/3/10 '
@@ -17,14 +16,13 @@ def check(code_name, data, date=None, threshold=30):
         end_date = date.strftime("%Y-%m-%d")
     if end_date is not None:
         mask = (data['date'] <= end_date)
-        data = data.loc[mask].copy()
+        data = data.loc[mask]
     if len(data.index) < threshold:
-        # logging.debug("{0}:样本小于{1}天...\n".format(code_name, threshold))
         return
 
-    data.loc[:, 'ma30'] = pd.Series(tl.MA(data['close'].values, 30), index=data.index.values)
-    if len(data.index) == 0:
-        return
+    data.loc[:, 'ma30'] = tl.MA(data['close'].values, timeperiod=30)
+    data['ma30'].values[np.isnan(data['ma30'].values)] = 0.0
+
     data = data.tail(n=threshold)
 
     step1 = round(threshold / 3)

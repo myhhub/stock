@@ -443,7 +443,12 @@ def get_indicator(code_name, data, stock_column, date=None, calc_threshold=90):
         # 初始化统计类
         for i in range(columns_num):
             # 将数据的最后一个返回。
-            stock_data_list.append(idr_data[stock_column[i + 2]].tail(1).values[0])
+            tmp_val = idr_data[stock_column[i + 2]].tail(1).values[0]
+            # 解决值中存在INF NaN问题。
+            if np.isinf(tmp_val) or np.isnan(tmp_val):
+                stock_data_list.append(0)
+            else:
+                stock_data_list.append(tmp_val)
 
         return pd.Series(stock_data_list, index=stock_column)
     except Exception as e:
