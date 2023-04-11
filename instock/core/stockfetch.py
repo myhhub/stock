@@ -162,7 +162,7 @@ def fetch_stock_hist(data_base):
         data = stock_hist_cache(code, date_start, None, 'qfq')
         if data is not None:
             data.loc[:, 'p_change'] = tl.ROC(data['close'].values, 1)
-            data['volume'] = data['volume'].values.astype('double')
+            data["volume"] = data['volume'].values.astype('double') * 100  # 成交量单位从手变成股。
         return data
     except Exception as e:
         logging.debug("{}处理异常：{}".format('stockfetch.fetch_stock_hist', e))

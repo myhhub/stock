@@ -23,7 +23,6 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
 
         if isCopy:
             data = data.copy()
-        data["volume"] = data["volume"].values * 100  # 成交量单位从手变成股。
 
         # import stockstats
         # test = data.copy()

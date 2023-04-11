@@ -36,7 +36,7 @@ def check(code_name, data, date=None, threshold=60):
     # 最后一天成交量
     last_vol = data.iloc[-1]['volume']
 
-    amount = last_close * last_vol * 100
+    amount = last_close * last_vol
 
     # 成交额不低于2亿
     if amount < 200000000:
