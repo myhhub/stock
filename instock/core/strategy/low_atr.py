@@ -37,18 +37,16 @@ def check_low_increase(code_name, data, date=None, ma_short=30, ma_long=250, thr
 
     total_change = 0.0
     for _close, _p_change in zip(data['close'].values, data['p_change'].values):
-        p_change = float(_p_change)
-        if abs(p_change) > 0:
-            total_change += abs(p_change)
-
-        if p_change > 0:
+        if _p_change > 0:
+            total_change += abs(_p_change)
             inc_days = inc_days + 1
-        if p_change < 0:
+        elif _p_change < 0:
+            total_change += abs(_p_change)
             dec_days = dec_days + 1
 
         if _close > highest_row:
             highest_row = _close
-        if _close < lowest_row:
+        elif _close < lowest_row:
             lowest_row = _close
 
     atr = total_change / days_count
