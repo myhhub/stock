@@ -19,7 +19,7 @@ def check(code_name, data, date=None, threshold=15):
         mask = (data['date'] <= end_date)
         data = data.loc[mask]
     if len(data.index) < threshold:
-        return
+        return False
 
     data = data.tail(n=threshold)
 
@@ -32,7 +32,7 @@ def check(code_name, data, date=None, threshold=15):
                 limitup_row[1] = _date
                 if check_internal(data, limitup_row):
                     return True
-
+    return False
 
 def check_internal(data, limitup_row):
     limitup_price = limitup_row[0]
