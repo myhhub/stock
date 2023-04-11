@@ -363,6 +363,7 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
             # DPO
             data.loc[:, 'c_m_11'] = tl.MA(data['close'].values, timeperiod=11)
             data.loc[:, 'dpo'] = data['close'].values - data['c_m_11'].shift(1, fill_value=0.0).values
+            data['dpo'].values[np.isnan(data['dpo'].values)] = 0.0
             data.loc[:, 'madpo'] = tl.MA(data['dpo'].values, timeperiod=6)
             data['madpo'].values[np.isnan(data['madpo'].values)] = 0.0
 
