@@ -62,7 +62,7 @@ def run_check(strategy_fun, table_name, stocks, date, workers=40):
             is_check_high_tight = True
     data = []
     try:
-        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
             if is_check_high_tight:
                 future_to_data = {executor.submit(strategy_fun, k, stocks[k], date=date, istop=(k[1] in stock_tops)): k for k in stocks}
             else:
@@ -85,7 +85,7 @@ def run_check(strategy_fun, table_name, stocks, date, workers=40):
 
 def main():
     # 使用方法传递。
-    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+    with concurrent.futures.ThreadPoolExecutor() as executor:
         for strategy in tbs.TABLE_CN_STOCK_STRATEGIES:
             executor.submit(runt.run_with_args, prepare, strategy)
 
