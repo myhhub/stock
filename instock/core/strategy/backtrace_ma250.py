@@ -24,7 +24,7 @@ def check(code_name, data, date=None, threshold=60):
 
     if end_date is not None:
         mask = (data['date'] <= end_date)
-        data = data.loc[mask]
+        data = data.loc[mask].copy()
     if len(data.index) < 250:
         return False
 
