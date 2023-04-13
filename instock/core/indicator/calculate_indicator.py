@@ -188,12 +188,14 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
             data['vwma'].values[np.isnan(data['vwma'].values)] = 0.0
             data['vwma'].values[np.isinf(data['vwma'].values)] = 0.0
             # ppo
-            data.loc[:, 'ppo_short'] = tl.EMA(data['close'].values, timeperiod=12)
-            data.loc[:, 'ppo_long'] = tl.EMA(data['close'].values, timeperiod=26)
-            data.loc[:, 'ppo'] = ((data['ppo_short'].values - data['ppo_long'].values) / data['ppo_long'].values)
+            # data.loc[:, 'ppo_short'] = tl.EMA(data['close'].values, timeperiod=12)
+            # data.loc[:, 'ppo_long'] = tl.EMA(data['close'].values, timeperiod=26)
+            # data.loc[:, 'ppo'] = ((data['ppo_short'].values - data['ppo_long'].values) / data['ppo_long'].values)
+            # data['ppo'].values[np.isnan(data['ppo'].values)] = 0.0
+            # data['ppo'].values[np.isinf(data['ppo'].values)] = 0.0
+            # data['ppo'] = data['ppo'].values * 100
+            data.loc[:, 'ppo'] = tl.PPO(data['close'].values, fastperiod=12, slowperiod=26, matype=0)
             data['ppo'].values[np.isnan(data['ppo'].values)] = 0.0
-            data['ppo'].values[np.isinf(data['ppo'].values)] = 0.0
-            data['ppo'] = data['ppo'].values * 100
             data.loc[:, 'ppos'] = tl.EMA(data['ppo'].values, timeperiod=9)
             data['ppos'].values[np.isnan(data['ppos'].values)] = 0.0
             data.loc[:, 'ppoh'] = data['ppo'].values - data['ppos'].values
