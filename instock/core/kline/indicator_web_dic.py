@@ -68,6 +68,12 @@ indicators_dic = [
         """,
         "dic": ("rsi_6", "rsi_12", "rsi", "rsi_24")
     }, {
+        "title": "STOCHRSI",
+        "desc": """
+            <a href="https://www.ljjyy.com/archives/2023/04/100719.html" rel="nofollow" target="_blank">随机相对强弱指标(STOCHRSI)</a> 
+        """,
+        "dic": ("stochrsi_k", "stochrsi_d")
+    }, {
         "title": "RVI",
         "desc": """
             <a href="https://www.ljjyy.com/archives/2023/04/100716.html" target="_blank">相对离散指数(RVI)</a>

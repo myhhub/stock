@@ -131,7 +131,8 @@ STOCK_STATS_DATA = {'name': 'calculate_indicator', 'cn': '股票统计/指标计
                                 'fi': {'type': FLOAT, 'cn': 'fi'}, 'force_2': {'type': FLOAT, 'cn': 'force_2'},
                                 'force_13': {'type': FLOAT, 'cn': 'force_13'},
                                 'ene_ue': {'type': FLOAT, 'cn': 'ene上轨'}, 'ene': {'type': FLOAT, 'cn': 'ene'},
-                                'ene_le': {'type': FLOAT, 'cn': 'ene下轨'}
+                                'ene_le': {'type': FLOAT, 'cn': 'ene下轨'},
+                                'stochrsi_k': {'type': FLOAT, 'cn': 'stochrsi_k'}, 'stochrsi_d': {'type': FLOAT, 'cn': 'stochrsi_d'}
                                 }}
 
 TABLE_CN_STOCK_INDICATORS = {'name': 'cn_stock_indicators', 'cn': '股票指标数据',

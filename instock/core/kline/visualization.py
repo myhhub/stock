@@ -180,7 +180,7 @@ def get_plot_kline(code, stock, date):
             div_indicator = Div(text=f"""★★★★★指标详细解读：{conf["desc"]}""", width=p_kline.width)
             tabs.append(TabPanel(child=column(p_indicator, row(div_indicator)), title=conf["title"]))
         tabs_indicators = Tabs(tabs=tabs, tabs_location='below', width=p_kline.width, stylesheets=[
-            {'.bk-tab': Styles(padding='1px 3px'),
+            {'.bk-tab': Styles(padding='1px 2.5px'),
              '.bk-tab.bk-active': Styles(background_color='yellow', color='red')}])
 
         # 东方财富股票页面

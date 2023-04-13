@@ -195,12 +195,16 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
             data.loc[:, 'ppoh'] = data['ppo'].values - data['ppos'].values
 
             # stochrsi
+            # talib计算公式和stockstats不同
+            # talib计算公式
+            # data.loc[:, 'stochrsi_k'], data.loc[:, 'stochrsi_d'] = tl.STOCHRSI(data['close'].values, timeperiod=14, fastk_period=5, fastd_period=3, fastd_matype=0)
             data.loc[:, 'rsi_min'] = tl.MIN(data['rsi'].values, timeperiod=14)
             data.loc[:, 'rsi_max'] = tl.MAX(data['rsi'].values, timeperiod=14)
-            data.loc[:, 'stochrsi'] = (data['rsi'].values - data['rsi_min'].values) / (data['rsi_max'].values - data['rsi_min'].values)
-            data['stochrsi'].values[np.isnan(data['stochrsi'].values)] = 0.0
-            data['stochrsi'].values[np.isinf(data['stochrsi'].values)] = 0.0
-            data['stochrsi'] = data['stochrsi'].values * 100
+            data.loc[:, 'stochrsi_k'] = (data['rsi'].values - data['rsi_min'].values) / (data['rsi_max'].values - data['rsi_min'].values)
+            data['stochrsi_k'].values[np.isnan(data['stochrsi_k'].values)] = 0.0
+            data['stochrsi_k'].values[np.isinf(data['stochrsi_k'].values)] = 0.0
+            data['stochrsi_k'] = data['stochrsi_k'].values * 100
+            data.loc[:, 'stochrsi_d'] = tl.MA(data['stochrsi_k'].values, timeperiod=3)
 
             # wt
             data.loc[:, 'esa'] = tl.EMA(data['m_price'].values, timeperiod=10)
