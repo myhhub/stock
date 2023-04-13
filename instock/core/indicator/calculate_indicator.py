@@ -150,24 +150,13 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
             data['adxr'].values[np.isnan(data['adxr'].values)] = 0.0
 
             # wr
-            data.loc[:, 'h_6'] = tl.MAX(data['high'].values, timeperiod=6)
-            data.loc[:, 'l_6'] = tl.MIN(data['low'].values, timeperiod=6)
-            data.loc[:, 'wr_6'] = ((data['h_6'].values - data['close'].values) / (data['h_6'].values - data['l_6'].values))
+            data.loc[:, 'wr_6'] = tl.WILLR(data['high'].values, data['low'].values, data['close'].values, timeperiod=6)
             data['wr_6'].values[np.isnan(data['wr_6'].values)] = 0.0
-            data['wr_6'].values[np.isinf(data['wr_6'].values)] = 0.0
-            data['wr_6'] = data['wr_6'].values * 100
-            data.loc[:, 'h_10'] = tl.MAX(data['high'].values, timeperiod=10)
-            data.loc[:, 'l_10'] = tl.MIN(data['low'].values, timeperiod=10)
-            data.loc[:, 'wr_10'] = ((data['h_10'].values - data['close'].values) / (data['h_10'].values - data['l_10'].values))
+            data.loc[:, 'wr_10'] = tl.WILLR(data['high'].values, data['low'].values, data['close'].values, timeperiod=10)
             data['wr_10'].values[np.isnan(data['wr_10'].values)] = 0.0
-            data['wr_10'].values[np.isinf(data['wr_10'].values)] = 0.0
-            data['wr_10'] = data['wr_10'].values * 100
-            data.loc[:, 'h_14'] = tl.MAX(data['high'].values, timeperiod=14)
-            data.loc[:, 'l_14'] = tl.MIN(data['low'].values, timeperiod=14)
-            data.loc[:, 'wr_14'] = ((data['h_14'].values - data['close'].values) / (data['h_14'].values - data['l_14'].values))
+            data.loc[:, 'wr_14'] = tl.WILLR(data['high'].values, data['low'].values, data['close'].values, timeperiod=14)
             data['wr_14'].values[np.isnan(data['wr_14'].values)] = 0.0
-            data['wr_14'].values[np.isinf(data['wr_14'].values)] = 0.0
-            data['wr_14'] = data['wr_14'].values * 100
+
 
             # cci 计算方法和结果和stockstats不同，stockstats典型价采用均价(总额/成交量)计算
             data.loc[:, 'cci'] = tl.CCI(data['high'].values, data['low'].values, data['close'].values, timeperiod=14)
