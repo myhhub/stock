@@ -174,7 +174,7 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
             data['dma_10_sma'].values[np.isnan(data['dma_10_sma'].values)] = 0.0
 
             # tema
-            data.loc[:, 'tema'] = tl.TEMA(data['close'].values, timeperiod=5)
+            data.loc[:, 'tema'] = tl.TEMA(data['close'].values, timeperiod=14)
             data['tema'].values[np.isnan(data['tema'].values)] = 0.0
 
             # mfi 计算方法和结果和stockstats不同，stockstats典型价采用均价(总额/成交量)计算
