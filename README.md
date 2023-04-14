@@ -258,10 +258,10 @@ db_charset = "utf8mb4"  # 数据库字符集
         例如：广发的下载核新独立委托端(同花顺版):
         http://www.gf.com.cn/softdownload/index?tab=1
 2.安装tesseract(自动识别验证码)
-    第一方法.下载编译好的
+    第一种方法.下载编译好的
         在下面链接页，根据操作系统选择相应版本
         https://digi.bib.uni-mannheim.de/tesseract/
-    第二方法.用源码编译
+    第二种方法.用源码编译
         下载源码：https://github.com/tesseract-ocr/tesseract
     注意：
         安装完要将安装路径设置到PATH环境变量里。
