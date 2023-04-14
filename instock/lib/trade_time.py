@@ -40,10 +40,6 @@ OPEN_TIME = (
 
 
 def is_tradetime(now_time):
-    """
-    :param now_time: datetime.time()
-    :return:
-    """
     now = now_time.time()
     for begin, end in OPEN_TIME:
         if begin <= now < end:
@@ -58,10 +54,6 @@ PAUSE_TIME = (
 
 
 def is_pause(now_time):
-    """
-    :param now_time:
-    :return:
-    """
     now = now_time.time()
     for b, e in PAUSE_TIME:
         if b <= now < e:
