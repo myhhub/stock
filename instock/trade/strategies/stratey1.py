@@ -30,8 +30,8 @@ class Strategy(StrategyTemplate):
         self.clock_engine.register_interval(minute_interval, trading=False)
 
     def strategy(self):
-        buy_stock = [('0000001', 7, 100)]
-        sell_stock = [('0000001', 8, 100)]
+        buy_stock = [('000001', 1, 100)]
+        sell_stock = [('000001', 100, 100)]
         # --------写交易策略---------
 
         # --------写交易策略---------
