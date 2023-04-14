@@ -266,11 +266,11 @@ db_charset = "utf8mb4"  # 数据库字符集
     以管理员身份运行cmd，然后:
     setx /m PATH "%PATH%;C:\Program Files\Tesseract-OCR"
 3.设置交易配置   
-	3.1.修改trade_client.json
+    3.1.修改trade_client.json
         "user": "888888888888",               #交易账号
         "password": "888888",                 #交易密码
         "exe_path": "C:/gfzqrzrq/xiadan.exe"  #交易软件路径
-	3.2.修改trade_service.py
+    3.2.修改trade_service.py
         broker = 'gf_client' #这是广发
         详情参阅usage.md，配置对应券商
 ```
