@@ -31,7 +31,7 @@ class Strategy(StrategyTemplate):
 
     def strategy(self):
         self.log.info('打新股')
-        self.log.info(self.user.auto_ipo())
+        self.user.auto_ipo()
 
     def clock(self, event):
         """在交易时间会定时推送 clock 事件
