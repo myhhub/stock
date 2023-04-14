@@ -195,7 +195,7 @@ c.若扩展了本项目，可以通过下面方法生成项目依赖：
 python pip install pipreqs
 # 安装pipreqs，若有安装可跳过
 
-python pipreqs --encoding utf-8 ./ 
+python  pipreqs --encoding utf-8 --force ./ 
 # 本项目是utf-8编码
 ```
 
