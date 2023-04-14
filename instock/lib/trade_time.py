@@ -100,3 +100,10 @@ def is_close(now_time):
         if now >= close:
             return True
     return False
+
+
+def is_open(now_time):
+    now = now_time.time()
+    if now >= datetime.time(9, 30, 0):
+        return True
+    return False
