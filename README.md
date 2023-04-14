@@ -262,7 +262,7 @@ db_charset = "utf8mb4"  # 数据库字符集
     第二方法.编译源码
     下载源码：https://github.com/tesseract-ocr/tesseract
     注意：
-    安装完要，要把安装路径设置到环境变量里。下面提供dos命令设置:
+    安装完要将安装路径设置到PATH环境变量里。下面提供dos命令设置:
     以管理员身份运行cmd，然后:
     setx /m PATH "%PATH%;C:\Program Files\Tesseract-OCR"
 3.设置交易配置   
