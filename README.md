@@ -253,8 +253,8 @@ db_charset = "utf8mb4"  # 数据库字符集
     1.1 通用同花顺客户端券商的客户
     通用同花顺客户端:https://activity.ths123.com/acmake/cache/1361.html
     1.2 专用同花顺客户端券商的客户
-    自动去券商官网找同花顺专用版
-    例如：广发核新独立委托端(同花顺版):http://www.gf.com.cn/softdownload/index?tab=1
+    自行去券商官网找同花顺专用版
+    例如：广发的下载核新独立委托端(同花顺版):http://www.gf.com.cn/softdownload/index?tab=1
 2.安装tesseract(自动识别验证码)
     第一方法.下载编译好的
     根据操作系统选择版本
