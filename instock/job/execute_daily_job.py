@@ -39,6 +39,7 @@ def main():
     with concurrent.futures.ThreadPoolExecutor() as executor:
         # 第2步创建股票基础数据表
         executor.submit(hdj.main)
+        time.sleep(1)
         # # 第3步创建股票指标数据表
         executor.submit(gdj.main)
         # # # # 第4步创建股票k线形态表
