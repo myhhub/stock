@@ -7,54 +7,10 @@ import datetime
 import concurrent.futures
 import sys
 import time
-
-from instock.core.singleton import stock_trade_date
+import instock.lib.trade_time as trd
 
 __author__ = 'myh '
 __date__ = '2023/3/10 '
-
-
-def is_stock_trade_date(date):
-    if date in stock_trade_date().get_data():
-        return True
-    else:
-        return False
-
-
-def get_stock_trade_date(date=None, hour=15):
-    current_time = datetime.datetime.now()
-    if date is None:
-        tmp_date = current_time.date()
-    else:
-        tmp_date = date
-
-    if tmp_date == current_time.date():
-        hour_int = int(current_time.strftime("%H"))
-        # 每天15点前获取昨天的数据
-        if hour_int < hour:
-            current_time = (current_time + datetime.timedelta(days=-1))
-        tmp_date = current_time.date()
-
-    while tmp_date not in stock_trade_date().get_data():
-        tmp_date += datetime.timedelta(days=-1)
-
-    return tmp_date
-
-
-def get_current_date():
-    return datetime.datetime.now().date()
-
-
-def is_get_data(date, hour=15):
-    current_time = datetime.datetime.now()
-    if date != current_time.date():
-        return False
-
-    hour_int = int(current_time.strftime("%H"))
-    if hour_int < hour:
-        return False
-
-    return True
 
 
 # 通用函数，获得日期参数，支持批量作业。
@@ -69,7 +25,7 @@ def run_with_args(run_fun, *args):
         try:
             with concurrent.futures.ThreadPoolExecutor() as executor:
                 while run_date <= end_date:
-                    if is_stock_trade_date(run_date):
+                    if trd.is_trade_date(run_date):
                         executor.submit(run_fun, run_date, *args)
                         time.sleep(2)
                     run_date += datetime.timedelta(days=1)
@@ -83,7 +39,7 @@ def run_with_args(run_fun, *args):
                 for date in dates:
                     tmp_year, tmp_month, tmp_day = date.split("-")
                     run_date = datetime.datetime(int(tmp_year), int(tmp_month), int(tmp_day)).date()
-                    if is_stock_trade_date(run_date):
+                    if trd.is_trade_date(run_date):
                         executor.submit(run_fun, run_date, *args)
                         time.sleep(2)
         except Exception as e:
@@ -91,9 +47,18 @@ def run_with_args(run_fun, *args):
     else:
         # 当前时间作业 python xxx.py
         try:
-            run_date = get_stock_trade_date()
+            now_time = datetime.datetime.now()
+            run_date = now_time.date()
+            run_date_nph = run_date
+            if trd.is_trade_date(run_date):
+                if not trd.is_close(now_time):
+                    run_date = trd.get_previous_trade_date(run_date)
+            else:
+                run_date = trd.get_previous_trade_date(run_date)
+                run_date_nph = run_date
+
             if run_fun.__name__.startswith('save_nph'):
-                run_fun(run_date, False)
+                run_fun(run_date_nph, False)
             else:
                 run_fun(run_date, *args)
         except Exception as e:

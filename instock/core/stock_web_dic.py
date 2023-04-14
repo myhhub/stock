@@ -8,7 +8,7 @@ __date__ = '2023/3/10 '
 
 
 class StockWebData:
-    def __init__(self, mode, type, name, table_name, columns, column_names, primary_key, order_by):
+    def __init__(self, mode, type, name, table_name, columns, column_names, primary_key, is_realtime, order_by):
         self.mode = mode  # 模式，query，editor 查询和编辑模式
         self.type = type
         self.name = name
@@ -16,6 +16,7 @@ class StockWebData:
         self.columns = columns
         self.column_names = column_names
         self.primary_key = primary_key
+        self.is_realtime = is_realtime
         self.order_by = order_by
         if mode == "query":
             self.url = f"/stock/data?table_name={self.table_name}"
@@ -31,6 +32,7 @@ STOCK_WEB_DATA_LIST = [StockWebData(
     columns=tuple(tbs.TABLE_CN_STOCK_SPOT['columns']),
     column_names=tbs.get_field_cns(tbs.TABLE_CN_STOCK_SPOT['columns'].values()),
     primary_key=[],
+    is_realtime=True,
     order_by=" code asc "
 ), StockWebData(
     mode="query",
@@ -40,6 +42,7 @@ STOCK_WEB_DATA_LIST = [StockWebData(
     columns=tuple(tbs.TABLE_CN_STOCK_TOP['columns']),
     column_names=tbs.get_field_cns(tbs.TABLE_CN_STOCK_TOP['columns'].values()),
     primary_key=[],
+    is_realtime=True,
     order_by=" code asc "
 ), StockWebData(
     mode="query",
@@ -49,6 +52,7 @@ STOCK_WEB_DATA_LIST = [StockWebData(
     columns=tuple(tbs.TABLE_CN_STOCK_BLOCKTRADE['columns']),
     column_names=tbs.get_field_cns(tbs.TABLE_CN_STOCK_BLOCKTRADE['columns'].values()),
     primary_key=[],
+    is_realtime=False,
     order_by=" code asc "
 ), StockWebData(
     mode="query",
@@ -58,6 +62,7 @@ STOCK_WEB_DATA_LIST = [StockWebData(
     columns=tuple(tbs.TABLE_CN_STOCK_INDICATORS['columns']),
     column_names=tbs.get_field_cns(tbs.TABLE_CN_STOCK_INDICATORS['columns'].values()),
     primary_key=[],
+    is_realtime=False,
     order_by=" code desc  "
 ), StockWebData(
     mode="query",
@@ -67,6 +72,7 @@ STOCK_WEB_DATA_LIST = [StockWebData(
     columns=tuple(tbs.TABLE_CN_STOCK_INDICATORS_BUY['columns']),
     column_names=tbs.get_field_cns(tbs.TABLE_CN_STOCK_INDICATORS_BUY['columns'].values()),
     primary_key=[],
+    is_realtime=False,
     order_by=" code desc  "
 ), StockWebData(
     mode="query",
@@ -76,6 +82,7 @@ STOCK_WEB_DATA_LIST = [StockWebData(
     columns=tuple(tbs.TABLE_CN_STOCK_INDICATORS_SELL['columns']),
     column_names=tbs.get_field_cns(tbs.TABLE_CN_STOCK_INDICATORS_SELL['columns'].values()),
     primary_key=[],
+    is_realtime=False,
     order_by=" code desc  "
 ), StockWebData(
     mode="query",
@@ -85,6 +92,7 @@ STOCK_WEB_DATA_LIST = [StockWebData(
     columns=tuple(tbs.TABLE_CN_STOCK_KLINE_PATTERN['columns']),
     column_names=tbs.get_field_cns(tbs.TABLE_CN_STOCK_KLINE_PATTERN['columns'].values()),
     primary_key=[],
+    is_realtime=False,
     order_by=" code desc  "
 )]
 
@@ -98,6 +106,7 @@ for table in tbs.TABLE_CN_STOCK_STRATEGIES:
             columns=tuple(table['columns']),
             column_names=tbs.get_field_cns(table['columns'].values()),
             primary_key=[],
+            is_realtime=False,
             order_by=" code asc "
         )
     )

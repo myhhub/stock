@@ -7,6 +7,7 @@ from tornado import gen
 # import logging
 import datetime
 import instock.lib.version as version
+import instock.lib.trade_time as trd
 import instock.core.stock_web_dic as stock_web_dic
 import instock.web.base as webBase
 
@@ -28,11 +29,14 @@ class GetStockHtmlHandler(webBase.BaseHandler, ABC):
     def get(self):
         name = self.get_argument("table_name", default=None, strip=False)
         stockWeb = stock_web_dic.STOCK_WEB_DATA_MAP[name]
-        date_now = datetime.datetime.now()
-        date_now_str = date_now.strftime("%Y-%m-%d")
-        # 每天的 16 点前显示昨天数据。
-        if date_now.hour < 15:
-            date_now_str = (date_now + datetime.timedelta(days=-1)).strftime("%Y-%m-%d")
+        now_time = datetime.datetime.now()
+        run_date = now_time.date()
+        if trd.is_trade_date(run_date):
+            if (not stockWeb.is_realtime) and (not trd.is_close(now_time)):
+                run_date = trd.get_previous_trade_date(run_date)
+        else:
+            run_date = trd.get_previous_trade_date(run_date)
+        date_now_str = run_date.strftime("%Y-%m-%d")
 
         self.render("stock_web.html", stockWeb=stockWeb, date_now=date_now_str,
                     stockVersion=version.__version__,

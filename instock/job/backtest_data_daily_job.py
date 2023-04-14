@@ -7,6 +7,7 @@ import concurrent.futures
 import pandas as pd
 import os.path
 import sys
+import datetime
 
 cpath_current = os.path.dirname(os.path.dirname(__file__))
 cpath = os.path.abspath(os.path.join(cpath_current, os.pardir))
@@ -48,14 +49,16 @@ def process(table, data_all, date, backtest_column):
         return
 
     column_tail = tuple(table['columns'])[-1]
-    sql = f"SELECT * FROM `{table_name}` WHERE `date` < '{runt.get_current_date()}' AND `{column_tail}` is NULL"
+    now_date = datetime.datetime.now().date()
+    sql = f"SELECT * FROM `{table_name}` WHERE `date` < '{now_date}' AND `{column_tail}` is NULL"
     try:
         data = pd.read_sql(sql=sql, con=mdb.conn_not_cursor())
         if data is None or len(data.index) == 0:
             return
 
         subset = data[list(tbs.TABLE_CN_STOCK_FOREIGN_KEY['columns'])]
-        subset['date'] = subset['date'].values.astype('str')
+        # subset['date'] = subset['date'].values.astype('str')
+        subset = subset.astype({'date': 'string'})
         stocks = [tuple(x) for x in subset.values]
 
         results = run_check(stocks, data_all, date, backtest_column)

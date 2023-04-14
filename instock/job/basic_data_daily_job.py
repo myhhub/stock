@@ -21,7 +21,7 @@ __date__ = '2023/3/10 '
 
 # 股票实时行情数据。
 def save_nph_stock_spot_data(date, before=True):
-    if before and not runt.is_get_data(date):
+    if before:
         return
     # 股票列表
     try:
@@ -48,7 +48,7 @@ def save_nph_stock_spot_data(date, before=True):
 # 目标地址: http://vip.stock.finance.sina.com.cn/q/go.php/vLHBData/kind/ggtj/index.phtml
 # 描述: 获取新浪财经-龙虎榜-个股上榜统计
 def save_nph_stock_top_data(date, before=True):
-    if before and not runt.is_get_data(date):
+    if before:
         return
 
     try:
