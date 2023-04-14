@@ -38,7 +38,7 @@ def check(code_name, data, date=None, threshold=60):
     if breakthrough_row is None:
         return False
 
-    data_front = data.loc[(data['date'] < breakthrough_row)]
+    data_front = data.loc[(data['date'] < breakthrough_row) & (data['ma60'] > 0)]
     for _close, _ma60 in zip(data_front['close'].values, data_front['ma60'].values):
         if not (-0.05 < ((_ma60 - _close) / _ma60) < 0.2):
             return False
