@@ -259,7 +259,7 @@ db_charset = "utf8mb4"  # 数据库字符集
     第一方法.下载编译好的
     根据操作系统选择版本
     https://digi.bib.uni-mannheim.de/tesseract/
-    第二方法.编译源码
+    第二方法.用源码编译
     下载源码：https://github.com/tesseract-ocr/tesseract
     注意：
     安装完要将安装路径设置到PATH环境变量里。下面提供dos命令设置:
@@ -267,14 +267,12 @@ db_charset = "utf8mb4"  # 数据库字符集
     setx /m PATH "%PATH%;C:\Program Files\Tesseract-OCR"
 3.设置交易配置   
 	3.1.修改trade_client.json
-	{
-      "user": "888888888888",               #交易账号
-      "password": "888888",                 #交易密码
-      "exe_path": "C:/gfzqrzrq/xiadan.exe"  #交易软件路径
-	}
+        "user": "888888888888",               #交易账号
+        "password": "888888",                 #交易密码
+        "exe_path": "C:/gfzqrzrq/xiadan.exe"  #交易软件路径
 	3.2.修改trade_service.py
-	broker = 'gf_client' #这是广发的
-    详情参阅usage.md
+        broker = 'gf_client' #这是广发
+        详情参阅usage.md，配置对应券商
 ```
 
 # 运行说明
