@@ -251,20 +251,22 @@ db_charset = "utf8mb4"  # 数据库字符集
 ```
 1.安装交易软件
     1.1 通用同花顺客户端券商的客户
-    通用同花顺客户端:https://activity.ths123.com/acmake/cache/1361.html
+        通用同花顺客户端:
+        https://activity.ths123.com/acmake/cache/1361.html
     1.2 专用同花顺客户端券商的客户
-    自行去券商官网找同花顺专用版
-    例如：广发的下载核新独立委托端(同花顺版):http://www.gf.com.cn/softdownload/index?tab=1
+        自行去券商官网找同花顺专用版
+        例如：广发的下载核新独立委托端(同花顺版):
+        http://www.gf.com.cn/softdownload/index?tab=1
 2.安装tesseract(自动识别验证码)
     第一方法.下载编译好的
-    根据操作系统选择版本
-    https://digi.bib.uni-mannheim.de/tesseract/
+        在下面链接页，根据操作系统选择相应版本
+        https://digi.bib.uni-mannheim.de/tesseract/
     第二方法.用源码编译
-    下载源码：https://github.com/tesseract-ocr/tesseract
+        下载源码：https://github.com/tesseract-ocr/tesseract
     注意：
-    安装完要将安装路径设置到PATH环境变量里。下面提供dos命令设置:
-    以管理员身份运行cmd，然后:
-    setx /m PATH "%PATH%;C:\Program Files\Tesseract-OCR"
+        安装完要将安装路径设置到PATH环境变量里。
+        下面提供dos命令设置，以管理员身份运行cmd，输入:
+        setx /m PATH "%PATH%;C:\Program Files\Tesseract-OCR"
 3.设置交易配置   
     3.1.修改trade_client.json
         "user": "888888888888",               #交易账号
