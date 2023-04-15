@@ -358,14 +358,21 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
             data['vhf'].values[np.isnan(data['vhf'].values)] = 0.0
 
             # RVI
-            data.loc[:, 'rvi_x'] = data['close'].values - data['open'].values + 2 * (data['prev_close'].values - data['open'].shift(1, fill_value=0.0).values) + 2 * (
-                    data['close'].shift(2, fill_value=0.0).values - data['open'].shift(2, fill_value=0.0).values) * (data['close'].shift(3, fill_value=0.0).values - data['open'].shift(3, fill_value=0.0).values) / 6
-            data.loc[:, 'rvi_y'] = data['high'].values - data['low'].values + 2 * (data['prev_high'].values - data['prev_low'].values) + 2 * (
-                    data['high'].shift(2, fill_value=0.0).values - data['low'].shift(2, fill_value=0.0).values) * (data['high'].shift(3, fill_value=0.0).values - data['low'].shift(3, fill_value=0.0).values) / 6
+            data.loc[:, 'rvi_x'] = ((data['close'].values - data['open'].values) +
+                                    2 * (data['prev_close'].values - data['open'].shift(1, fill_value=0.0).values) +
+                                    2 * (data['close'].shift(2, fill_value=0.0).values - data['open'].shift(2, fill_value=0.0).values) +
+                                    (data['close'].shift(3, fill_value=0.0).values - data['open'].shift(3, fill_value=0.0).values)) / 6
+            data.loc[:, 'rvi_y'] = ((data['high'].values - data['low'].values) +
+                                    2 * (data['prev_high'].values - data['prev_low'].values) +
+                                    2 * (data['high'].shift(2, fill_value=0.0).values - data['low'].shift(2, fill_value=0.0).values) +
+                                    (data['high'].shift(3, fill_value=0.0).values - data['low'].shift(3, fill_value=0.0).values)) / 6
             data.loc[:, 'rvi'] = tl.MA(data['rvi_x'].values, timeperiod=10) / tl.MA(data['rvi_y'].values, timeperiod=10)
             data['rvi'].values[np.isnan(data['rvi'].values)] = 0.0
             data['rvi'].values[np.isinf(data['rvi'].values)] = 0.0
-            data['rvi'] = data['rvi'].values * 100
+            data.loc[:, 'rvis'] = (data['rvi'].values +
+                                   2 * data['rvi'].shift(1, fill_value=0.0).values +
+                                   2 * data['rvi'].shift(2, fill_value=0.0).values +
+                                   data['rvi'].shift(3, fill_value=0.0).values) / 6
 
             # FI
             data.loc[:, 'fi'] = np.insert(np.diff(data['close'].values), 0, 0.0) * data['volume'].values

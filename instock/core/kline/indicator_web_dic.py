@@ -78,7 +78,7 @@ indicators_dic = [
         "desc": """
             <a href="https://www.ljjyy.com/archives/2023/04/100716.html" target="_blank">相对离散指数(RVI)</a>
         """,
-        "dic": ("rvi",)
+        "dic": ("rvi", "rvis")
     }, {
         "title": "WT",
         "desc": """
