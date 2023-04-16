@@ -157,7 +157,6 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
             data.loc[:, 'wr_14'] = tl.WILLR(data['high'].values, data['low'].values, data['close'].values, timeperiod=14)
             data['wr_14'].values[np.isnan(data['wr_14'].values)] = 0.0
 
-
             # cci 计算方法和结果和stockstats不同，stockstats典型价采用均价(总额/成交量)计算
             data.loc[:, 'cci'] = tl.CCI(data['high'].values, data['low'].values, data['close'].values, timeperiod=14)
             data['cci'].values[np.isnan(data['cci'].values)] = 0.0
@@ -187,6 +186,7 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
             data.loc[:, 'vwma'] = data['tpv_14'].values / data['vol_14'].values
             data['vwma'].values[np.isnan(data['vwma'].values)] = 0.0
             data['vwma'].values[np.isinf(data['vwma'].values)] = 0.0
+
             # ppo
             data.loc[:, 'ppo'] = tl.PPO(data['close'].values, fastperiod=12, slowperiod=26, matype=1)
             data['ppo'].values[np.isnan(data['ppo'].values)] = 0.0
@@ -297,6 +297,7 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
             data.loc[:, 'psy'] = data['price_up_sum'].values / 12.0
             data['psy'].values[np.isnan(data['psy'].values)] = 0.0
             data['psy'] = data['psy'].values * 100
+            data.loc[:, 'psyma'] = tl.MA(data['psy'].values, timeperiod=6)
 
             # BRAR
             data.loc[:, 'h_o'] = data['high'].values - data['open'].values
@@ -308,11 +309,11 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
             data['ar'].values[np.isinf(data['ar'].values)] = 0.0
             data['ar'] = data['ar'].values * 100
 
-            data.loc[:, 'h_c'] = data['high'].values - data['close'].values
-            data.loc[:, 'c_l'] = data['close'].values - data['low'].values
-            data.loc[:, 'h_c_sum'] = tl.SUM(data['h_c'].values, timeperiod=26)
-            data.loc[:, 'c_l_sum'] = tl.SUM(data['c_l'].values, timeperiod=26)
-            data.loc[:, 'br'] = data['h_c_sum'].values / data['c_l_sum'].values
+            data.loc[:, 'h_cy'] = data['high'].values - data['prev_close'].values
+            data.loc[:, 'cy_l'] = data['prev_close'].values - data['low'].values
+            data.loc[:, 'h_cy_sum'] = tl.SUM(data['h_cy'].values, timeperiod=26)
+            data.loc[:, 'cy_l_sum'] = tl.SUM(data['cy_l'].values, timeperiod=26)
+            data.loc[:, 'br'] = data['h_cy_sum'].values / data['cy_l_sum'].values
             data['br'].values[np.isnan(data['br'].values)] = 0.0
             data['br'].values[np.isinf(data['br'].values)] = 0.0
             data['br'] = data['br'].values * 100
@@ -320,8 +321,8 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
             # EMV
             data.loc[:, 'prev_high'] = data['high'].shift(1, fill_value=0.0).values
             data.loc[:, 'prev_low'] = data['low'].shift(1, fill_value=0.0).values
-            data.loc[:, 'm_hl'] = (data['prev_high'].values + data['prev_low'].values) / 2
-            data.loc[:, 'emva_em'] = (data['m_price'].values - data['m_hl'].values) * data['h_l'].values / data['amount'].values
+            data.loc[:, 'phl_avg'] = (data['prev_high'].values + data['prev_low'].values) / 2.0
+            data.loc[:, 'emva_em'] = (data['hl_avg'].values - data['phl_avg'].values) * data['h_l'].values / data['amount'].values
             data.loc[:, 'emv'] = tl.SUM(data['emva_em'].values, timeperiod=14)
             data['emv'].values[np.isnan(data['emv'].values)] = 0.0
             data.loc[:, 'emva'] = tl.MA(data['emv'].values, timeperiod=9)
@@ -334,7 +335,10 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
             data['ma12'].values[np.isnan(data['ma12'].values)] = 0.0
             data.loc[:, 'ma24'] = tl.MA(data['close'].values, timeperiod=24)
             data['ma24'].values[np.isnan(data['ma24'].values)] = 0.0
-            data.loc[:, 'bias'] = ((data['close'].values - data['ma6'].values) / data['ma6'].values) * 100
+            data.loc[:, 'bias'] = ((data['close'].values - data['ma6'].values) / data['ma6'].values)
+            data['bias'].values[np.isnan(data['bias'].values)] = 0.0
+            data['bias'].values[np.isinf(data['bias'].values)] = 0.0
+            data['bias'] = data['bias'].values * 100
             data.loc[:, 'bias_12'] = (data['close'].values - data['ma12'].values) / data['ma12'].values
             data['bias_12'].values[np.isnan(data['bias_12'].values)] = 0.0
             data['bias_12'].values[np.isinf(data['bias_12'].values)] = 0.0

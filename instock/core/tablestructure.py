@@ -115,7 +115,7 @@ STOCK_STATS_DATA = {'name': 'calculate_indicator', 'cn': '股票统计/指标计
                                 'tr': {'type': FLOAT, 'cn': 'tr'}, 'atr': {'type': FLOAT, 'cn': 'atr'},
                                 'dma': {'type': FLOAT, 'cn': 'dma'}, 'dma_10_sma': {'type': FLOAT, 'cn': 'ama'},
                                 'obv': {'type': FLOAT, 'cn': 'obv'}, 'sar': {'type': FLOAT, 'cn': 'sar'},
-                                'psy': {'type': FLOAT, 'cn': 'psy'},
+                                'psy': {'type': FLOAT, 'cn': 'psy'}, 'psyma': {'type': FLOAT, 'cn': 'psyma'},
                                 'br': {'type': FLOAT, 'cn': 'br'}, 'ar': {'type': FLOAT, 'cn': 'ar'},
                                 'emv': {'type': FLOAT, 'cn': 'emv'}, 'emva': {'type': FLOAT, 'cn': 'emva'},
                                 'bias': {'type': FLOAT, 'cn': 'bias'},

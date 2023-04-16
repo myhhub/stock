@@ -146,7 +146,7 @@ indicators_dic = [
         "desc": """
             <a href="https://www.ljjyy.com/archives/2023/04/100705.html" rel="nofollow" target="_blank">心理线指标(PSY)</a>
         """,
-        "dic": ("psy",)
+        "dic": ("psy", "psyma")
     }, {
         "title": "BRAR",
         "desc": """
