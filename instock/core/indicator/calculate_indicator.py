@@ -354,7 +354,7 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
             # VHF
             data.loc[:, 'hcp_lcp'] = tl.MAX(data['close'].values, timeperiod=28) - tl.MIN(data['close'].values, timeperiod=28)
             data['hcp_lcp'].values[np.isnan(data['hcp_lcp'].values)] = 0.0
-            data.loc[:, 'vhf'] = np.divide(data['hcp_lcp'].values, tl.MA(abs(data['close'].values - data['prev_close'].values), timeperiod=28) * 28)
+            data.loc[:, 'vhf'] = np.divide(data['hcp_lcp'].values, tl.SUM(abs(data['close'].values - data['prev_close'].values), timeperiod=28))
             data['vhf'].values[np.isnan(data['vhf'].values)] = 0.0
 
             # RVI
