@@ -279,7 +279,7 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
             data['roc'].values[np.isnan(data['roc'].values)] = 0.0
             data.loc[:, 'rocma'] = tl.MA(data['roc'].values, timeperiod=6)
             data['rocma'].values[np.isnan(data['rocma'].values)] = 0.0
-            data.loc[:, 'rocema'] = tl.EMA(data['rocma'].values, timeperiod=9)
+            data.loc[:, 'rocema'] = tl.EMA(data['roc'].values, timeperiod=9)
             data['rocema'].values[np.isnan(data['rocema'].values)] = 0.0
 
             # obv
