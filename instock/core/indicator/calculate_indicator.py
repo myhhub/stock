@@ -100,10 +100,7 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
             data.loc[:, 'vr_6_sma'] = tl.MA(data['vr'].values, timeperiod=6)
             data['vr_6_sma'].values[np.isnan(data['vr_6_sma'].values)] = 0.0
 
-            # atr talib计算公式和stockstats不同
-            # 国内行情软件一般是取TR（真实波幅）的简单平均，而TA - lib则是采取类似EMA平均一样的方法求TR的平均值
-            # talib计算公式
-            # data.loc[:, 'atr'] = tl.ATR(data['high'].values, data['low'].values, data['close'].values, timeperiod=14)
+            # atr
             data.loc[:, 'prev_close'] = data['close'].shift(1, fill_value=0.0).values
             data.loc[:, 'h_l'] = data['high'].values - data['low'].values
             data.loc[:, 'h_cy'] = data['high'].values - data['prev_close'].values
@@ -112,7 +109,7 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
             data.loc[:, 'cy_l_a'] = abs(data['cy_l'].values)
             data.loc[:, 'tr'] = data.loc[:, ['h_l', 'h_cy_a', 'cy_l_a']].T.max().values
             data['tr'].values[np.isnan(data['tr'].values)] = 0.0
-            data.loc[:, 'atr'] = tl.MA(data['tr'].values, timeperiod=14)
+            data.loc[:, 'atr'] = tl.ATR(data['high'].values, data['low'].values, data['close'].values, timeperiod=14)
             data['atr'].values[np.isnan(data['atr'].values)] = 0.0
 
             # DMI
