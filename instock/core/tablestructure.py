@@ -120,7 +120,7 @@ STOCK_STATS_DATA = {'name': 'calculate_indicator', 'cn': '股票统计/指标计
                                 'emv': {'type': FLOAT, 'cn': 'emv'}, 'emva': {'type': FLOAT, 'cn': 'emva'},
                                 'bias': {'type': FLOAT, 'cn': 'bias'},
                                 'mfi': {'type': FLOAT, 'cn': 'mfi'}, 'mfisma': {'type': FLOAT, 'cn': 'mfisma'},
-                                'vwma': {'type': FLOAT, 'cn': 'vwma'},
+                                'vwma': {'type': FLOAT, 'cn': 'vwma'}, 'mvwma': {'type': FLOAT, 'cn': 'mvwma'},
                                 'ppo': {'type': FLOAT, 'cn': 'ppo'}, 'ppos': {'type': FLOAT, 'cn': 'ppos'},
                                 'ppoh': {'type': FLOAT, 'cn': 'ppoh'},
                                 'wt1': {'type': FLOAT, 'cn': 'wt1'}, 'wt2': {'type': FLOAT, 'cn': 'wt2'},

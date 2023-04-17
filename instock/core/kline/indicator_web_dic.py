@@ -176,7 +176,7 @@ indicators_dic = [
         "desc": """
             <a href="https://www.ljjyy.com/archives/2023/04/100710.html" target="_blank">成交量加权平均指标(VWMA)</a>
         """,
-        "dic": ("close", "vwma")
+        "dic": ("close", "vwma", "mvwma")
     }, {
         "title": "SUPERTREND",
         "desc": """

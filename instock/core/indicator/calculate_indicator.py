@@ -189,6 +189,7 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
             data.loc[:, 'vwma'] = data['tpv_14'].values / data['vol_14'].values
             data['vwma'].values[np.isnan(data['vwma'].values)] = 0.0
             data['vwma'].values[np.isinf(data['vwma'].values)] = 0.0
+            data.loc[:, 'mvwma'] = tl.MA(data['vwma'].values, timeperiod=6)
 
             # ppo
             data.loc[:, 'ppo'] = tl.PPO(data['close'].values, fastperiod=12, slowperiod=26, matype=1)
