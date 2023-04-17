@@ -167,7 +167,9 @@ K线形态作业 klinepattern_data_daily_job.py
 
 建议windows下安装，方便操作及使用系统，同时安装也非常简单。以下安装及运行以windows为例进行介绍。
 
-1.安装最新的 python
+## 1.安装python
+
+项目开发使用python 3.11，建议最新版。
 
 ```
 （1）在官网 https://www.python.org/downloads/ 下载安装包，一键安装即可，安装切记勾选自动设置环境变量。
@@ -175,12 +177,16 @@ K线形态作业 klinepattern_data_daily_job.py
 python pip config --global set  global.index-url https://mirrors.aliyun.com/pypi/simple/
 # 如果你只想为当前用户设置，你也可以去掉下面的"--global"选项
 ```
-2.安装最新的 mysql
+## 2.安装mysql
+
+建议最新版。
 
 ```
 在官网 https://dev.mysql.com/downloads/mysql/ 下载安装包，一键安装即可。
 ```
-3.安装库文件，库都是目前最新版本
+## 3.安装依赖库
+
+依赖库都是目前最新版本。
 
 a.安装依赖库：
 
@@ -205,7 +211,7 @@ python  pipreqs --encoding utf-8 --force ./
 # 本项目是utf-8编码
 ```
 
-4.安装 talib
+## 4.安装 talib
 
 ```
 第一种方法. pip 下安装
@@ -223,7 +229,7 @@ python  pipreqs --encoding utf-8 --force ./
 （3）此处确认是否继续安装？输入y 继续安装，直到完成
 （4）安装完成。
 ```
-5.安装 Navicat（可选）
+## 5.安装 Navicat（可选）
 
 Navicat可以方便管理数据库，以及可以手工对数据进行查看、处理、分析、挖掘。
 
@@ -234,7 +240,7 @@ Navicat是一套可创建多个连接的数据库管理工具，用以方便管�
 
 （2）然后下载破解补丁: https://pan.baidu.com/s/18XpTHrm9OiLEl3u6z_uxnw 提取码: 8888 ，破解即可。
 ```
-6.配置数据库
+## 6.配置数据库
 
 一般可能会修改的信息是”数据库访问密码“。
 
@@ -248,7 +254,7 @@ db_port = 3306  # 数据库服务端口
 db_charset = "utf8mb4"  # 数据库字符集
 ```
 
-7.安装自动交易（可选）
+## 7.安装自动交易（可选）
 
 ```
 1.安装交易软件
@@ -281,7 +287,7 @@ db_charset = "utf8mb4"  # 数据库字符集
 
 # 运行说明
 
-1.执行数据抓取、处理、分析、识别
+## 1.执行数据抓取、处理、分析、识别
 
 支持批量作业，具体参见run_job.bat中的注释说明。
 
@@ -289,11 +295,11 @@ db_charset = "utf8mb4"  # 数据库字符集
 
 **数据抓取、处理原则：**
 
-1.开盘即有且无历史数据的：每日股票数据、龙虎榜；
+1).开盘即有且无历史数据的：每日股票数据、龙虎榜；
 
-2.收盘即有且有历史数据的：股票指标数据、股票K线形态、股票策略数据；
+2).收盘即有且有历史数据的：股票指标数据、股票K线形态、股票策略数据；
 
-3.收盘后1~2小时才有且有历史数据的：大宗交易。
+3).收盘后1~2小时才有且有历史数据的：大宗交易。
 
 运行run_job.bat，会依据上面原则获取各模块当前或前个交易日的数据。
 
@@ -307,12 +313,12 @@ db_charset = "utf8mb4"  # 数据库字符集
 #基础数据作业 
 python basic_data_daily_job.py
 ```
-2.启动web服务
+## 2.启动web服务
 
 ```
 运行 run_web.bat
 ```
-3.启动交易服务
+## 3.启动交易服务
 
 ```
 运行 run_trade.bat
