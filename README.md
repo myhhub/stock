@@ -304,7 +304,7 @@ db_charset = "utf8mb4"  # 数据库字符集
 若想看开盘后的当前实时数据，可以运行下面，很快大概1秒：
 
 ```
-#v基础数据作业 
+#基础数据作业 
 python basic_data_daily_job.py
 ```
 2.启动web服务
