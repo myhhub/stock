@@ -181,6 +181,7 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
             # mfi 计算方法和结果和stockstats不同，stockstats典型价采用均价(总额/成交量)计算
             data.loc[:, 'mfi'] = tl.MFI(data['high'].values, data['low'].values, data['close'].values, data['volume'].values, timeperiod=14)
             data['mfi'].values[np.isnan(data['mfi'].values)] = 0.0
+            data.loc[:, 'mfisma'] = tl.MA(data['mfi'].values, timeperiod=6)
 
             # vwma
             data.loc[:, 'tpv_14'] = tl.SUM(data['amount'].values, timeperiod=14)

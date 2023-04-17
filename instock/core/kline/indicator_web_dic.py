@@ -170,7 +170,7 @@ indicators_dic = [
         "desc": """
             <a href="https://www.ljjyy.com/archives/2023/04/100709.html" target="_blank">资金流量指标(MFI)</a>
         """,
-        "dic": ("mfi",)
+        "dic": ("mfi", "mfisma")
     }, {
         "title": "VWMA",
         "desc": """
