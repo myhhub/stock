@@ -47,18 +47,7 @@ def run_with_args(run_fun, *args):
     else:
         # 当前时间作业 python xxx.py
         try:
-            now_time = datetime.datetime.now()
-            run_date = now_time.date()
-            run_date_nph = run_date
-            if trd.is_trade_date(run_date):
-                if not trd.is_close(now_time):
-                    run_date = trd.get_previous_trade_date(run_date)
-                    if not trd.is_open(now_time):
-                        run_date_nph = run_date
-            else:
-                run_date = trd.get_previous_trade_date(run_date)
-                run_date_nph = run_date
-
+            run_date, run_date_nph = trd.get_trade_date_last()
             if run_fun.__name__.startswith('save_nph'):
                 run_fun(run_date_nph, False)
             else:

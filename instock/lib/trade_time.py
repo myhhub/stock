@@ -124,3 +124,18 @@ def get_trade_hist_interval(date):
                 is_trade_date_open_close_between = True
 
     return date_start, not is_trade_date_open_close_between
+
+
+def get_trade_date_last():
+    now_time = datetime.datetime.now()
+    run_date = now_time.date()
+    run_date_nph = run_date
+    if is_trade_date(run_date):
+        if not is_close(now_time):
+            run_date = get_previous_trade_date(run_date)
+            if not is_open(now_time):
+                run_date_nph = run_date
+    else:
+        run_date = get_previous_trade_date(run_date)
+        run_date_nph = run_date
+    return run_date, run_date_nph

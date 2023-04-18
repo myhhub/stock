@@ -29,17 +29,7 @@ class GetStockHtmlHandler(webBase.BaseHandler, ABC):
     def get(self):
         name = self.get_argument("table_name", default=None, strip=False)
         stockWeb = stock_web_dic.STOCK_WEB_DATA_MAP[name]
-        now_time = datetime.datetime.now()
-        run_date = now_time.date()
-        run_date_nph = run_date
-        if trd.is_trade_date(run_date):
-            if not trd.is_close(now_time):
-                run_date = trd.get_previous_trade_date(run_date)
-                if not trd.is_open(now_time):
-                    run_date_nph = run_date
-        else:
-            run_date = trd.get_previous_trade_date(run_date)
-            run_date_nph = run_date
+        run_date, run_date_nph = trd.get_trade_date_last()
         if stockWeb.is_realtime:
             date_now_str = run_date_nph.strftime("%Y-%m-%d")
         else:
