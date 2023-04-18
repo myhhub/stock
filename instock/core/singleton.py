@@ -6,6 +6,7 @@ from threading import RLock
 import concurrent.futures
 import instock.core.stockfetch as stf
 import instock.core.tablestructure as tbs
+import instock.lib.trade_time as trd
 
 __author__ = 'myh '
 __date__ = '2023/3/10 '
@@ -55,11 +56,12 @@ class stock_hist_data(metaclass=SingletonType):
         if stocks is None:
             self.data = None
             return
+        date_start, is_cache = trd.get_trade_hist_interval(stocks[0][0])  # 提高运行效率，只运行一次
         _data = {}
         try:
             # max_workers是None还是没有给出，将默认为机器cup个数*5
             with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
-                future_to_stock = {executor.submit(stf.fetch_stock_hist, stock): stock for stock in stocks}
+                future_to_stock = {executor.submit(stf.fetch_stock_hist, stock, date_start, is_cache): stock for stock in stocks}
                 for future in concurrent.futures.as_completed(future_to_stock):
                     stock = future_to_stock[future]
                     try:

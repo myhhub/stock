@@ -9,6 +9,8 @@ import pandas as pd
 import akshare as ak
 import talib as tl
 import instock.core.tablestructure as cons
+import instock.lib.trade_time as trd
+
 
 __author__ = 'myh '
 __date__ = '2023/3/10 '
@@ -150,16 +152,15 @@ def fetch_stock_blocktrade_data(date):
 
 
 # 读取股票历史数据
-def fetch_stock_hist(data_base):
+def fetch_stock_hist(data_base, date_start=None, is_cache=True):
     date = data_base[0]
     code = data_base[1]
 
-    tmp_year, tmp_month, tmp_day = date.split("-")
-    date_end = datetime.datetime(int(tmp_year), int(tmp_month), int(tmp_day))
-    date_start = (date_end + datetime.timedelta(days=-(365 * 3))).strftime("%Y%m%d")
-    # date_end = date_end.strftime("%Y%m%d")
+    if date_start is None:
+        date_start, is_cache = trd.get_trade_hist_interval(date)  # 提高运行效率，只运行一次
+        # date_end = date_end.strftime("%Y%m%d")
     try:
-        data = stock_hist_cache(code, date_start, None, 'qfq')
+        data = stock_hist_cache(code, date_start, None, is_cache, 'qfq')
         if data is not None:
             data.loc[:, 'p_change'] = tl.ROC(data['close'].values, 1)
             data["volume"] = data['volume'].values.astype('double') * 100  # 成交量单位从手变成股。
@@ -170,7 +171,7 @@ def fetch_stock_hist(data_base):
 
 
 # 增加读取股票缓存方法。加快处理速度。多线程解决效率
-def stock_hist_cache(code, date_start, date_end=None, adjust=''):
+def stock_hist_cache(code, date_start, date_end=None, is_cache=True, adjust=''):
     cache_dir = os.path.join(stock_hist_cache_path, date_start[0:6], date_start)
     # 如果没有文件夹创建一个。月文件夹和日文件夹。方便删除。
     try:
@@ -195,7 +196,8 @@ def stock_hist_cache(code, date_start, date_end=None, adjust=''):
             stock.columns = tuple(cons.CN_STOCK_HIST_DATA['columns'])
             stock = stock.sort_index()  # 将数据按照日期排序下。
             try:
-                stock.to_pickle(cache_file, compression="gzip")
+                if is_cache:
+                    stock.to_pickle(cache_file, compression="gzip")
             except Exception:
                 pass
             # time.sleep(1)
