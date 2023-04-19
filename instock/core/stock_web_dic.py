@@ -19,7 +19,7 @@ class StockWebData:
         self.is_realtime = is_realtime
         self.order_by = order_by
         if mode == "query":
-            self.url = f"/stock/data?table_name={self.table_name}"
+            self.url = f"/instock/data?table_name={self.table_name}"
         elif mode == "editor":
             self.url = f"/data/editor?table_name={self.table_name}"
 

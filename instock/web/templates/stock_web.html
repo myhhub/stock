@@ -77,11 +77,11 @@
 			"language": {
                 "url": "/static/js/datatables.Chinese.json"
             },
-			"ajax": "/stock/api_data?name="+nameParam,
+			"ajax": "/instock/api_data?name="+nameParam,
 			"columns": [
 				{% for column in stockWeb.columns %}
                     {% if column == 'code' %}
-                        { "data": "{{ column }}","render": function(data, type, row, meta){data = '<a href="/stock/data/indicators?code=' + data + '&date=' + row.date + '" target="_blank">' + data + '</a>';return data;}},
+                        { "data": "{{ column }}","render": function(data, type, row, meta){data = '<a href="/instock/data/indicators?code=' + data + '&date=' + row.date + '" target="_blank">' + data + '</a>';return data;}},
                     {% else %}
 					    { "data": "{{ column }}" },
                     {% end %}

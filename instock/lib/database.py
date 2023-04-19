@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import os.path
 import pymysql
 from sqlalchemy import create_engine
 from sqlalchemy.types import NVARCHAR

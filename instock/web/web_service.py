@@ -35,12 +35,12 @@ class Application(tornado.web.Application):
         handlers = [
             # 设置路由
             (r"/", HomeHandler),
-            (r"/stock/", HomeHandler),
+            (r"/instock/", HomeHandler),
             # 使用datatable 展示报表数据模块。
-            (r"/stock/api_data", dataTableHandler.GetStockDataHandler),
-            (r"/stock/data", dataTableHandler.GetStockHtmlHandler),
+            (r"/instock/api_data", dataTableHandler.GetStockDataHandler),
+            (r"/instock/data", dataTableHandler.GetStockHtmlHandler),
             # 获得股票指标数据。
-            (r"/stock/data/indicators", dataIndicatorsHandler.GetDataIndicatorsHandler),
+            (r"/instock/data/indicators", dataIndicatorsHandler.GetDataIndicatorsHandler),
         ]
         settings = dict(  # 配置
             template_path=os.path.join(os.path.dirname(__file__), "templates"),
