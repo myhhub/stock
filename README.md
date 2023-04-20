@@ -293,9 +293,9 @@ db_charset = "utf8mb4"  # 数据库字符集
         详情参阅usage.md，配置对应券商
 ```
 
-### 运行说明
+### 8.运行说明
 
-#### 1.执行数据抓取、处理、分析、识别
+#### 8.1.执行数据抓取、处理、分析、识别
 
 支持批量作业，具体参见run_job.bat中的注释说明。
 
@@ -321,14 +321,14 @@ db_charset = "utf8mb4"  # 数据库字符集
 #基础数据作业 
 python basic_data_daily_job.py
 ```
-#### 2.启动web服务
+#### 8.2.启动web服务
 
 ```
 运行 run_web.bat
 ```
 启动服务后，打开浏览器，输入：http://localhost:9988/ ，即可使用本系统的可视化功能。
 
-#### 3.启动交易服务
+#### 8.3.启动交易服务
 
 ```
 运行 run_trade.bat
@@ -409,6 +409,10 @@ cat InStock/instock/log/stock_web.log
 ### 5.docker常用命令
 
 具体参见：[Docker基础之 二.镜像及容器的基本操作](https://www.ljjyy.com/archives/2018/06/100208.html)
+
+### 6.自动交易
+
+目前只支持windows。参考常规安装方式,只需安装python、依赖库，**不需安装mysql、talib等**。
 
 # 特别声明
 
