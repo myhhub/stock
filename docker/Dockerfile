@@ -49,7 +49,6 @@ RUN curl -SL http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz |
     cd ..  && \
     pip install --no-cache-dir TA-Lib && \
     rm -rf ta-lib*
-RUN apt-get install -y nodejs
 RUN apt-get --purge remove -y gcc make python3-dev default-libmysqlclient-dev libxml2-dev libxslt1-dev curl
 RUN rm -rf /root/.cache/* && apt-get clean && apt-get autoremove -y
 
