@@ -67,7 +67,7 @@ class HomeHandler(webBase.BaseHandler, ABC):
 def main():
     tornado.options.parse_command_line()
     http_server = tornado.httpserver.HTTPServer(Application())
-    port = 9999
+    port = 9988
     http_server.listen(port)
 
     # tornado.options.log_file_prefix = os.path.join(cpath, '/logs/stock_web.log')
@@ -75,8 +75,8 @@ def main():
     # tornado.options.parse_command_line()
     logging.getLogger().setLevel(logging.INFO)
 
-    print("服务已启动，web地址 : http://localhost:9999/")
-    logging.info("服务已启动，web地址 : http://localhost:9999/")
+    print(f"服务已启动，web地址 : http://localhost:{port}/")
+    logging.info(f"服务已启动，web地址 : http://localhost:{port}/")
 
     tornado.ioloop.IOLoop.current().start()
 

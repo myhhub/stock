@@ -320,7 +320,7 @@ python basic_data_daily_job.py
 ```
 运行 run_web.bat
 ```
-启动服务后，打开浏览器，输入：http://localhost:9999/ ，即可使用本系统的可视化功能。
+启动服务后，打开浏览器，输入：http://localhost:9988/ ，即可使用本系统的可视化功能。
 
 ## 3.启动交易服务
 
