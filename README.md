@@ -165,7 +165,9 @@ K线形态作业 klinepattern_data_daily_job.py
 
 # 安装说明
 
-本系统支持Windows、Linux、MacOS，也为本系统创建了Docker镜像，按自己需要选择安装方式。
+本系统支持Windows、Linux、MacOS，同时本系统创建了Docker镜像，按自己需要选择安装方式。
+
+下面按分常规安装方式、docker镜像安装方式进行一一说明。
 
 ## 一：常规安装方式
 
@@ -381,7 +383,7 @@ docker -e 参数说明：
 db_host       # 数据库服务主机
 db_user       # 数据库访问用户
 db_password   # 数据库访问密码
-db_database   # 数据库访问密码
+db_database   # 数据库名称
 db_port       # 数据库服务端口
 ```
 按自己数据库实际情况配置参数。
