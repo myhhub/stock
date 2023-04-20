@@ -350,7 +350,6 @@ python basic_data_daily_job.py
 docker run -d --name InStockDbService \
     -v /data/mariadb/data:/var/lib/instockdb \
     -e MYSQL_ROOT_PASSWORD=root \
-    -p 3306:3306 \
     library/mariadb:latest
 ```
 
@@ -362,10 +361,6 @@ a.若按上面【1.安装数据库镜像】装的数据库，运行下面命令�
 docker run -dit --name InStock --link=InStockDbService \
     -p 9988:9988 \
     -e db_host=InStockDbService \
-    -e db_user=root \
-    -e db_password=root \
-    -e db_database=instockdb \
-    -e db_port=3306 \
     mayanghua/instock:latest
 ```
 
