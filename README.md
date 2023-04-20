@@ -336,6 +336,8 @@ python basic_data_daily_job.py
 
 ## 二：docker镜像安装方式
 
+没有docker环境，可以参考：[VirtualBox虚拟机安装Ubuntu](https://www.ljjyy.com/archives/2019/10/100590.html)，里面也介绍了python、docker等常用软件的安装，若想在Windows下安装docker自行百度。
+
 ### 1.安装数据库镜像
 
 如果已经有Mysql、mariadb数据库可以跳过本步。
@@ -403,6 +405,10 @@ docker exec -it InStock bash
 cat InStock/instock/log/stock_execute_job.log
 cat InStock/instock/log/stock_web.log
 ```
+
+### 5.docker常用命令
+
+具体参见：[Docker基础之 二.镜像及容器的基本操作](https://www.ljjyy.com/archives/2018/06/100208.html)
 
 # 特别声明
 
