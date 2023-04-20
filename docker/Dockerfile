@@ -27,7 +27,7 @@ ENV PYTHONPATH=/data/InStock
 # apt-get autoremove -y 删除没有用的依赖lib
 # apt-get --purge remove 软件包名称 , 删除已安装包（不保留配置文件)
 RUN apt-get update
-RUN apt-get install -y net-tools procps cron gcc make python3-dev default-libmysqlclient-dev  libxml2-dev libxslt1-dev curl
+RUN apt-get install -y net-tools procps cron gcc make python3-dev default-libmysqlclient-dev libxml2-dev libxslt1-dev curl
 RUN pip install mysqlclient
 RUN pip install arrow
 RUN pip install numpy
