@@ -167,9 +167,15 @@ K线形态作业 klinepattern_data_daily_job.py
 
 # 安装说明
 
-建议windows下安装，方便操作及使用系统，同时安装也非常简单。以下安装及运行以windows为例进行介绍。
+本系统支持Windows、Linux、MacOS，也为本系统创建了Docker镜像，按自己需要选择安装方式。
 
-## 1.安装python
+## 一：常规安装方式
+
+建议windows下安装，方便操作及使用系统，同时安装也非常简单。
+
+以下安装及运行以windows为例进行介绍。
+
+### 1.安装python
 
 项目开发使用python 3.11，建议最新版。
 
@@ -179,14 +185,14 @@ K线形态作业 klinepattern_data_daily_job.py
 python pip config --global set  global.index-url https://mirrors.aliyun.com/pypi/simple/
 # 如果你只想为当前用户设置，你也可以去掉下面的"--global"选项
 ```
-## 2.安装mysql
+### 2.安装mysql
 
 建议最新版。
 
 ```
 在官网 https://dev.mysql.com/downloads/mysql/ 下载安装包，一键安装即可。
 ```
-## 3.安装依赖库
+### 3.安装依赖库
 
 依赖库都是目前最新版本。
 
@@ -213,7 +219,7 @@ python  pipreqs --encoding utf-8 --force ./
 # 本项目是utf-8编码
 ```
 
-## 4.安装 talib
+### 4.安装 talib
 
 ```
 第一种方法. pip 下安装
@@ -231,7 +237,7 @@ python  pipreqs --encoding utf-8 --force ./
 （3）此处确认是否继续安装？输入y 继续安装，直到完成
 （4）安装完成。
 ```
-## 5.安装 Navicat（可选）
+### 5.安装 Navicat（可选）
 
 Navicat可以方便管理数据库，以及可以手工对数据进行查看、处理、分析、挖掘。
 
@@ -242,7 +248,7 @@ Navicat是一套可创建多个连接的数据库管理工具，用以方便管�
 
 （2）然后下载破解补丁: https://pan.baidu.com/s/18XpTHrm9OiLEl3u6z_uxnw 提取码: 8888 ，破解即可。
 ```
-## 6.配置数据库
+### 6.配置数据库
 
 一般可能会修改的信息是”数据库访问密码“。
 
@@ -256,7 +262,7 @@ db_port = 3306  # 数据库服务端口
 db_charset = "utf8mb4"  # 数据库字符集
 ```
 
-## 7.安装自动交易（可选）
+### 7.安装自动交易（可选）
 
 ```
 1.安装交易软件
@@ -287,9 +293,9 @@ db_charset = "utf8mb4"  # 数据库字符集
         详情参阅usage.md，配置对应券商
 ```
 
-# 运行说明
+### 运行说明
 
-## 1.执行数据抓取、处理、分析、识别
+#### 1.执行数据抓取、处理、分析、识别
 
 支持批量作业，具体参见run_job.bat中的注释说明。
 
@@ -315,17 +321,87 @@ db_charset = "utf8mb4"  # 数据库字符集
 #基础数据作业 
 python basic_data_daily_job.py
 ```
-## 2.启动web服务
+#### 2.启动web服务
 
 ```
 运行 run_web.bat
 ```
 启动服务后，打开浏览器，输入：http://localhost:9988/ ，即可使用本系统的可视化功能。
 
-## 3.启动交易服务
+#### 3.启动交易服务
 
 ```
 运行 run_trade.bat
+```
+
+## 二：docker镜像安装方式
+
+### 1.安装数据库镜像
+
+如果已经有Mysql、mariadb数据库可以跳过本步。
+
+运行下面命令：
+
+```
+docker run -d --name InStockDbService \
+    -v /data/mariadb/data:/var/lib/instockdb \
+    -e MYSQL_ROOT_PASSWORD=root \
+    -p 9966:3306 \
+    library/mariadb:latest
+```
+
+### 2.安装本系统镜像
+
+a.若按上面【1.安装数据库镜像】装的数据库，运行下面命令：
+
+```
+sudo docker run -dit --name InStock --link=InStockDbService \
+    -p 9988:9988 \
+    -e db_host=InStockDbService \
+    -e db_user=root \
+    -e db_password=root \
+    -e db_database=instockdb \
+    -e db_port=9966 \
+    mayanghua/instock:latest
+```
+
+b.已经有Mysql、mariadb数据库，运行下面命令：
+
+```
+sudo docker run -dit --name InStock \
+    -p 9988:9988 \
+    -e db_host=localhost \
+    -e db_user=root \
+    -e db_password=root \
+    -e db_database=instockdb \
+    -e db_port=3306 \
+    mayanghua/instock:latest
+```
+
+docker -e 参数说明：
+```
+db_host       # 数据库服务主机
+db_user       # 数据库访问用户
+db_password   # 数据库访问密码
+db_database   # 数据库访问密码
+db_port       # 数据库服务端口
+```
+按自己数据库实际情况配置参数。
+
+### 3. 系统运行
+
+启动容器后，会自动运行，首先会初始化数据、启动web服务。然后每小时执行“基础数据抓取”，每天17:30执行所有的数据抓取、处理、分析、识别。
+
+打开浏览器，输入：http://localhost:9988/ ，即可使用本系统的可视化功能。
+
+### 4.若想查看日志
+
+运行下面命令：
+
+```
+docker exec -it InStock bash 
+cat InStock/instock/log/stock_execute_job.log
+cat InStock/instock/log/stock_web.log
 ```
 
 # 特别声明
