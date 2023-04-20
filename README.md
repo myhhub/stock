@@ -350,7 +350,7 @@ python basic_data_daily_job.py
 docker run -d --name InStockDbService \
     -v /data/mariadb/data:/var/lib/instockdb \
     -e MYSQL_ROOT_PASSWORD=root \
-    -p 9966:3306 \
+    -p 3306:3306 \
     library/mariadb:latest
 ```
 
@@ -365,7 +365,7 @@ docker run -dit --name InStock --link=InStockDbService \
     -e db_user=root \
     -e db_password=root \
     -e db_database=instockdb \
-    -e db_port=9966 \
+    -e db_port=3306 \
     mayanghua/instock:latest
 ```
 
