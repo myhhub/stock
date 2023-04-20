@@ -344,6 +344,8 @@ python basic_data_daily_job.py
 
 运行下面命令：
 
+**特别提醒执行命令的用户要有root权限，其他命令也如此。例如：ubuntu系统在命令前加上sudo** ，sudo docker......
+
 ```
 docker run -d --name InStockDbService \
     -v /data/mariadb/data:/var/lib/instockdb \
@@ -357,7 +359,7 @@ docker run -d --name InStockDbService \
 a.若按上面【1.安装数据库镜像】装的数据库，运行下面命令：
 
 ```
-sudo docker run -dit --name InStock --link=InStockDbService \
+docker run -dit --name InStock --link=InStockDbService \
     -p 9988:9988 \
     -e db_host=InStockDbService \
     -e db_user=root \
@@ -370,7 +372,7 @@ sudo docker run -dit --name InStock --link=InStockDbService \
 b.已经有Mysql、mariadb数据库，运行下面命令：
 
 ```
-sudo docker run -dit --name InStock \
+docker run -dit --name InStock \
     -p 9988:9988 \
     -e db_host=localhost \
     -e db_user=root \
