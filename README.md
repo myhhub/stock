@@ -348,7 +348,7 @@ python basic_data_daily_job.py
 
 运行下面命令：
 
-**特别提醒执行命令的用户要有root权限，其他命令也如此。例如：ubuntu系统在命令前加上sudo** ，sudo docker......
+**特别提醒：执行命令的用户要有root权限，其他命令也如此。例如：ubuntu系统在命令前加上sudo** ，sudo docker......
 
 ```
 docker run -d --name InStockDbService \
