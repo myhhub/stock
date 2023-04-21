@@ -6,7 +6,7 @@
 #printenv | grep -v "no_proxy" >> /etc/environment
 
 # 第一次后台执行日数据。
-nohup bash /etc/cron.hourly/run_daily &
+nohup bash /etc/cron.daily/run_daily &
 
 #启动cron服务。在前台
 /usr/sbin/cron -f
