@@ -406,7 +406,7 @@ docker exec -it InStock bash
 cat InStock/instock/bin/run_job.sh
 #查看run_job.log注释,自己选择作业
 第一种方法：
-python python execute_daily_job.py 2023-03-01,2023-03-02
+python execute_daily_job.py 2023-03-01,2023-03-02
 第二种方法：
 修改run_job.sh，然后运行 bash InStock/instock/bin/run_job.sh
 ```
