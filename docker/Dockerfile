@@ -39,7 +39,7 @@ RUN apt-get update && \
     pip install akshare && \
     pip install easytrader && \
     pip install supervisor && \
-    curl -SL http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz | tar -xzC . && \
+    curl -SL https://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz | tar -xzC . && \
     cd ta-lib/  && \
     ./configure --prefix=/usr && \
     make && \
