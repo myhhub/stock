@@ -24,7 +24,7 @@ trusted-host = pypi.tuna.tsinghua.edu.cn" > /etc/pip.conf && \
     ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
     echo "Asia/Shanghai" > /etc/timezone && \
     apt-get update && \
-    apt-get install -y cron gcc make python3-dev default-libmysqlclient-dev libxml2-dev libxslt1-dev curl && \
+    apt-get install -y net-tools procps cron gcc make python3-dev default-libmysqlclient-dev libxml2-dev libxslt1-dev curl && \
     pip install supervisor && \
     pip install mysqlclient && \
     pip install arrow && \
