@@ -45,7 +45,7 @@ RUN apt-get update && \
     make && \
     make install && \
     cd .. && \
-    pip install --no-cache-dir TA-Lib && \
+    pip install TA-Lib && \
     rm -rf ta-lib* && \
     apt-get --purge remove -y gcc make python3-dev default-libmysqlclient-dev libxml2-dev libxslt1-dev curl && \
     rm -rf /root/.cache/* && apt-get clean && apt-get autoremove -y
