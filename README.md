@@ -393,11 +393,25 @@ db_port       # 数据库服务端口
 
 ### 3. 系统运行
 
-启动容器后，会自动运行，首先会初始化数据、启动web服务。然后每小时执行“基础数据抓取”，每天17:30执行所有的数据抓取、处理、分析、识别。
+启动容器后，会自动运行，首先会初始化数据、启动web服务。然后每小时执行“基础数据抓取”，每天17:30执行所有的数据抓取、处理、分析、识别、回测。
 
 打开浏览器，输入：http://localhost:9988/ ，即可使用本系统的可视化功能。
 
-### 4.若想查看日志
+### 4.历史数据
+
+历史数据抓取、处理、分析、识别、回测，运行下面命令：
+
+```
+docker exec -it InStock bash 
+cat InStock/instock/bin/run_job.sh
+#查看run_job.log注释,自己选择作业
+第一种方法：
+python python execute_daily_job.py 2023-03-01,2023-03-02
+第二种方法：
+修改run_job.sh，然后运行 bash InStock/instock/bin/run_job.sh
+```
+
+### 5.查看日志
 
 运行下面命令：
 
@@ -407,11 +421,11 @@ cat InStock/instock/log/stock_execute_job.log
 cat InStock/instock/log/stock_web.log
 ```
 
-### 5.docker常用命令
+### 6.docker常用命令
 
 具体参见：[Docker基础之 二.镜像及容器的基本操作](https://www.ljjyy.com/archives/2018/06/100208.html)
 
-### 6.自动交易
+### 7.自动交易
 
 目前只支持windows。参考常规安装方式,只需安装python、依赖库，**不需安装mysql、talib等**。
 
