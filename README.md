@@ -2,6 +2,10 @@
 
 InStock股票系统，抓取股票每日关键数据，计算股票各种指标，识别K线各种形态，内置多种选股策略，支持选股验证回测，支持自动交易，支持批量时间，运行高效，同时提供Docker镜像方便安装，是量化投资的好帮手。
 
+项目地址：https://github.com/myhhub/InStock
+
+镜像地址：https://hub.docker.com/r/mayanghua/instock
+
 # 功能介绍
 
 ##  一：股票每日数据
