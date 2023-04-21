@@ -56,6 +56,9 @@ EXPOSE 9988
 
 #InStock软件
 ADD InStock /data/InStock
+ADD InStock/cron/cron.minutely /etc/cron.minutely
+ADD InStock/cron/cron.hourly /etc/cron.hourly
+ADD InStock/cron/cron.daily /etc/cron.daily
 
 #add cron sesrvice.
 #每分钟，每小时1分钟，每天1点1分，每月1号执行
@@ -66,13 +69,8 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin \n\
 */1     *       *       *       *       /bin/run-parts /etc/cron.minutely \n\
 10       *       *       *       *       /bin/run-parts /etc/cron.hourly \n\
 30       17       *       *       *       /bin/run-parts /etc/cron.daily \n" > /var/spool/cron/crontabs/root && \
-    chmod 600 /var/spool/cron/crontabs/root
-
-ADD InStock/cron/cron.minutely /etc/cron.minutely
-ADD InStock/cron/cron.hourly /etc/cron.hourly
-ADD InStock/cron/cron.daily /etc/cron.daily
-
-RUN chmod 755 /data/InStock/instock/bin/run_* && \
+    chmod 600 /var/spool/cron/crontabs/root && \
+    chmod 755 /data/InStock/instock/bin/run_* && \
     chmod 755 /etc/cron.minutely/* &&  \
     chmod 755 /etc/cron.hourly/* &&  \
     chmod 755 /etc/cron.daily/*
