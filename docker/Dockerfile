@@ -24,7 +24,7 @@ trusted-host = pypi.tuna.tsinghua.edu.cn" > /etc/pip.conf && \
     ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
     echo "Asia/Shanghai" > /etc/timezone && \
     apt-get update && \
-    apt-get install -y net-tools procps cron gcc make python3-dev default-libmysqlclient-dev libxml2-dev libxslt1-dev curl && \
+    apt-get install -y cron gcc make python3-dev default-libmysqlclient-dev libxml2-dev libxslt1-dev curl && \
     pip install supervisor && \
     pip install mysqlclient && \
     pip install arrow && \
@@ -58,17 +58,16 @@ COPY cron/cron.daily /etc/cron.daily
 
 #add cron sesrvice.
 #每分钟，每小时1分钟，每天1点1分，每月1号执行
-RUN mkdir -p /etc/cron.minutely && mkdir -p /etc/cron.hourly && mkdir -p /etc/cron.daily && \
+RUN chmod 755 /data/InStock/instock/bin/run_*.sh && \
+    chmod 755 /etc/cron.minutely/* && \
+    chmod 755 /etc/cron.hourly/* && \
+    chmod 755 /etc/cron.daily/* && \
     echo "SHELL=/bin/sh \n\
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin \n\
 # min   hour    day     month   weekday command \n\
 */1     *       *       *       *       /bin/run-parts /etc/cron.minutely \n\
 10       *       *       *       *       /bin/run-parts /etc/cron.hourly \n\
 30       17       *       *       *       /bin/run-parts /etc/cron.daily \n" > /var/spool/cron/crontabs/root && \
-    chmod 600 /var/spool/cron/crontabs/root && \
-    chmod 755 /data/InStock/instock/bin/run_* && \
-    chmod 755 /etc/cron.minutely/* &&  \
-    chmod 755 /etc/cron.hourly/* &&  \
-    chmod 755 /etc/cron.daily/*
+    chmod 600 /var/spool/cron/crontabs/root
 
 ENTRYPOINT ["supervisord","-n","-c","/data/InStock/supervisor/supervisord.conf"]
