@@ -50,15 +50,15 @@ RUN apt-get update && \
     apt-get --purge remove -y gcc make python3-dev default-libmysqlclient-dev libxml2-dev libxslt1-dev curl && \
     rm -rf /root/.cache/* && apt-get clean && apt-get autoremove -y
 
-WORKDIR /data
-
 EXPOSE 9988
 
+WORKDIR /data
+
 #InStock软件
-ADD InStock /data/InStock
-ADD InStock/cron/cron.minutely /etc/cron.minutely
-ADD InStock/cron/cron.hourly /etc/cron.hourly
-ADD InStock/cron/cron.daily /etc/cron.daily
+COPY InStock /data/InStock
+COPY cron/cron.minutely /etc/cron.minutely
+COPY cron/cron.hourly /etc/cron.hourly
+COPY cron/cron.daily /etc/cron.daily
 
 #add cron sesrvice.
 #每分钟，每小时1分钟，每天1点1分，每月1号执行

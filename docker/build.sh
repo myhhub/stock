@@ -1,7 +1,9 @@
 #!/bin/sh
 
 rm -rf InStock
-rsync -av --progress ../../InStock . --exclude .git --exclude .idea --exclude __pycache__ --exclude .gitignore --exclude InStock/img --exclude InStock/docker --exclude instock/cache --exclude instock/log --exclude instock/test
+rsync -av --progress ../../InStock . --exclude .git --exclude .idea --exclude __pycache__ --exclude .gitignore --exclude InStock/cron --exclude InStock/img --exclude InStock/docker --exclude instock/cache --exclude instock/log --exclude instock/test
+rm -rf cron
+cp -r ../../InStock/cron .
 
 DOCKER_NAME=mayanghua/instock
 TAG1=$(date "+%Y%m")
