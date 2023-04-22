@@ -82,7 +82,7 @@ def get_plot_kline(code, stock, date):
         p_kline.add_tools(hover, crosshair)
 
         # 形态信息
-        pattern_is_show = False
+        pattern_is_show = False # 形态缺省是否显示
         checkboxes_args = {}
         checkboxes_code = """var acts = cb_obj.active;"""
         pattern_labels = []
