@@ -35,11 +35,9 @@ def main():
     logging.info("######## 任务执行时间: %s #######" % _start.strftime("%Y-%m-%d %H:%M:%S.%f"))
     # 第1步创建数据库
     bj.main()
-
+    # 第2步创建股票基础数据表
+    hdj.main()
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        # 第2步创建股票基础数据表
-        executor.submit(hdj.main)
-        time.sleep(2)
         # # 第3步创建股票指标数据表
         executor.submit(gdj.main)
         # # # # 第4步创建股票k线形态表

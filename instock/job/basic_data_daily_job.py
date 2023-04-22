@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import concurrent.futures
 import os.path
 import sys
 
@@ -96,11 +95,9 @@ def save_stock_blocktrade_data(date):
 def main():
     # 执行数据初始化。
     # 使用方法传递。
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        executor.submit(runt.run_with_args, save_nph_stock_spot_data)
-        executor.submit(runt.run_with_args, save_nph_stock_top_data)
-        executor.submit(runt.run_with_args, save_stock_blocktrade_data)
-
+    runt.run_with_args(save_nph_stock_spot_data)
+    runt.run_with_args(save_nph_stock_top_data)
+    runt.run_with_args(save_stock_blocktrade_data)
 
 # main函数入口
 if __name__ == '__main__':
