@@ -82,6 +82,7 @@ def get_plot_kline(code, stock, date):
         p_kline.add_tools(hover, crosshair)
 
         # 形态信息
+        pattern_is_show = False
         checkboxes_args = {}
         checkboxes_code = """var acts = cb_obj.active;"""
         pattern_labels = []
@@ -97,7 +98,7 @@ def get_plot_kline(code, stock, date):
                 locals()[f'pattern_labels_u_{str(i)}'] = LabelSet(x='index', y='high', text="label_cn",
                                                                   source=label_source_u, x_offset=7, y_offset=5,
                                                                   angle=90, angle_units='deg', text_color='red',
-                                                                  text_font_style='bold', text_font_size="9pt", visible=False)
+                                                                  text_font_style='bold', text_font_size="9pt", visible=pattern_is_show)
                 p_kline.add_layout(locals()[f'pattern_labels_u_{str(i)}'])
                 checkboxes_args[f'lsu{str(i)}'] = locals()[f'pattern_labels_u_{str(i)}']
                 checkboxes_code = f"{checkboxes_code}lsu{i}.visible = acts.includes({i});"
@@ -113,7 +114,7 @@ def get_plot_kline(code, stock, date):
                                                                   source=label_source_d, x_offset=-7, y_offset=-5,
                                                                   angle=270, angle_units='deg',
                                                                   text_color='green',
-                                                                  text_font_style='bold', text_font_size="9pt", visible=False)
+                                                                  text_font_style='bold', text_font_size="9pt", visible=pattern_is_show)
                 p_kline.add_layout(locals()[f'pattern_labels_d_{str(i)}'])
                 checkboxes_args[f'lsd{str(i)}'] = locals()[f'pattern_labels_d_{str(i)}']
                 checkboxes_code = f"{checkboxes_code}lsd{i}.visible = acts.includes({i});"
@@ -139,8 +140,8 @@ def get_plot_kline(code, stock, date):
         p_volume.xaxis.major_label_overrides = {i: date for i, date in enumerate(data['date'])}
         # p_volume.xaxis.major_label_orientation = pi / 4
 
-        # 形态复选框 list(range(len(pattern_labels)))
-        pattern_checkboxes = CheckboxGroup(labels=pattern_labels, active=[])
+        # 形态复选框
+        pattern_checkboxes = CheckboxGroup(labels=pattern_labels, active=list(range(len(pattern_labels))) if pattern_is_show else [])
         # pattern_checkboxes.inline = True
         pattern_checkboxes.height = p_kline.height + p_volume.height
         if checkboxes_args:
