@@ -140,7 +140,8 @@ VR:
 区间时间作业 python execute_daily_job.py 2022-01-01 2022-03-01
 
 ------单功能作业，支持批量作业，回测数据自动填补到当前
-基础数据作业 python basic_data_daily_job.py
+基础数据实时作业 python basic_data_daily_job.py
+基础数据非实时作业 python basic_data_other_daily_job.py
 指标数据作业 python indicators_data_daily_job.py
 K线形态作业 klinepattern_data_daily_job.py
 策略数据作业 python strategy_data_daily_job.py
@@ -417,7 +418,8 @@ cat InStock/instock/bin/run_job.sh
 枚举时间作业 python execute_daily_job.py 2022-01-01,2021-02-08,2022-03-12
 区间时间作业 python execute_daily_job.py 2022-01-01 2022-03-01
 ------单功能作业，支持批量作业，回测数据自动填补到当前
-基础数据作业 python basic_data_daily_job.py
+基础数据实时作业 python basic_data_daily_job.py
+基础数据非实时作业 python basic_data_other_daily_job.py
 指标数据作业 python indicators_data_daily_job.py
 K线形态作业 klinepattern_data_daily_job.py
 策略数据作业 python strategy_data_daily_job.py
