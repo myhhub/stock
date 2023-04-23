@@ -193,9 +193,12 @@ def get_plot_kline(code, stock, date):
         div_dfcf_hq = Div(
             text=f"""<a href="https://quote.eastmoney.com/{code_name}.html" target="_blank">{code}行情</a>""",
             width=80)
-        div_dfcf_zl = Div(
-            text=f"""<a href="https://emweb.eastmoney.com/PC_HSF10/OperationsRequired/Index?code={code_name}" target="_blank">{code}资料</a>""",
-            width=80)
+        if code.startswith(('1', '5')):
+            div_dfcf_zl = Div()
+        else:
+            div_dfcf_zl = Div(
+                text=f"""<a href="https://emweb.eastmoney.com/PC_HSF10/OperationsRequired/Index?code={code_name}" target="_blank">{code}资料</a>""",
+                width=80)
         div_dfcf_pr = Div(
             text=f"""<a href="https://www.ljjyy.com/archives/2023/04/100718.html" target="_blank">K线形态解读</a>""",
             width=80)
@@ -209,5 +212,5 @@ def get_plot_kline(code, stock, date):
 
         return {"script": script, "div": div}
     except Exception as e:
-        logging.debug("{}处理异常：{}".format('visualization.get_plot_kline', e))
+        logging.error(f"visualization.get_plot_kline处理异常：{e}")
     return None

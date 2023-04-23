@@ -12,7 +12,6 @@ import datetime
 cpath_current = os.path.dirname(os.path.dirname(__file__))
 cpath = os.path.abspath(os.path.join(cpath_current, os.pardir))
 sys.path.append(cpath)
-import instock.lib.run_template as runt
 import instock.core.tablestructure as tbs
 import instock.lib.database as mdb
 import instock.core.backtest.rate_stats as rate
@@ -69,7 +68,7 @@ def process(table, data_all, date, backtest_column):
         mdb.update_db_from_df(data_new, table_name, ('date', 'code'))
 
     except Exception as e:
-        logging.debug("{}处理异常：{}表{}".format('backtest_data_daily_job.process', table, e))
+        logging.error(f"backtest_data_daily_job.process处理异常：{table}表{e}")
 
 
 def run_check(stocks, data_all, date, backtest_column, workers=40):
@@ -86,9 +85,9 @@ def run_check(stocks, data_all, date, backtest_column, workers=40):
                     if _data_ is not None:
                         data[stock] = _data_
                 except Exception as e:
-                    logging.debug("{}处理异常：{}代码{}".format('backtest_data_daily_job.run_check', stock[1], e))
+                    logging.error(f"backtest_data_daily_job.run_check处理异常：{stock[1]}代码{e}")
     except Exception as e:
-        logging.debug("{}处理异常：{}".format('backtest_data_daily_job.run_check', e))
+        logging.error(f"backtest_data_daily_job.run_check处理异常：{e}")
     if not data:
         return None
     else:

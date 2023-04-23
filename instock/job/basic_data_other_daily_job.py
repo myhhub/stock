@@ -12,63 +12,64 @@ import instock.lib.run_template as runt
 import instock.core.tablestructure as tbs
 import instock.lib.database as mdb
 import instock.core.stockfetch as stf
-from instock.core.singleton import stock_data
 
 __author__ = 'myh '
 __date__ = '2023/3/10 '
 
 
-# 股票实时行情数据。
-def save_nph_stock_spot_data(date, before=True):
+# 龙虎榜-个股上榜统计
+# 接口: stock_lhb_ggtj_sina
+# 目标地址: http://vip.stock.finance.sina.com.cn/q/go.php/vLHBData/kind/ggtj/index.phtml
+# 描述: 获取新浪财经-龙虎榜-个股上榜统计
+def save_nph_stock_top_data(date, before=True):
     if before:
         return
-    # 股票列表
+
     try:
-        data = stock_data(date).get_data()
+        data = stf.fetch_stock_top_data(date)
         if data is None or len(data.index) == 0:
             return
 
-        table_name = tbs.TABLE_CN_STOCK_SPOT['name']
+        table_name = tbs.TABLE_CN_STOCK_TOP['name']
         # 删除老数据。
         if mdb.checkTableIsExist(table_name):
             del_sql = f"DELETE FROM `{table_name}` where `date` = '{date}'"
             mdb.executeSql(del_sql)
             cols_type = None
         else:
-            cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_SPOT['columns'])
-
+            cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_TOP['columns'])
         mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
     except Exception as e:
-        logging.error(f"basic_data_daily_job.save_stock_spot_data处理异常：{e}")
+        logging.error(f"basic_data_other_daily_job.save_stock_top_data处理异常：{e}")
 
 
-# 基金实时行情数据。
-def save_nph_etf_spot_data(date, before=True):
-    if before:
-        return
-    # 股票列表
+# 每日统计
+# 接口: stock_dzjy_mrtj
+# 目标地址: http://data.eastmoney.com/dzjy/dzjy_mrtj.aspx
+# 描述: 获取东方财富网-数据中心-大宗交易-每日统计
+def save_stock_blocktrade_data(date):
     try:
-        data = stf.fetch_etfs(date)
+        data = stf.fetch_stock_blocktrade_data(date)
         if data is None or len(data.index) == 0:
             return
 
-        table_name = tbs.TABLE_CN_ETF_SPOT['name']
+        table_name = tbs.TABLE_CN_STOCK_BLOCKTRADE['name']
         # 删除老数据。
         if mdb.checkTableIsExist(table_name):
             del_sql = f"DELETE FROM `{table_name}` where `date` = '{date}'"
             mdb.executeSql(del_sql)
             cols_type = None
         else:
-            cols_type = tbs.get_field_types(tbs.TABLE_CN_ETF_SPOT['columns'])
+            cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_BLOCKTRADE['columns'])
 
         mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
     except Exception as e:
-        logging.error(f"basic_data_daily_job.save_nph_etf_spot_data处理异常：{e}")
+        logging.error(f"basic_data_other_daily_job.save_stock_blocktrade_data处理异常：{e}")
 
 
 def main():
-    runt.run_with_args(save_nph_stock_spot_data)
-    runt.run_with_args(save_nph_etf_spot_data)
+    runt.run_with_args(save_nph_stock_top_data)
+    runt.run_with_args(save_stock_blocktrade_data)
 
 
 # main函数入口

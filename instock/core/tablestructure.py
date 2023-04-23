@@ -19,6 +19,21 @@ __date__ = '2023/3/10 '
 
 RATE_FIELDS_COUNT = 100  # N日收益率字段数目，即N值
 
+TABLE_CN_ETF_SPOT = {'name': 'cn_etf_spot', 'cn': '每日ETF数据',
+                     'columns': {'date': {'type': DATE, 'cn': '日期'}, 'code': {'type': NVARCHAR(6), 'cn': '代码'},
+                                 'name': {'type': NVARCHAR(20), 'cn': '名称'},
+                                 'latest_price': {'type': FLOAT, 'cn': '最新价'},
+                                 'quote_change': {'type': FLOAT, 'cn': '涨跌幅'},
+                                 'ups_downs': {'type': FLOAT, 'cn': '涨跌额'},
+                                 'volume': {'type': FLOAT, 'cn': '成交量'},
+                                 'turnover': {'type': FLOAT, 'cn': '成交额'},
+                                 'high': {'type': FLOAT, 'cn': '最高价'},
+                                 'low': {'type': FLOAT, 'cn': '最低价'}, 'open': {'type': FLOAT, 'cn': '昨收'},
+                                 'closed': {'type': FLOAT, 'cn': '开盘价'},
+                                 'turnover_rate': {'type': FLOAT, 'cn': '换手率'},
+                                 'value_total': {'type': FLOAT, 'cn': '总市值'},
+                                 'value_liquidity': {'type': FLOAT, 'cn': '流通市值'}}}
+
 TABLE_CN_STOCK_SPOT = {'name': 'cn_stock_spot', 'cn': '每日股票数据',
                        'columns': {'date': {'type': DATE, 'cn': '日期'}, 'code': {'type': NVARCHAR(6), 'cn': '代码'},
                                    'name': {'type': NVARCHAR(20), 'cn': '名称'},
@@ -41,7 +56,7 @@ TABLE_CN_STOCK_SPOT = {'name': 'cn_stock_spot', 'cn': '每日股票数据',
                                    'speed_increase_60': {'type': FLOAT, 'cn': '60日涨跌幅'},
                                    'speed_increase_all': {'type': FLOAT, 'cn': '年初至今涨跌幅'}}}
 
-TABLE_CN_STOCK_TOP = {'name': 'cn_stock_top', 'cn': '龙虎榜',
+TABLE_CN_STOCK_TOP = {'name': 'cn_stock_top', 'cn': '股票龙虎榜',
                       'columns': {'date': {'type': DATE, 'cn': '日期'}, 'code': {'type': NVARCHAR(6), 'cn': '代码'},
                                   'name': {'type': NVARCHAR(20), 'cn': '名称'},
                                   'ranking_times': {'type': FLOAT, 'cn': '上榜次数'},
@@ -51,7 +66,7 @@ TABLE_CN_STOCK_TOP = {'name': 'cn_stock_top', 'cn': '龙虎榜',
                                   'buy_seat': {'type': FLOAT, 'cn': '买入席位数'},
                                   'sell_seat': {'type': FLOAT, 'cn': '卖出席位数'}}}
 
-TABLE_CN_STOCK_BLOCKTRADE = {'name': 'cn_stock_blocktrade', 'cn': '大宗交易',
+TABLE_CN_STOCK_BLOCKTRADE = {'name': 'cn_stock_blocktrade', 'cn': '股票大宗交易',
                              'columns': {'date': {'type': DATE, 'cn': '日期'},
                                          'code': {'type': NVARCHAR(6), 'cn': '代码'},
                                          'name': {'type': NVARCHAR(20), 'cn': '名称'},
@@ -64,9 +79,9 @@ TABLE_CN_STOCK_BLOCKTRADE = {'name': 'cn_stock_blocktrade', 'cn': '大宗交易'
                                          'sum_turnover': {'type': FLOAT, 'cn': '成交总额'},
                                          'turnover_market_rate': {'type': FLOAT, 'cn': '成交总额/流通市值'}}}
 
-CN_STOCK_HIST_DATA = {'name': 'stock_zh_a_hist', 'cn': '股票某时间段的日行情数据库',
-                      'columns': {'date': {'type': DATE, 'cn': '日期'}, 'open': {'type': FLOAT, 'cn': '开盘价'},
-                                  'close': {'type': FLOAT, 'cn': '收盘价'}, 'high': {'type': FLOAT, 'cn': '最高'},
+CN_STOCK_HIST_DATA = {'name': 'fund_etf_hist_em', 'cn': '基金某时间段的日行情数据库',
+                      'columns': {'date': {'type': DATE, 'cn': '日期'}, 'open': {'type': FLOAT, 'cn': '开盘'},
+                                  'close': {'type': FLOAT, 'cn': '收盘'}, 'high': {'type': FLOAT, 'cn': '最高'},
                                   'low': {'type': FLOAT, 'cn': '最低'}, 'volume': {'type': FLOAT, 'cn': '成交量'},
                                   'amount': {'type': FLOAT, 'cn': '成交额'}, 'amplitude': {'type': FLOAT, 'cn': '振幅'},
                                   'quote_change': {'type': FLOAT, 'cn': '涨跌幅'},
@@ -134,7 +149,8 @@ STOCK_STATS_DATA = {'name': 'calculate_indicator', 'cn': '股票统计/指标计
                                 'force_13': {'type': FLOAT, 'cn': 'force_13'},
                                 'ene_ue': {'type': FLOAT, 'cn': 'ene上轨'}, 'ene': {'type': FLOAT, 'cn': 'ene'},
                                 'ene_le': {'type': FLOAT, 'cn': 'ene下轨'},
-                                'stochrsi_k': {'type': FLOAT, 'cn': 'stochrsi_k'}, 'stochrsi_d': {'type': FLOAT, 'cn': 'stochrsi_d'}
+                                'stochrsi_k': {'type': FLOAT, 'cn': 'stochrsi_k'},
+                                'stochrsi_d': {'type': FLOAT, 'cn': 'stochrsi_d'}
                                 }}
 
 TABLE_CN_STOCK_INDICATORS = {'name': 'cn_stock_indicators', 'cn': '股票指标数据',

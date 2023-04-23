@@ -55,7 +55,7 @@ def prepare(date):
         mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
 
     except Exception as e:
-        logging.debug("{}处理异常：{}".format('indicators_data_daily_job.prepare', e))
+        logging.error(f"indicators_data_daily_job.prepare处理异常：{e}")
 
 
 def run_check(stocks, date=None, workers=40):
@@ -74,10 +74,9 @@ def run_check(stocks, date=None, workers=40):
                     if _data_ is not None:
                         data[stock] = _data_
                 except Exception as e:
-                    logging.debug(
-                        "{}处理异常：{}代码{}".format('indicators_data_daily_job.run_check', stock[1], e))
+                    logging.error(f"indicators_data_daily_job.run_check处理异常：{stock[1]}代码{e}")
     except Exception as e:
-        logging.debug("{}处理异常：{}".format('indicators_data_daily_job.run_check', e))
+        logging.error(f"indicators_data_daily_job.run_check处理异常：{e}")
     if not data:
         return None
     else:
@@ -117,7 +116,7 @@ def guess_buy(date):
         data = pd.concat([data, pd.DataFrame(columns=_columns_backtest)])
         mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
     except Exception as e:
-        logging.debug("{}处理异常：{}".format('indicators_data_daily_job.guess_buy', e))
+        logging.error(f"indicators_data_daily_job.guess_buy处理异常：{e}")
 
 
 # 设置卖出数据。
@@ -151,7 +150,7 @@ def guess_sell(date):
         data = pd.concat([data, pd.DataFrame(columns=_columns_backtest)])
         mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
     except Exception as e:
-        logging.debug("{}处理异常：{}".format('indicators_data_daily_job.guess_sell', e))
+        logging.error(f"indicators_data_daily_job.guess_sell处理异常：{e}")
 
 
 def main():

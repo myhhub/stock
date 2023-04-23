@@ -73,10 +73,10 @@ def main():
     # tornado.options.log_file_prefix = os.path.join(cpath, '/logs/stock_web.log')
     tornado.options.options.logging = None
     # tornado.options.parse_command_line()
-    logging.getLogger().setLevel(logging.INFO)
+    logging.getLogger().setLevel(logging.ERROR)
 
     print(f"服务已启动，web地址 : http://localhost:{port}/")
-    logging.info(f"服务已启动，web地址 : http://localhost:{port}/")
+    logging.error(f"服务已启动，web地址 : http://localhost:{port}/")
 
     tornado.ioloop.IOLoop.current().start()
 

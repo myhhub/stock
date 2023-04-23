@@ -11,7 +11,6 @@ import talib as tl
 import instock.core.tablestructure as cons
 import instock.lib.trade_time as trd
 
-
 __author__ = 'myh '
 __date__ = '2023/3/10 '
 
@@ -53,7 +52,28 @@ def fetch_stocks_trade_date():
         data_date = set(data['trade_date'].values.tolist())
         return data_date
     except Exception as e:
-        logging.debug("{}处理异常：{}".format('stockfetch.fetch_stocks_trade_date', e))
+        logging.error(f"stockfetch.fetch_stocks_trade_date处理异常：{e}")
+    return None
+
+
+# 读取当天股票数据
+def fetch_etfs(date):
+    try:
+        data = ak.fund_etf_spot_em()
+        if data is None or len(data.index) == 0:
+            return None
+        columns = list(cons.TABLE_CN_ETF_SPOT['columns'])
+        columns.pop(0)
+        data.columns = columns
+        data = data.loc[data['latest_price'].apply(is_open)]
+        if date is None:
+            data.insert(0, 'date', datetime.datetime.now().strftime("%Y-%m-%d"))
+        else:
+            data.insert(0, 'date', date.strftime("%Y-%m-%d"))
+
+        return data
+    except Exception as e:
+        logging.error(f"stockfetch.fetch_etfs处理异常：{e}")
     return None
 
 
@@ -76,7 +96,7 @@ def fetch_stocks(date):
         data.drop('index', axis=1, inplace=True)
         return data
     except Exception as e:
-        logging.debug("{}处理异常：{}".format('stockfetch.fetch_stocks', e))
+        logging.error(f"stockfetch.fetch_stocks处理异常：{e}")
     return None
 
 
@@ -108,7 +128,7 @@ def fetch_stock_top_entity_data(date):
 
         return data_code
     except Exception as e:
-        logging.debug("{}处理异常：{}".format('stockfetch.fetch_stock_top_entity_data', e))
+        logging.error(f"stockfetch.fetch_stock_top_entity_data处理异常：{e}")
     return None
 
 
@@ -122,10 +142,13 @@ def fetch_stock_top_data(date):
         _columns.pop(0)
         data.columns = _columns
         data = data.loc[data['code'].apply(is_a_stock)]
-        data.insert(0, 'date', date)
+        if date is None:
+            data.insert(0, 'date', datetime.datetime.now().strftime("%Y-%m-%d"))
+        else:
+            data.insert(0, 'date', date.strftime("%Y-%m-%d"))
         return data
     except Exception as e:
-        logging.debug("{}处理异常：{}".format('stockfetch.fetch_stock_top_data', e))
+        logging.error(f"stockfetch.fetch_stock_top_data处理异常：{e}")
     return None
 
 
@@ -144,10 +167,37 @@ def fetch_stock_blocktrade_data(date):
         data.drop('index', axis=1, inplace=True)
         return data
     except TypeError:
-        logging.debug("处理异常：{}".format('目前还没有大宗交易数据，请17:00点后再获取！'))
+        logging.error("处理异常：目前还没有大宗交易数据，请17:00点后再获取！")
         return None
     except Exception as e:
-        logging.debug("{}处理异常：{}".format('stockfetch.fetch_stock_blocktrade_data', e))
+        logging.error(f"stockfetch.fetch_stock_blocktrade_data处理异常：{e}")
+    return None
+
+
+# 读取股票历史数据
+def fetch_etf_hist(data_base, date_start=None, date_end=None, adjust='qfq'):
+    date = data_base[0]
+    code = data_base[1]
+
+    if date_start is None:
+        date_start, is_cache = trd.get_trade_hist_interval(date)  # 提高运行效率，只运行一次
+    try:
+        if date_end is not None:
+            data = ak.fund_etf_hist_em(symbol=code, period="daily", start_date=date_start, end_date=date_end,
+                                       adjust=adjust)
+        else:
+            data = ak.fund_etf_hist_em(symbol=code, period="daily", start_date=date_start, adjust=adjust)
+
+        if data is None or len(data.index) == 0:
+            return None
+        data.columns = tuple(cons.CN_STOCK_HIST_DATA['columns'])
+        data = data.sort_index()  # 将数据按照日期排序下。
+        if data is not None:
+            data.loc[:, 'p_change'] = tl.ROC(data['close'].values, 1)
+            data["volume"] = data['volume'].values.astype('double') * 100  # 成交量单位从手变成股。
+        return data
+    except Exception as e:
+        logging.error(f"stockfetch.fetch_etf_hist处理异常：{e}")
     return None
 
 
@@ -166,7 +216,7 @@ def fetch_stock_hist(data_base, date_start=None, is_cache=True):
             data["volume"] = data['volume'].values.astype('double') * 100  # 成交量单位从手变成股。
         return data
     except Exception as e:
-        logging.debug("{}处理异常：{}".format('stockfetch.fetch_stock_hist', e))
+        logging.error(f"stockfetch.fetch_stock_hist处理异常：{e}")
     return None
 
 
@@ -203,5 +253,5 @@ def stock_hist_cache(code, date_start, date_end=None, is_cache=True, adjust=''):
             # time.sleep(1)
             return stock
     except Exception as e:
-        logging.debug("{}处理异常：{}代码{}".format('stockfetch.stock_hist_cache', code, e))
+        logging.error(f"stockfetch.stock_hist_cache处理异常：{code}代码{e}")
     return None

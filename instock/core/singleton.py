@@ -29,7 +29,7 @@ class stock_trade_date(metaclass=SingletonType):
         try:
             self.data = stf.fetch_stocks_trade_date()
         except Exception as e:
-            logging.debug("{}处理异常：{}".format('singleton.stock_trade_date', e))
+            logging.error(f"singleton.stock_trade_date处理异常：{e}")
 
     def get_data(self):
         return self.data
@@ -41,7 +41,7 @@ class stock_data(metaclass=SingletonType):
         try:
             self.data = stf.fetch_stocks(date)
         except Exception as e:
-            logging.debug("{}处理异常：{}".format('singleton.stock_data', e))
+            logging.error(f"singleton.stock_data处理异常：{e}")
 
     def get_data(self):
         return self.data
@@ -69,10 +69,9 @@ class stock_hist_data(metaclass=SingletonType):
                         if __data is not None:
                             _data[stock] = __data
                     except Exception as e:
-                        logging.debug(
-                            "{}处理异常：{}代码{}".format('singleton.stock_hist_data', stock[1], e))
+                        logging.error(f"singleton.stock_hist_data处理异常：{stock[1]}代码{e}")
         except Exception as e:
-            logging.debug("{}处理异常：{}".format('singleton.stock_hist_data', e))
+            logging.error(f"singleton.stock_hist_data处理异常：{e}")
         if not _data:
             self.data = None
         else:

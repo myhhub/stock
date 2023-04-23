@@ -45,6 +45,6 @@ def get_rates(code_name, data, stock_column, threshold=101):
             stock_data_list.append(None)
 
     except Exception as e:
-        logging.debug("{}处理异常：{}代码{}".format('rate_stats.get_rates', code, e))
+        logging.error(f"rate_stats.get_rates处理异常：{code}代码{e}")
 
     return pd.Series(stock_data_list, index=stock_column)

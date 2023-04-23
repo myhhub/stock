@@ -25,7 +25,7 @@ def create_new_database():
             create_sql = f"CREATE DATABASE IF NOT EXISTS `{mdb.db_database}` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci"
             db.cursor().execute(create_sql)
         except Exception as e:
-            logging.debug("{}处理异常：{}".format('init_job.create_new_database', e))
+            logging.error(f"init_job.create_new_database处理异常：{e}")
 
 
 def main():
@@ -34,7 +34,7 @@ def main():
         with pymysql.connect(**mdb.MYSQL_CONN_DBAPI) as db:
             db.cursor().execute(" select 1 ")
     except Exception as e:
-        logging.info("{}执行信息：{}".format('数据库不存在，将创建。', e))
+        logging.error("执行信息：数据库不存在，将创建。")
         # 检查数据库失败，
         create_new_database()
     # 执行数据初始化。

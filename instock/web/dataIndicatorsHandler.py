@@ -21,7 +21,10 @@ class GetDataIndicatorsHandler(webBase.BaseHandler, ABC):
         date = self.get_argument("date", default=None, strip=False)
         comp_list = []
         try:
-            stock = stf.fetch_stock_hist((date, code))
+            if code.startswith(('1', '5')):
+                stock = stf.fetch_etf_hist((date, code))
+            else:
+                stock = stf.fetch_stock_hist((date, code))
             if stock is None:
                 return
 
@@ -31,7 +34,7 @@ class GetDataIndicatorsHandler(webBase.BaseHandler, ABC):
 
             comp_list.append(pk)
         except Exception as e:
-            logging.debug("{}处理异常：{}".format('dataIndicatorsHandler.GetDataIndicatorsHandler', e))
+            logging.error(f"dataIndicatorsHandler.GetDataIndicatorsHandler处理异常：{e}")
 
         self.render("stock_indicators.html", comp_list=comp_list,
                     stockVersion=version.__version__,
