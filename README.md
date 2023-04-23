@@ -1,6 +1,6 @@
 **InStock股票系统**
 
-InStock股票系统，抓取股票每日关键数据，计算股票各种指标，识别K线各种形态，内置多种选股策略，支持选股验证回测，支持自动交易，支持批量时间，运行高效，同时提供Docker镜像方便安装，是量化投资的好帮手。
+InStock股票系统，抓取股票、ETF每日关键数据，计算股票各种指标，识别K线各种形态，内置多种选股策略，支持选股验证回测，支持自动交易，支持批量时间，运行高效，同时提供Docker镜像方便安装，是量化投资的好帮手。
 
 本项目地址：https://github.com/myhhub/InStock
 
@@ -9,6 +9,9 @@ Docker镜像：https://hub.docker.com/r/mayanghua/instock **镜像优化构建�
 # 功能介绍
 
 ##  一：股票每日数据
+
+包括每日股票数据、股票龙虎榜、股票大宗交易、每日ETF数据。
+
 抓取A股票每日数据，主要为一些关键数据，同时封装抓取方法，方便扩展系统获取个人关注的数据。基于免费开源的akshare抓取，更多数据获取参见 [akshare官网文档](https://www.akshare.xyz/data/stock/stock.html)。
 
 ![](img/00.jpg)
