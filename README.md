@@ -211,7 +211,7 @@ b.若想升级项目依赖库至最新版，可以通过下面方法：
 先打开requirements.txt，然后修改文件中的“==”为“>=”，接着执行下面命令：
 
 ```
-python pip install --upgrade -r requirements.txt 
+python pip install -r requirements.txt --upgrade
 ```
 
 c.若扩展了本项目，可以通过下面方法生成项目依赖：
