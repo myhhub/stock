@@ -23,18 +23,6 @@ class SingletonType(type):
         return cls._instance
 
 
-# 读取股票交易日历数据
-class stock_trade_date(metaclass=SingletonType):
-    def __init__(self):
-        try:
-            self.data = stf.fetch_stocks_trade_date()
-        except Exception as e:
-            logging.error(f"singleton.stock_trade_date处理异常：{e}")
-
-    def get_data(self):
-        return self.data
-
-
 # 读取当天股票数据
 class stock_data(metaclass=SingletonType):
     def __init__(self, date):
