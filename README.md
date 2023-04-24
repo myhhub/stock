@@ -443,11 +443,11 @@ cat InStock/instock/log/stock_web.log
 ### 6.docker常用命令
 
 ```
-sudo docker container stop InStock InStockDbService
+docker container stop InStock InStockDbService
 #停止容器
-sudo docker container prune
+docker container prune
 #回收容器
-sudo docker rmi mayanghua/instock:latest library/mariadb:latest
+docker rmi mayanghua/instock:latest library/mariadb:latest
 #删除镜像
 ```
 
