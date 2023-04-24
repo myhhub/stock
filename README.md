@@ -442,6 +442,15 @@ cat InStock/instock/log/stock_web.log
 
 ### 6.docker常用命令
 
+```
+sudo docker container stop InStock InStockDbService
+#停止容器
+sudo docker container prune
+#回收容器
+sudo docker rmi mayanghua/instock:latest library/mariadb:latest
+#删除镜像
+```
+
 具体参见：[Docker基础之 二.镜像及容器的基本操作](https://www.ljjyy.com/archives/2018/06/100208.html)
 
 ### 7.自动交易
