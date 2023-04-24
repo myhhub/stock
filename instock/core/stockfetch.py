@@ -30,7 +30,7 @@ if not os.path.exists(stock_hist_cache_path):
 # 300开头的股票是创业板股票；400开头的股票是三板市场股票。
 def is_a_stock(code):
     # 上证A股  # 深证A股
-    return code.startswith(('600', '601', '000', '001', '002'))
+    return code.startswith(('600', '601', '000', '001', '002', '300'))
 
 
 # 过滤掉 st 股票。
