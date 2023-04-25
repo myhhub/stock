@@ -19,6 +19,7 @@ log_path = os.path.join(cpath_current, 'log')
 if not os.path.exists(log_path):
     os.makedirs(log_path)
 logging.basicConfig(format='%(asctime)s %(message)s', filename=os.path.join(log_path, 'stock_web.log'))
+logging.getLogger().setLevel(logging.ERROR)
 import instock.lib.torndb as torndb
 import instock.lib.database as mdb
 import instock.lib.version as version
@@ -65,15 +66,12 @@ class HomeHandler(webBase.BaseHandler, ABC):
 
 
 def main():
-    tornado.options.parse_command_line()
+    # tornado.options.parse_command_line()
+    tornado.options.options.logging = None
+
     http_server = tornado.httpserver.HTTPServer(Application())
     port = 9988
     http_server.listen(port)
-
-    # tornado.options.log_file_prefix = os.path.join(cpath, '/logs/stock_web.log')
-    tornado.options.options.logging = None
-    # tornado.options.parse_command_line()
-    logging.getLogger().setLevel(logging.ERROR)
 
     print(f"服务已启动，web地址 : http://localhost:{port}/")
     logging.error(f"服务已启动，web地址 : http://localhost:{port}/")

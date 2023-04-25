@@ -2,25 +2,14 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from threading import RLock
 import concurrent.futures
 import instock.core.stockfetch as stf
 import instock.core.tablestructure as tbs
 import instock.lib.trade_time as trd
+from instock.lib.SingletonType import SingletonType
 
 __author__ = 'myh '
 __date__ = '2023/3/10 '
-
-
-class SingletonType(type):
-    single_lock = RLock()
-
-    def __call__(cls, *args, **kwargs):  # 创建cls的对象时候调用
-        with SingletonType.single_lock:
-            if not hasattr(cls, "_instance"):
-                cls._instance = super(SingletonType, cls).__call__(*args, **kwargs)  # 创建cls的对象
-
-        return cls._instance
 
 
 # 读取当天股票数据
@@ -49,7 +38,8 @@ class stock_hist_data(metaclass=SingletonType):
         try:
             # max_workers是None还是没有给出，将默认为机器cup个数*5
             with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
-                future_to_stock = {executor.submit(stf.fetch_stock_hist, stock, date_start, is_cache): stock for stock in stocks}
+                future_to_stock = {executor.submit(stf.fetch_stock_hist, stock, date_start, is_cache): stock for stock
+                                   in stocks}
                 for future in concurrent.futures.as_completed(future_to_stock):
                     stock = future_to_stock[future]
                     try:
