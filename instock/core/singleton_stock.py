@@ -6,14 +6,14 @@ import concurrent.futures
 import instock.core.stockfetch as stf
 import instock.core.tablestructure as tbs
 import instock.lib.trade_time as trd
-from instock.lib.SingletonType import SingletonType
+from instock.lib.singleton_type import singleton_type
 
 __author__ = 'myh '
 __date__ = '2023/3/10 '
 
 
 # 读取当天股票数据
-class stock_data(metaclass=SingletonType):
+class stock_data(metaclass=singleton_type):
     def __init__(self, date):
         try:
             self.data = stf.fetch_stocks(date)
@@ -25,7 +25,7 @@ class stock_data(metaclass=SingletonType):
 
 
 # 读取股票历史数据
-class stock_hist_data(metaclass=SingletonType):
+class stock_hist_data(metaclass=singleton_type):
     def __init__(self, date=None, stocks=None, workers=16):
         if stocks is None:
             _subset = stock_data(date).get_data()[list(tbs.TABLE_CN_STOCK_FOREIGN_KEY['columns'])]
