@@ -81,9 +81,15 @@ class GetStockDataHandler(webBase.BaseHandler, ABC):
             val = search_by_data[search_idx]
             # 查询sql
             if search_idx == 0:
-                search_sql = f" WHERE `{item}` = '{val}'"
+                if item == 'date':
+                    search_sql = f" WHERE `{item}` = '{val}'"
+                else:
+                    search_sql = f" WHERE `{item}` like '%%{val}%%'"
             else:
-                search_sql = f"{search_sql} AND `{item}` = '{val}'"
+                if item == 'date':
+                    search_sql = f"{search_sql} AND `{item}` == '{val}'"
+                else:
+                    search_sql = f"{search_sql} AND `{item}` like '%%{val}%%'"
             search_idx = search_idx + 1
 
         order_by_sql = ""
