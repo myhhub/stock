@@ -8,7 +8,7 @@ __date__ = '2023/3/10 '
 
 # 低ATR成长
 # 1.必须至少上市交易250日
-# 2.最近10的最高收盘价必须比最近10的最低收盘价高1.1倍
+# 2.最近10个交易日的最高收盘价必须比最近10个交易日的最低收盘价高1.1倍
 def check_low_increase(code_name, data, date=None, ma_short=30, ma_long=250, threshold=10):
     if date is None:
         end_date = code_name[0]
