@@ -8,8 +8,9 @@ __date__ = '2023/3/10 '
 # 总市值
 BALANCE = 200000
 
-
+# 海龟交易法则
 # 最后一个交易日收市价为指定区间内最高价
+# 1.当日收盘价>=最近60日最高收盘价
 def check_enter(code_name, data, date=None, threshold=60):
     if date is None:
         end_date = code_name[0]

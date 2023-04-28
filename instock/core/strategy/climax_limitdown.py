@@ -8,7 +8,10 @@ import talib as tl
 __author__ = 'myh '
 __date__ = '2023/3/10 '
 
-
+# 放量跌停
+# 1.跌>9.5%
+# 2.成交额不低于2亿
+# 3.成交量至少是5日平均成交量的4倍
 def check(code_name, data, date=None, threshold=60):
     if date is None:
         end_date = code_name[0]

@@ -11,6 +11,9 @@ __date__ = '2023/3/10 '
 
 
 # 平台突破策略
+# 1.60日内某日收盘价>=60日均线>开盘价
+# 2.且【1】放量上涨
+# 3.且【1】间之前时间，任意一天收盘价与60日均线偏离在-5%~20%之间。
 def check(code_name, data, date=None, threshold=60):
     origin_data = data
     if date is None:

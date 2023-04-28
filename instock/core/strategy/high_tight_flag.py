@@ -7,6 +7,9 @@ __date__ = '2023/3/10 '
 
 
 # 高而窄的旗形
+# 1.必须至少上市交易60日
+# 2.当日收盘价/之前24~10日的最低价>=1.9
+# 3.之前24~10日必须连续两天涨幅大于等于9.5%
 def check_high_tight(code_name, data, date=None, threshold=60, istop=False):
     # 龙虎榜上必须有机构
     if not istop:

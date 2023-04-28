@@ -6,7 +6,9 @@ __author__ = 'myh '
 __date__ = '2023/3/10 '
 
 
-# 低回撤稳步上涨策略
+# 无大幅回撤
+# 1.当日收盘价比60日前的收盘价的涨幅小于0.6
+# 2.最近60日，不能有单日跌幅超7%、高开低走7%、两日累计跌幅10%、两日高开低走累计10%
 def check(code_name, data, date=None, threshold=60):
     if date is None:
         end_date = code_name[0]

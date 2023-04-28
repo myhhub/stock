@@ -9,6 +9,9 @@ __date__ = '2023/3/10 '
 
 
 # 持续上涨（MA30向上）
+# 均线多头
+# 1.30日前的30日均线<20日前的30日均线<10日前的30日均线<当日的30日均线
+# 3.(当日的30日均线/30日前的30日均线)>1.2
 def check(code_name, data, date=None, threshold=30):
     if date is None:
         end_date = code_name[0]
