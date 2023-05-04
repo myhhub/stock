@@ -14,9 +14,13 @@ cpath_current = os.path.dirname(os.path.dirname(__file__))
 cpath = os.path.abspath(os.path.join(cpath_current, os.pardir))
 sys.path.append(cpath)
 log_path = os.path.join(cpath_current, 'log')
-if not os.path.exists(log_path):
-    os.makedirs(log_path)
-logging.basicConfig(format='%(asctime)s %(message)s', filename=os.path.join(log_path, 'stock_execute_job.log'))
+log_execute_job_path = os.path.join(cpath_current, 'log/job')
+if not os.path.exists(log_execute_job_path):
+    os.makedirs(log_execute_job_path)
+
+current_time = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+log_filename = 'stock_execute_job-{}.log'.format(current_time)
+logging.basicConfig(format='%(asctime)s %(message)s', filename=os.path.join(log_execute_job_path, log_filename))
 logging.getLogger().setLevel(logging.INFO)
 import init_job as bj
 import basic_data_daily_job as hdj
