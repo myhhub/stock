@@ -268,6 +268,7 @@ def fetch_stocks_financial_indicator(date=None):
         if stock is None or len(stock.index) == 0:
             return None
         stock.columns = tuple(tbs.CN_STOCK_FINANCIAL_INDICATOR['columns'])
+        stock = stock.loc[stock['code'].apply(is_a_stock)]
         return stock
     except Exception as e:
         logging.error(f"fetch_stocks_financial_indicator处理异常：{e}")
