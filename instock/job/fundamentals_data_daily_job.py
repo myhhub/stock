@@ -54,13 +54,41 @@ def save_nph_stock_fundamentals_data(date, before=True):
         # data.set_index('code', inplace=True)
         mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
 
+        fundamental_buy(date)
     except Exception as e:
         logging.error(f"fundamentals_data_daily_job.save_nph_stock_fundamentals_data处理异常：{e}")
 
 
+# 设置卖出数据。
+def fundamental_buy(date):
+    try:
+        _table_name = tbs.TABLE_CN_STOCK_FUNDAMENTALS['name']
+        if not mdb.checkTableIsExist(_table_name):
+            return
+
+        sql = f'''SELECT * FROM `{_table_name}` WHERE `date` = '{date}' and 
+                `pe_dynamic` > 0 and `pe_dynamic` <= 20 and `pb` <= 10 and `roe` >= 15'''
+        data = pd.read_sql(sql=sql, con=mdb.conn_not_cursor())
+        data = data.drop_duplicates(subset="code", keep="last")
+        if len(data.index) == 0:
+            return
+
+        table_name = tbs.TABLE_CN_STOCK_FUNDAMENTALS_BUY['name']
+        # 删除老数据。
+        if mdb.checkTableIsExist(table_name):
+            del_sql = f"DELETE FROM `{table_name}` where `date` = '{date}'"
+            mdb.executeSql(del_sql)
+            cols_type = None
+        else:
+            cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_FUNDAMENTALS_BUY['columns'])
+
+        mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
+    except Exception as e:
+        logging.error(f"fundamentals_data_daily_job.fundamental_buy处理异常：{e}")
+
+
 def main():
     runt.run_with_args(save_nph_stock_fundamentals_data)
-
 
 # main函数入口
 if __name__ == '__main__':

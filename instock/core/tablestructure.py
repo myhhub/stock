@@ -309,28 +309,31 @@ TABLE_CN_STOCK_KLINE_PATTERN = {'name': 'cn_stock_pattern', 'cn': '股票K线形
 TABLE_CN_STOCK_KLINE_PATTERN['columns'].update(STOCK_KLINE_PATTERN_DATA['columns'])
 
 CN_STOCK_FINANCIAL_INDICATOR = {'name': 'stock_yjbb_em', 'cn': '业绩报表',
-                                   'columns': {'index': {'type': FLOAT, 'cn': '序号'},
-                                               'code': {'type': NVARCHAR(6), 'cn': '代码'},
-                                               'name': {'type': NVARCHAR(20), 'cn': '名称'},
-                                               'eps': {'type': FLOAT, 'cn': '营业收入'},
-                                               'revenue': {'type': FLOAT, 'cn': '营业收入'},
-                                               'revenuer_yb': {'type': FLOAT, 'cn': '营业收入-同比增长'},
-                                               'revenuer_qq': {'type': FLOAT, 'cn': '营业收入-季度环比增长'},
-                                               'np': {'type': FLOAT, 'cn': '净利润'},
-                                               'npr_yb': {'type': FLOAT, 'cn': '净利润-同比增长'},
-                                               'npr_qq': {'type': FLOAT, 'cn': '净利润-季度环比增长'},
-                                               'naps': {'type': FLOAT, 'cn': '每股净资产'},
-                                               'roe': {'type': FLOAT, 'cn': '净资产收益率'},
-                                               'ncf': {'type': FLOAT, 'cn': '每股经营现金流量'},
-                                               'gross_margi': {'type': FLOAT, 'cn': '销售毛利率'},
-                                               'industry': {'type': NVARCHAR(20), 'cn': '所处行业'},
-                                               'report_date': {'type': DATE, 'cn': '公告日期'}}}
+                                'columns': {'index': {'type': FLOAT, 'cn': '序号'},
+                                            'code': {'type': NVARCHAR(6), 'cn': '代码'},
+                                            'name': {'type': NVARCHAR(20), 'cn': '名称'},
+                                            'eps': {'type': FLOAT, 'cn': '营业收入'},
+                                            'revenue': {'type': FLOAT, 'cn': '营业收入'},
+                                            'revenuer_yb': {'type': FLOAT, 'cn': '营业收入-同比增长'},
+                                            'revenuer_qq': {'type': FLOAT, 'cn': '营业收入-季度环比增长'},
+                                            'np': {'type': FLOAT, 'cn': '净利润'},
+                                            'npr_yb': {'type': FLOAT, 'cn': '净利润-同比增长'},
+                                            'npr_qq': {'type': FLOAT, 'cn': '净利润-季度环比增长'},
+                                            'naps': {'type': FLOAT, 'cn': '每股净资产'},
+                                            'roe': {'type': FLOAT, 'cn': '净资产收益率'},
+                                            'ncf': {'type': FLOAT, 'cn': '每股经营现金流量'},
+                                            'gross_margi': {'type': FLOAT, 'cn': '销售毛利率'},
+                                            'industry': {'type': NVARCHAR(20), 'cn': '所处行业'},
+                                            'report_date': {'type': DATE, 'cn': '公告日期'}}}
 _CN_STOCK_FINANCIAL_INDICATOR_COLS = CN_STOCK_FINANCIAL_INDICATOR['columns'].copy()
 _CN_STOCK_FINANCIAL_INDICATOR_COLS.pop('index')
 _CN_STOCK_FINANCIAL_INDICATOR_COLS.pop('name')
 TABLE_CN_STOCK_FUNDAMENTALS = {'name': 'cn_stock_fundamentals', 'cn': '股票基本面数据',
                                'columns': CN_STOCK_SPOT_FOREIGN_KEY['columns'].copy()}
 TABLE_CN_STOCK_FUNDAMENTALS['columns'].update(_CN_STOCK_FINANCIAL_INDICATOR_COLS)
+
+TABLE_CN_STOCK_FUNDAMENTALS_BUY = {'name': 'cn_stock_fundamentals_buy', 'cn': '基本面选股',
+                                   'columns': TABLE_CN_STOCK_FUNDAMENTALS['columns'].copy()}
 
 
 def get_field_cn(key, table):

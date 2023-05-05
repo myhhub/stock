@@ -114,6 +114,16 @@ STOCK_WEB_DATA_LIST = [StockWebData(
     primary_key=[],
     is_realtime=False,
     order_by=" code desc  "
+), StockWebData(
+    mode="query",
+    type="4、股票策略数据",
+    name=tbs.TABLE_CN_STOCK_FUNDAMENTALS_BUY['cn'],
+    table_name=tbs.TABLE_CN_STOCK_FUNDAMENTALS_BUY['name'],
+    columns=tuple(tbs.TABLE_CN_STOCK_FUNDAMENTALS_BUY['columns']),
+    column_names=tbs.get_field_cns(tbs.TABLE_CN_STOCK_FUNDAMENTALS_BUY['columns'].values()),
+    primary_key=[],
+    is_realtime=False,
+    order_by=" code desc  "
 )]
 
 for table in tbs.TABLE_CN_STOCK_STRATEGIES:
