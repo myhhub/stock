@@ -139,3 +139,19 @@ def get_trade_date_last():
         run_date = get_previous_trade_date(run_date)
         run_date_nph = run_date
     return run_date, run_date_nph
+
+
+def get_quarterly_report_date():
+    now_time = datetime.datetime.now()
+    year = now_time.year
+    month = now_time.month
+    if 1 <= month <= 3:
+        month_day = '1231'
+    elif 4 <= month <= 6:
+        month_day = '0331'
+    elif 7 <= month <= 9:
+        month_day = '0630'
+    else:
+        month_day = '0930'
+
+    return f"{year}{month_day}"

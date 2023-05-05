@@ -57,6 +57,16 @@ STOCK_WEB_DATA_LIST = [StockWebData(
 ), StockWebData(
     mode="query",
     type="1、股票基本数据",
+    name=tbs.TABLE_CN_STOCK_FUNDAMENTALS['cn'],
+    table_name=tbs.TABLE_CN_STOCK_FUNDAMENTALS['name'],
+    columns=tuple(tbs.TABLE_CN_STOCK_FUNDAMENTALS['columns']),
+    column_names=tbs.get_field_cns(tbs.TABLE_CN_STOCK_FUNDAMENTALS['columns'].values()),
+    primary_key=[],
+    is_realtime=True,
+    order_by=" code asc "
+), StockWebData(
+    mode="query",
+    type="1、股票基本数据",
     name=tbs.TABLE_CN_ETF_SPOT['cn'],
     table_name=tbs.TABLE_CN_ETF_SPOT['name'],
     columns=tuple(tbs.TABLE_CN_ETF_SPOT['columns']),

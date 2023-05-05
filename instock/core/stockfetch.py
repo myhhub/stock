@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import akshare as ak
 import talib as tl
-import instock.core.tablestructure as cons
+import instock.core.tablestructure as tbs
 import instock.lib.trade_time as trd
 
 __author__ = 'myh '
@@ -64,7 +64,7 @@ def fetch_etfs(date):
         data = ak.fund_etf_spot_em()
         if data is None or len(data.index) == 0:
             return None
-        columns = list(cons.TABLE_CN_ETF_SPOT['columns'])
+        columns = list(tbs.TABLE_CN_ETF_SPOT['columns'])
         columns.pop(0)
         data.columns = columns
         data = data.loc[data['latest_price'].apply(is_open)]
@@ -85,7 +85,7 @@ def fetch_stocks(date):
         data = ak.stock_zh_a_spot_em()
         if data is None or len(data.index) == 0:
             return None
-        columns = list(cons.TABLE_CN_STOCK_SPOT['columns'])
+        columns = list(tbs.TABLE_CN_STOCK_SPOT['columns'])
         columns[0] = 'index'
         data.columns = columns
         data = data.loc[data['code'].apply(is_a_stock)].loc[data['latest_price'].apply(is_open)]
@@ -140,7 +140,7 @@ def fetch_stock_top_data(date):
         data = ak.stock_lhb_ggtj_sina(recent_day="5")
         if data is None or len(data.index) == 0:
             return None
-        _columns = list(cons.TABLE_CN_STOCK_TOP['columns'])
+        _columns = list(tbs.TABLE_CN_STOCK_TOP['columns'])
         _columns.pop(0)
         data.columns = _columns
         data = data.loc[data['code'].apply(is_a_stock)]
@@ -162,7 +162,7 @@ def fetch_stock_blocktrade_data(date):
         if data is None or len(data.index) == 0:
             return None
 
-        columns = list(cons.TABLE_CN_STOCK_BLOCKTRADE['columns'])
+        columns = list(tbs.TABLE_CN_STOCK_BLOCKTRADE['columns'])
         columns.insert(0, 'index')
         data.columns = columns
         data = data.loc[data['code'].apply(is_a_stock)]
@@ -192,7 +192,7 @@ def fetch_etf_hist(data_base, date_start=None, date_end=None, adjust='qfq'):
 
         if data is None or len(data.index) == 0:
             return None
-        data.columns = tuple(cons.CN_STOCK_HIST_DATA['columns'])
+        data.columns = tuple(tbs.CN_STOCK_HIST_DATA['columns'])
         data = data.sort_index()  # 将数据按照日期排序下。
         if data is not None:
             data.loc[:, 'p_change'] = tl.ROC(data['close'].values, 1)
@@ -245,7 +245,7 @@ def stock_hist_cache(code, date_start, date_end=None, is_cache=True, adjust=''):
 
             if stock is None or len(stock.index) == 0:
                 return None
-            stock.columns = tuple(cons.CN_STOCK_HIST_DATA['columns'])
+            stock.columns = tuple(tbs.CN_STOCK_HIST_DATA['columns'])
             stock = stock.sort_index()  # 将数据按照日期排序下。
             try:
                 if is_cache:
@@ -257,3 +257,19 @@ def stock_hist_cache(code, date_start, date_end=None, is_cache=True, adjust=''):
     except Exception as e:
         logging.error(f"stockfetch.stock_hist_cache处理异常：{code}代码{e}")
     return None
+
+
+# 读取股票交易日历数据
+def fetch_stocks_financial_indicator(date=None):
+    try:
+        if date is None:
+            date = trd.get_quarterly_report_date()
+        stock = ak.stock_yjbb_em(date=date)
+        if stock is None or len(stock.index) == 0:
+            return None
+        stock.columns = tuple(tbs.CN_STOCK_FINANCIAL_INDICATOR['columns'])
+        return stock
+    except Exception as e:
+        logging.error(f"fetch_stocks_financial_indicator处理异常：{e}")
+    return None
+

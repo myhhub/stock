@@ -170,6 +170,7 @@ VR:
 ------单功能作业，支持批量作业，回测数据自动填补到当前
 基础数据实时作业 python basic_data_daily_job.py
 基础数据非实时作业 python basic_data_other_daily_job.py
+股票基本面数据非实时作业 python fundamentals_data_daily_job.py
 指标数据作业 python indicators_data_daily_job.py
 K线形态作业 klinepattern_data_daily_job.py
 策略数据作业 python strategy_data_daily_job.py
@@ -448,6 +449,7 @@ cat InStock/instock/bin/run_job.sh
 ------单功能作业，支持批量作业，回测数据自动填补到当前
 基础数据实时作业 python basic_data_daily_job.py
 基础数据非实时作业 python basic_data_other_daily_job.py
+股票基本面数据非实时作业 python fundamentals_data_daily_job.py
 指标数据作业 python indicators_data_daily_job.py
 K线形态作业 klinepattern_data_daily_job.py
 策略数据作业 python strategy_data_daily_job.py
