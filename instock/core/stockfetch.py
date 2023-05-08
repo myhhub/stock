@@ -10,6 +10,7 @@ import akshare as ak
 import talib as tl
 import instock.core.tablestructure as tbs
 import instock.lib.trade_time as trd
+import instock.core.crawling.stock_hist_em_my as akm
 
 __author__ = 'myh '
 __date__ = '2023/3/10 '
@@ -99,6 +100,24 @@ def fetch_stocks(date):
         return data
     except Exception as e:
         logging.error(f"stockfetch.fetch_stocks处理异常：{e}")
+    return None
+
+
+# 读取股票交易日历数据
+def fetch_stocks_fundamentals(date):
+    try:
+        data = akm.stock_zh_a_spot_em()
+        if data is None or len(data.index) == 0:
+            return None
+        if date is None:
+            data.insert(0, 'date', datetime.datetime.now().strftime("%Y-%m-%d"))
+        else:
+            data.insert(0, 'date', date.strftime("%Y-%m-%d"))
+        data.columns = list(tbs.TABLE_CN_STOCK_FUNDAMENTALS['columns'])
+        data = data.loc[data['code'].apply(is_a_stock)].loc[data['latest_price'].apply(is_open)]
+        return data
+    except Exception as e:
+        logging.error(f"stockfetch.fetch_stocks_fundamentals：{e}")
     return None
 
 
@@ -257,20 +276,3 @@ def stock_hist_cache(code, date_start, date_end=None, is_cache=True, adjust=''):
     except Exception as e:
         logging.error(f"stockfetch.stock_hist_cache处理异常：{code}代码{e}")
     return None
-
-
-# 读取股票交易日历数据
-def fetch_stocks_financial_indicator(date=None):
-    try:
-        if date is None:
-            date = trd.get_quarterly_report_date()
-        stock = ak.stock_yjbb_em(date=date)
-        if stock is None or len(stock.index) == 0:
-            return None
-        stock.columns = tuple(tbs.CN_STOCK_FINANCIAL_INDICATOR['columns'])
-        stock = stock.loc[stock['code'].apply(is_a_stock)]
-        return stock
-    except Exception as e:
-        logging.error(f"fetch_stocks_financial_indicator处理异常：{e}")
-    return None
-

@@ -14,7 +14,6 @@ import instock.lib.run_template as runt
 import instock.core.tablestructure as tbs
 import instock.lib.database as mdb
 import instock.core.stockfetch as stf
-from instock.core.singleton_stock import stock_data
 
 __author__ = 'myh '
 __date__ = '2023/5/5 '
@@ -25,13 +24,8 @@ def save_nph_stock_fundamentals_data(date, before=True):
         return
 
     try:
-        dataVal = stf.fetch_stocks_financial_indicator()
-        if dataVal is None:
-            return
-
-        _subset = stock_data(date).get_data()[list(tbs.CN_STOCK_SPOT_FOREIGN_KEY['columns'])]
-        stocks = [tuple(x) for x in _subset.values]
-        if stocks is None:
+        data = stf.fetch_stocks_fundamentals(date)
+        if data is None:
             return
 
         table_name = tbs.TABLE_CN_STOCK_FUNDAMENTALS['name']
@@ -43,15 +37,6 @@ def save_nph_stock_fundamentals_data(date, before=True):
         else:
             cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_FUNDAMENTALS['columns'])
 
-        dataKey = pd.DataFrame(stocks)
-        _columns = tuple(tbs.CN_STOCK_SPOT_FOREIGN_KEY['columns'])
-        dataKey.columns = _columns
-
-        dataVal.drop('index', axis=1, inplace=True)  # 删除下标
-        dataVal.drop('name', axis=1, inplace=True)  # 删除名称
-
-        data = pd.merge(dataKey, dataVal, on=['code'], how='left')
-        # data.set_index('code', inplace=True)
         mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
 
         fundamental_buy(date)
@@ -67,7 +52,7 @@ def fundamental_buy(date):
             return
 
         sql = f'''SELECT * FROM `{_table_name}` WHERE `date` = '{date}' and 
-                `pe_dynamic` > 0 and `pe_dynamic` <= 20 and `pb` <= 10 and `roe` >= 15'''
+                `pe_ttm` > 0 and `pe_ttm` <= 20 and `pb` <= 10 and `roe` >= 15'''
         data = pd.read_sql(sql=sql, con=mdb.conn_not_cursor())
         data = data.drop_duplicates(subset="code", keep="last")
         if len(data.index) == 0:
@@ -89,6 +74,7 @@ def fundamental_buy(date):
 
 def main():
     runt.run_with_args(save_nph_stock_fundamentals_data)
+
 
 # main函数入口
 if __name__ == '__main__':
