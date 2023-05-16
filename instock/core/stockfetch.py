@@ -163,6 +163,7 @@ def fetch_stock_top_data(date):
         _columns.pop(0)
         data.columns = _columns
         data = data.loc[data['code'].apply(is_a_stock)]
+        data.drop_duplicates('code', keep='last', inplace=True)
         if date is None:
             data.insert(0, 'date', datetime.datetime.now().strftime("%Y-%m-%d"))
         else:
