@@ -19,6 +19,7 @@ class GetDataIndicatorsHandler(webBase.BaseHandler, ABC):
     def get(self):
         code = self.get_argument("code", default=None, strip=False)
         date = self.get_argument("date", default=None, strip=False)
+        name = self.get_argument("name", default=None, strip=False)
         comp_list = []
         try:
             if code.startswith(('1', '5')):
@@ -28,7 +29,7 @@ class GetDataIndicatorsHandler(webBase.BaseHandler, ABC):
             if stock is None:
                 return
 
-            pk = vis.get_plot_kline(code, stock, date)
+            pk = vis.get_plot_kline(code, stock, date, name)
             if pk is None:
                 return
 
