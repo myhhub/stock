@@ -191,13 +191,13 @@ def get_plot_kline(code, stock, date, stock_name):
         else:
             code_name = f"SZ{code}"
         div_dfcf_hq = Div(
-            text=f"""<a href="https://quote.eastmoney.com/{code_name}.html" target="_blank">{code}{stock_name}-行情</a>""",
+            text=f"""<a href="https://quote.eastmoney.com/{code_name}.html" target="_blank">{code}&nbsp;{stock_name}-行情</a>""",
             width=150)
         if code.startswith(('1', '5')):
             div_dfcf_zl = Div()
         else:
             div_dfcf_zl = Div(
-                text=f"""<a href="https://emweb.eastmoney.com/PC_HSF10/OperationsRequired/Index?code={code_name}" target="_blank">{code}{stock_name}-资料</a>""",
+                text=f"""<a href="https://emweb.eastmoney.com/PC_HSF10/OperationsRequired/Index?code={code_name}" target="_blank">{code}&nbsp;{stock_name}-资料</a>""",
                 width=150)
         div_dfcf_pr = Div(
             text=f"""<a href="https://www.ljjyy.com/archives/2023/04/100718.html" target="_blank">K线形态解读</a>""",
