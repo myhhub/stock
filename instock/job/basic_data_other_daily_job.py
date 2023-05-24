@@ -4,6 +4,7 @@
 import logging
 import os.path
 import sys
+import pandas as pd
 
 cpath_current = os.path.dirname(os.path.dirname(__file__))
 cpath = os.path.abspath(os.path.join(cpath_current, os.pardir))
@@ -41,6 +42,7 @@ def save_nph_stock_top_data(date, before=True):
         mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
     except Exception as e:
         logging.error(f"basic_data_other_daily_job.save_stock_top_data处理异常：{e}")
+    stock_spot_buy(date)
 
 
 # 每日统计
@@ -65,6 +67,33 @@ def save_stock_blocktrade_data(date):
         mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
     except Exception as e:
         logging.error(f"basic_data_other_daily_job.save_stock_blocktrade_data处理异常：{e}")
+
+
+def stock_spot_buy(date):
+    try:
+        _table_name = tbs.TABLE_CN_STOCK_SPOT['name']
+        if not mdb.checkTableIsExist(_table_name):
+            return
+
+        sql = f'''SELECT * FROM `{_table_name}` WHERE `date` = '{date}' and 
+                `pe9` > 0 and `pe9` <= 20 and `pbnewmrq` <= 10 and `roe_weight` >= 15'''
+        data = pd.read_sql(sql=sql, con=mdb.conn_not_cursor())
+        data = data.drop_duplicates(subset="code", keep="last")
+        if len(data.index) == 0:
+            return
+
+        table_name = tbs.TABLE_CN_STOCK_SPOT_BUY['name']
+        # 删除老数据。
+        if mdb.checkTableIsExist(table_name):
+            del_sql = f"DELETE FROM `{table_name}` where `date` = '{date}'"
+            mdb.executeSql(del_sql)
+            cols_type = None
+        else:
+            cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_SPOT_BUY['columns'])
+
+        mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
+    except Exception as e:
+        logging.error(f"fundamentals_data_daily_job.stock_spot_buy处理异常：{e}")
 
 
 def main():

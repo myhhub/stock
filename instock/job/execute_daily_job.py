@@ -21,7 +21,6 @@ logging.getLogger().setLevel(logging.INFO)
 import init_job as bj
 import basic_data_daily_job as hdj
 import basic_data_other_daily_job as hdtj
-import fundamentals_data_daily_job as fddj
 import indicators_data_daily_job as gdj
 import strategy_data_daily_job as sdj
 import backtest_data_daily_job as bdj
@@ -39,10 +38,8 @@ def main():
     bj.main()
     # 第2.1步创建股票基础数据表
     hdj.main()
-    # 第2.2步创建股票基础面数据表
-    fddj.main()
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        # # 第3.1步创建股票指标数据表
+        # # 第3.1步创建股票其它基础数据表
         executor.submit(hdtj.main)
         # # 第3.2步创建股票指标数据表
         executor.submit(gdj.main)

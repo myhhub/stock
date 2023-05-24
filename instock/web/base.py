@@ -3,7 +3,7 @@
 
 from abc import ABC
 import tornado.web
-import instock.core.stock_web_dic as stock_web_dic
+import instock.core.singleton_stock_web_module_data as sswmd
 
 __author__ = 'myh '
 __date__ = '2023/3/10 '
@@ -24,7 +24,7 @@ class BaseHandler(tornado.web.RequestHandler, ABC):
 
 class LeftMenu:
     def __init__(self, url):
-        self.leftMenuList = stock_web_dic.STOCK_WEB_DATA_LIST
+        self.leftMenuList = sswmd.stock_web_module_data().get_data_list()
         self.current_url = url
 
 

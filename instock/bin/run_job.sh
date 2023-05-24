@@ -14,7 +14,6 @@ echo ------单功能作业 除了创建数据库 其他都支持批量作业----
 echo 创建数据库作业 python init_job.py
 echo 基础数据实时作业 python basic_data_daily_job.py
 echo 基础数据非实时作业 python basic_data_other_daily_job.py
-echo 股票基本面数据非实时作业 python fundamentals_data_daily_job.py
 echo 指标数据作业 python indicators_data_daily_job.py
 echo K线形态作业 python klinepattern_data_daily_job.py
 echo 策略数据作业 python strategy_data_daily_job.py

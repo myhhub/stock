@@ -24,19 +24,22 @@ trusted-host = pypi.tuna.tsinghua.edu.cn" > /etc/pip.conf && \
     ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
     echo "Asia/Shanghai" > /etc/timezone && \
     apt-get update && \
-    apt-get install -y cron gcc make python3-dev default-libmysqlclient-dev libxml2-dev libxslt1-dev curl && \
+    apt-get install -y cron gcc make python3-dev default-libmysqlclient-dev curl && \
     pip install supervisor && \
     pip install mysqlclient && \
+    pip install requests && \
     pip install arrow && \
     pip install numpy && \
     pip install SQLAlchemy && \
-    pip install pymysql && \
+    pip install PyMySQL && \
     pip install Logbook && \
     pip install python_dateutil && \
+    pip install py_mini_racer && \
+    pip install tqdm && \
+    pip install beautifulsoup4 && \
     pip install bokeh && \
     pip install pandas && \
     pip install tornado && \
-    pip install akshare && \
     pip install easytrader && \
     curl -SL https://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz | tar -xzC . && \
     cd ta-lib/  && \
@@ -46,7 +49,7 @@ trusted-host = pypi.tuna.tsinghua.edu.cn" > /etc/pip.conf && \
     cd .. && \
     pip install TA-Lib && \
     rm -rf ta-lib* && \
-    apt-get --purge remove -y gcc make python3-dev default-libmysqlclient-dev libxml2-dev libxslt1-dev curl && \
+    apt-get --purge remove -y gcc make python3-dev default-libmysqlclient-dev curl && \
     rm -rf /root/.cache/* && apt-get clean && apt-get autoremove -y
 
 WORKDIR /data

@@ -6,11 +6,15 @@ import os.path
 import datetime
 import numpy as np
 import pandas as pd
-import akshare as ak
 import talib as tl
 import instock.core.tablestructure as tbs
 import instock.lib.trade_time as trd
-import instock.core.crawling.stock_hist_em_my as akm
+import instock.core.crawling.trade_date_hist as tdh
+import instock.core.crawling.fund_etf_em as fee
+import instock.core.crawling.stock_lhb_em as sle
+import instock.core.crawling.stock_lhb_sina as sls
+import instock.core.crawling.stock_dzjy_em as sde
+import instock.core.crawling.stock_hist_em as she
 
 __author__ = 'myh '
 __date__ = '2023/3/10 '
@@ -33,7 +37,7 @@ if not os.path.exists(stock_hist_cache_path):
 # 430、83、87开头的股票是北证A股
 def is_a_stock(code):
     # 上证A股  # 深证A股
-    return code.startswith(('600', '601', '603', '605', '000', '001', '002', '300', '301'))
+    return code.startswith(('600', '601', '603', '605', '000', '001', '002', '003', '300', '301'))
 
 
 # 过滤掉 st 股票。
@@ -42,14 +46,14 @@ def is_not_st(name):
 
 
 # 过滤价格，如果没有基本上是退市了。
-def is_open(latest_price):
-    return not np.isnan(latest_price)
+def is_open(price):
+    return not np.isnan(price)
 
 
 # 读取股票交易日历数据
 def fetch_stocks_trade_date():
     try:
-        data = ak.tool_trade_date_hist_sina()
+        data = tdh.tool_trade_date_hist_sina()
         if data is None or len(data.index) == 0:
             return None
         data_date = set(data['trade_date'].values.tolist())
@@ -62,18 +66,15 @@ def fetch_stocks_trade_date():
 # 读取当天股票数据
 def fetch_etfs(date):
     try:
-        data = ak.fund_etf_spot_em()
+        data = fee.fund_etf_spot_em()
         if data is None or len(data.index) == 0:
             return None
-        columns = list(tbs.TABLE_CN_ETF_SPOT['columns'])
-        columns.pop(0)
-        data.columns = columns
-        data = data.loc[data['latest_price'].apply(is_open)]
         if date is None:
             data.insert(0, 'date', datetime.datetime.now().strftime("%Y-%m-%d"))
         else:
             data.insert(0, 'date', date.strftime("%Y-%m-%d"))
-
+        data.columns = list(tbs.TABLE_CN_ETF_SPOT['columns'])
+        data = data.loc[data['new_price'].apply(is_open)]
         return data
     except Exception as e:
         logging.error(f"stockfetch.fetch_etfs处理异常：{e}")
@@ -83,41 +84,30 @@ def fetch_etfs(date):
 # 读取当天股票数据
 def fetch_stocks(date):
     try:
-        data = ak.stock_zh_a_spot_em()
+        data = she.stock_zh_a_spot_em()
         if data is None or len(data.index) == 0:
             return None
-        columns = list(tbs.TABLE_CN_STOCK_SPOT['columns'])
-        columns[0] = 'index'
-        data.columns = columns
-        data = data.loc[data['code'].apply(is_a_stock)].loc[data['latest_price'].apply(is_open)]
         if date is None:
             data.insert(0, 'date', datetime.datetime.now().strftime("%Y-%m-%d"))
         else:
             data.insert(0, 'date', date.strftime("%Y-%m-%d"))
-
-        # 删除index
-        data.drop('index', axis=1, inplace=True)
+        data.columns = list(tbs.TABLE_CN_STOCK_SPOT['columns'])
+        data = data.loc[data['code'].apply(is_a_stock)].loc[data['new_price'].apply(is_open)]
         return data
     except Exception as e:
         logging.error(f"stockfetch.fetch_stocks处理异常：{e}")
     return None
 
 
-# 读取股票交易日历数据
-def fetch_stocks_fundamentals(date):
+def fetch_stock_selection():
     try:
-        data = akm.stock_zh_a_spot_em()
+        data = sst.stock_selection()
         if data is None or len(data.index) == 0:
             return None
-        if date is None:
-            data.insert(0, 'date', datetime.datetime.now().strftime("%Y-%m-%d"))
-        else:
-            data.insert(0, 'date', date.strftime("%Y-%m-%d"))
-        data.columns = list(tbs.TABLE_CN_STOCK_FUNDAMENTALS['columns'])
-        data = data.loc[data['code'].apply(is_a_stock)].loc[data['latest_price'].apply(is_open)]
+        data.columns = list(tbs.TABLE_CN_STOCK_SELECTION['columns'])
         return data
     except Exception as e:
-        logging.error(f"stockfetch.fetch_stocks_fundamentals：{e}")
+        logging.error(f"stockfetch.fetch_stocks_selection处理异常：{e}")
     return None
 
 
@@ -129,7 +119,7 @@ def fetch_stock_top_entity_data(date):
     code_name = '代码'
     entity_amount_name = '买方机构数'
     try:
-        data = ak.stock_lhb_jgmmtj_em(start_date, end_date)
+        data = sle.stock_lhb_jgmmtj_em(start_date, end_date)
         if data is None or len(data.index) == 0:
             return None
 
@@ -156,7 +146,7 @@ def fetch_stock_top_entity_data(date):
 # 描述: 获取新浪财经-龙虎榜-个股上榜统计
 def fetch_stock_top_data(date):
     try:
-        data = ak.stock_lhb_ggtj_sina(recent_day="5")
+        data = sls.stock_lhb_ggtj_sina(recent_day="5")
         if data is None or len(data.index) == 0:
             return None
         _columns = list(tbs.TABLE_CN_STOCK_TOP['columns'])
@@ -178,7 +168,7 @@ def fetch_stock_top_data(date):
 def fetch_stock_blocktrade_data(date):
     date_str = date.strftime("%Y%m%d")
     try:
-        data = ak.stock_dzjy_mrtj(start_date=date_str, end_date=date_str)
+        data = sde.stock_dzjy_mrtj(start_date=date_str, end_date=date_str)
         if data is None or len(data.index) == 0:
             return None
 
@@ -205,10 +195,10 @@ def fetch_etf_hist(data_base, date_start=None, date_end=None, adjust='qfq'):
         date_start, is_cache = trd.get_trade_hist_interval(date)  # 提高运行效率，只运行一次
     try:
         if date_end is not None:
-            data = ak.fund_etf_hist_em(symbol=code, period="daily", start_date=date_start, end_date=date_end,
-                                       adjust=adjust)
+            data = fee.fund_etf_hist_em(symbol=code, period="daily", start_date=date_start, end_date=date_end,
+                                        adjust=adjust)
         else:
-            data = ak.fund_etf_hist_em(symbol=code, period="daily", start_date=date_start, adjust=adjust)
+            data = fee.fund_etf_hist_em(symbol=code, period="daily", start_date=date_start, adjust=adjust)
 
         if data is None or len(data.index) == 0:
             return None
@@ -258,10 +248,10 @@ def stock_hist_cache(code, date_start, date_end=None, is_cache=True, adjust=''):
             return pd.read_pickle(cache_file, compression="gzip")
         else:
             if date_end is not None:
-                stock = ak.stock_zh_a_hist(symbol=code, period="daily", start_date=date_start, end_date=date_end,
-                                           adjust=adjust)
+                stock = she.stock_zh_a_hist(symbol=code, period="daily", start_date=date_start, end_date=date_end,
+                                            adjust=adjust)
             else:
-                stock = ak.stock_zh_a_hist(symbol=code, period="daily", start_date=date_start, adjust=adjust)
+                stock = she.stock_zh_a_hist(symbol=code, period="daily", start_date=date_start, adjust=adjust)
 
             if stock is None or len(stock.index) == 0:
                 return None

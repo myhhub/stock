@@ -38,7 +38,6 @@ class GetDataIndicatorsHandler(webBase.BaseHandler, ABC):
             logging.error(f"dataIndicatorsHandler.GetDataIndicatorsHandler处理异常：{e}")
 
         self.render("stock_indicators.html", comp_list=comp_list,
-                    stockVersion=version.__version__,
                     leftMenu=webBase.GetLeftMenu(self.request.uri))
 
 

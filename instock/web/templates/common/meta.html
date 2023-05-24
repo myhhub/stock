@@ -1,40 +1,15 @@
 {% block meta %}
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-<!-- bootstrap & fontawesome -->
 <link rel="icon" href="/static/img/favicon.ico">
-<link rel="stylesheet" href="/static/css/bootstrap.min.css" />
-<link rel="stylesheet" href="/static/font-awesome/4.5.0/css/font-awesome.min.css" />
-<!-- ace styles -->
+<link rel="stylesheet" href="/static/css/bootstrap.min-3.4.1.css" />
+<link rel="stylesheet" href="/static/css/font-awesome.min-4.5.0.css" />
 <link rel="stylesheet" href="/static/css/ace.min.css" class="ace-main-stylesheet" id="main-ace-style" />
-<link rel="stylesheet" href="/static/css/bootstrap-datepicker3.min.css" />
-<link rel="stylesheet" href="/static/css/bootstrap-datetimepicker.min.css" />
-
-<!-- basic scripts -->
-<script src="/static/js/jquery-2.1.4.min.js"></script>
-<script src="/static/js/ace-extra.min.js"></script>
-<script src="/static/js/bootstrap.min.js"></script>
-
-<!-- page specific plugin scripts -->
-<script src="/static/js/jquery.dataTables.min.js"></script>
-<script src="/static/js/jquery.dataTables.bootstrap.min.js"></script>
-<script src="/static/js/dataTables.buttons.min.js"></script>
-<script src="/static/js/dataTables.select.min.js"></script>
-<!-- ace scripts -->
-<script src="/static/js/moment.min.js"></script>
-<script src="/static/js/bootstrap-datepicker.min.js"></script>
-<script src="/static/js/bootstrap-datetimepicker.min.js"></script>
-<script src="/static/js/bootstrap-datepicker.zh-CN.js"></script>
-
-<script src="/static/js/ace-elements.min.js"></script>
+<link rel="stylesheet" href="/static/css/ace-skins.min.css"/>
+<script src="/static/js/jquery.min-3.7.0.js"></script>
+<script src="/static/js/bootstrap.min-3.4.1.js"></script>
 <script src="/static/js/ace.min.js"></script>
-<script src="/static/js/jquery-ui.custom.min.js"></script>
-<script src="/static/js/bootbox.js"></script>
-
-<script src="/static/js/buttons.colVis.min.js"></script>
-<script src="/static/js/buttons.print.min.js"></script>
-<script src="/static/js/buttons.html5.min.js"></script>
-
-
+<script src="/static/js/ace-elements.min.js"></script>
+<script src="/static/js/ace-extra.min.js"></script>
 <script type='text/javascript'>
 jQuery(function($) {
     //初始化窗口。
@@ -67,50 +42,17 @@ jQuery(function($) {
 });
 </script>
 <style>
-	#dynamic-table_filter {display: none;}
-    .table{
+    html,body {
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height:100%;
         width: 100%;
     }
-    .thead{
-        height: 40px;
-        color: red;
-        background-color: #e6e6e6;
-    }
-    .th{
-        height: auto;
-    }
-    .tbody{
-        overflow: auto;
-    }
-    .tr{
-        height: auto;
-    }
-    .td{
-        float: left;
+    div.dataTables_wrapper {
         width: 100%;
-        height: auto;
-        padding: 5px;
-        border-right: 1px solid #e6e6e6;
-        border-left: 1px solid #e6e6e6;
-        text-align: left;
-        line-height: initial;
-        overflow: hidden;
-        text-overflow: initial;
-        white-space: initial;
-    }
-    .td:nth-child(even) {
-        float: left;
-        width: 100%;
-        height: auto;
-        padding: 5px;
-        border-right: 1px solid #e6e6e6;
-        border-left: 1px solid #e6e6e6;
-        border-bottom: 1px solid #e6e6e6;
-        text-align: left;
-        line-height: initial;
-        overflow: hidden;
-        text-overflow: initial;
-        white-space: initial;
+        margin: 0 auto;
     }
 </style>
 {% end %}

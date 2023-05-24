@@ -7,7 +7,7 @@ InStock股票系统，抓取每日股票、ETF关键数据，计算股票各种�
 
 本项目地址：https://github.com/myhhub/InStock
 
-Docker镜像：https://hub.docker.com/r/mayanghua/instock **镜像优化构建仅180M**。
+Docker镜像：https://hub.docker.com/r/mayanghua/instock **镜像优化构建仅170M**。
 
 # 功能介绍
 

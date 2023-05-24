@@ -1,17 +1,14 @@
 {% extends "layout/default.html" %}
 
 {% block main_content %}
-
-	<h3 class="header smaller lighter blue">InStock股票系统</h3>
-
-
-	<div class="clearfix">
-		<div class="pull-left tableTools-container">
-			<h3>功能介绍</h3>
-		</div>
-	</div>
-
-    <p dir="auto">一：计算股票指标：</p>
+<div class="page-content">
+    <h3 class="header smaller lighter">InStock股票系统</h3>
+    <div class="clearfix">
+        <div class="pull-left tableTools-container">
+            <h3>功能介绍</h3>
+        </div>
+    </div>
+    <p dir="auto" class="red">一：计算股票指标：</p>
     <div class="snippet-clipboard-content notranslate position-relative overflow-auto">
         <pre class="notranslate"><code>
         基于talib、pandas 计算指标，计算高效准确。调整个别指标公式，确保结果和同花顺、通信达结果一致。 指标：
@@ -24,7 +21,7 @@
         </code></pre>
     </div>
 
-    <p dir="auto">二：根据指标判定可能买入卖出的股票：</p>
+    <p dir="auto" class="red">二：根据指标判定可能买入卖出的股票：</p>
     <div class="snippet-clipboard-content notranslate position-relative overflow-auto">
         <pre class="notranslate"><code>
             KDJ:
@@ -53,7 +50,7 @@
         </code></pre>
     </div>
 
-    <p dir="auto">三：K线形态识别：</p>
+    <p dir="auto" class="red">三：K线形态识别：</p>
     <div class="snippet-clipboard-content notranslate position-relative overflow-auto">
         <pre class="notranslate"><code>
             K线形态识别返回的结果有三种： 负：出现卖出信号 0：没有出现该形态 正：出现买入信号
@@ -243,8 +240,7 @@
         </code></pre>
     </div>
 
-
-    <p dir="auto">四：策略选股：</p>
+    <p dir="auto" class="red">四：策略选股：</p>
     <div class="snippet-clipboard-content notranslate position-relative overflow-auto">
         <pre class="notranslate"><code>
             1、放量上涨
@@ -260,12 +256,11 @@
         </code></pre>
     </div>
 
-    <p dir="auto">五：选股验证：</p>
+    <p dir="auto" class="red">五：选股验证：</p>
     <div class="snippet-clipboard-content notranslate position-relative overflow-auto">
         <pre class="notranslate"><code>
             对指标、策略等选出的股票进行回测，验证其准确性。
         </code></pre>
     </div>
-
-
+</div>
 {% end %}
