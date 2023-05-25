@@ -10,37 +10,6 @@
 <script src="/static/js/ace.min.js"></script>
 <script src="/static/js/ace-elements.min.js"></script>
 <script src="/static/js/ace-extra.min.js"></script>
-<script type='text/javascript'>
-jQuery(function($) {
-    //初始化窗口。
-    $('.modal.aside').ace_aside();
-    $('#aside-inside-modal').addClass('aside').ace_aside({container: ""});
-    $(document).one('ajaxloadstart.page', function(e) {
-        $('.modal.aside').remove();
-        $(window).off('.aside')
-    });
-})
-$.extend({
-	getUrlVars: function(){
-		var vars = [], hash;
-		var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
-		for(var i = 0; i < hashes.length; i++)
-		{
-			hash = hashes[i].split('=');
-			vars.push(hash[0]);
-			vars[hash[0]] = hash[1];
-		}
-		return vars;
-	},
-	getUrlVar: function(name){
-		return $.getUrlVars()[name];
-	}
-});
-jQuery(function($) {
-    $('[data-rel=tooltip]').tooltip();
-    $('[data-rel=popover]').popover({html:true});
-});
-</script>
 <style>
     html,body {
         top: 0;
