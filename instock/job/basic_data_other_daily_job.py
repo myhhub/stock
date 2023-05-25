@@ -93,7 +93,7 @@ def stock_spot_buy(date):
 
         mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
     except Exception as e:
-        logging.error(f"fundamentals_data_daily_job.stock_spot_buy处理异常：{e}")
+        logging.error(f"basic_data_other_daily_job.stock_spot_buy处理异常：{e}")
 
 
 def main():
