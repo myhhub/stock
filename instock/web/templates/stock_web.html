@@ -85,7 +85,7 @@
                     {% if column == 'code' %}
                         { "data": "{{ column }}","render": function(data, type, row, meta){data = '<a href="/instock/data/indicators?code=' + data + '&date=' + row.date + '&name=' + row.name + '" target="_blank">' + data + '</a>';return data;}},
                     {% elif column == 'change_rate' %}
-                        { "data": null,"render": function (data, type, row, meta) {var val = row.change_rate;var colour = val < 0 ? 'red' : 'green';return type === 'display' ? '<span style="color:' + colour + '">' + val + '</span>' : val;}},
+                        { "data": "{{ column }}","render": function (data, type, row, meta) {var val = row.change_rate;var colour = val < 0 ? 'green' : 'red';return type === 'display' ? '<span style="color:' + colour + '">' + val + '</span>' : val;}},
                     {% else %}
 					    { "data": "{{ column }}" },
                     {% end %}
