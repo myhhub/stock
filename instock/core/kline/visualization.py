@@ -84,7 +84,7 @@ def get_plot_kline(code, stock, date, stock_name):
         # 形态信息
         pattern_is_show = False # 形态缺省是否显示
         checkboxes_args = {}
-        checkboxes_code = """var acts = cb_obj.active;"""
+        checkboxes_code = """let acts = cb_obj.active;"""
         pattern_labels = []
         i = 0
         for k in stock_column:

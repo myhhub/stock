@@ -94,8 +94,8 @@
 		} );
 
 		$('input.column_filter').on( 'keyup', function () {
-			var i =  $(this).parents('div').attr('data-column') ;
-			console.log(i,"val:",$(this).val());
+            const i = $(this).parents('div').attr('data-column');
+            console.log(i,"val:",$(this).val());
 			myTable.column(i).search(
 				$(this).val()
 			).draw();
