@@ -59,41 +59,54 @@
 			$('input.column_filter').keyup();//触发搜索
 		});
 
-		var nameParam = $.getUrlVar('table_name');
-        var dateParam = "{{ date_now }}";
-		//console.log(nameParam);
-		var myTable = $('#dynamic-table').DataTable( {
-			"select": true,
+        const nameParam = $.getUrlVar('table_name');
+        const dateParam = "{{ date_now }}";
+        const myTable = $('#dynamic-table').DataTable({
+            "select": true,
             "sDom": "tr<'row'<'col-sm-2'l><'col-sm-4'i><'col-sm-6'p>>",
-			"bFilter": true,
-			"ordering": true,
-			"processing": true,
-			"serverSide": true,
+            "bFilter": true,
+            "ordering": true,
+            "processing": true,
+            "serverSide": true,
             "deferRender": true,
             "scrollX": true,
             "scrollY": "calc(100vh - 160px)",
             "scrollCollapse": true,
             "flexibleWidth": false,
             "bAutoWidth": false,
-			"lengthMenu": [[20, 30, 50, 100,1000, -1], [20, 30, 50, 100,1000, "All"]],
-			"language": {
+            "lengthMenu": [[20, 30, 50, 100, 1000, -1], [20, 30, 50, 100, 1000, "All"]],
+            "language": {
                 "url": "/static/js/datatables.Chinese.json"
             },
-			"ajax": "/instock/api_data?name="+nameParam+"&date="+dateParam,
-			"columns": [
-				{% for column in web_module_data.columns %}
-                    {% if column == 'code' %}
-                        { "data": "{{ column }}","render": function(data, type, row, meta){data = '<a href="/instock/data/indicators?code=' + data + '&date=' + row.date + '&name=' + row.name + '" target="_blank">' + data + '</a>';return data;}},
-                    {% elif column == 'change_rate' %}
-                        { "data": "{{ column }}","render": function (data, type, row, meta) {var val = row.change_rate;var colour = val < 0 ? 'green' : 'red';return type === 'display' ? '<span style="color:' + colour + '">' + val + '</span>' : val;}},
-                    {% else %}
-					    { "data": "{{ column }}" },
-                    {% end %}
-				{% end %}
-        	]
-		} );
+            "ajax": "/instock/api_data?name=" + nameParam + "&date=" + dateParam,
+            "columns": [
+                {% for column in web_module_data.columns %}
+                {% if column == 'code' %}
+                {
+                    "data": "{{ column }}", "render": function (data, type, row, meta) {
+                        data = '<a href="/instock/data/indicators?code=' + data + '&date=' + row.date + '&name=' + row.name + '" target="_blank">' + data + '</a>';
+                        return data;
+                    }
+                },
+                {% elif column == 'change_rate' %}
+                {
+                    "data": "{{ column }}", "render": function (data, type, row, meta) {
+                        const val = row.change_rate;
+                        let colour;
+                        if(val < 0){colour = 'green';}
+                        else if (val > 0){ colour = 'red';}
+                        else{colour = 'black';}
+                        return type === 'display' ? '<span style="color:' + colour + '">' + val + '</span>' : val;
+                    }
+                },
+                {% else %}
+                {"data": "{{ column }}"},
+                {% end %}
+                {% end %}
+            ]
+        });
 
-		$('input.column_filter').on( 'keyup', function () {
+        $('input.column_filter').on( 'keyup', function () {
             const i = $(this).parents('div').attr('data-column');
             console.log(i,"val:",$(this).val());
 			myTable.column(i).search(
