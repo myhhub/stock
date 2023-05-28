@@ -77,7 +77,7 @@ def stock_spot_buy(date):
 
         sql = f'''SELECT * FROM `{_table_name}` WHERE `date` = '{date}' and 
                 `pe9` > 0 and `pe9` <= 20 and `pbnewmrq` <= 10 and `roe_weight` >= 15'''
-        data = pd.read_sql(sql=sql, con=mdb.conn_not_cursor())
+        data = pd.read_sql(sql=sql, con=mdb.engine())
         data = data.drop_duplicates(subset="code", keep="last")
         if len(data.index) == 0:
             return
