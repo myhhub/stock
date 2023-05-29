@@ -99,18 +99,6 @@ def fetch_stocks(date):
     return None
 
 
-def fetch_stock_selection():
-    try:
-        data = sst.stock_selection()
-        if data is None or len(data.index) == 0:
-            return None
-        data.columns = list(tbs.TABLE_CN_STOCK_SELECTION['columns'])
-        return data
-    except Exception as e:
-        logging.error(f"stockfetch.fetch_stocks_selection处理异常：{e}")
-    return None
-
-
 # 股票近三月上龙虎榜且必须有2次以上机构参与的
 def fetch_stock_top_entity_data(date):
     run_date = date + datetime.timedelta(days=-90)
