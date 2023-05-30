@@ -54,7 +54,7 @@ trusted-host = pypi.tuna.tsinghua.edu.cn" > /etc/pip.conf && \
 
 WORKDIR /data
 #InStock软件
-COPY InStock /data/InStock
+COPY stock /data/InStock
 COPY cron/cron.hourly /etc/cron.hourly
 COPY cron/cron.workdayly /etc/cron.workdayly
 COPY cron/cron.monthly /etc/cron.monthly
