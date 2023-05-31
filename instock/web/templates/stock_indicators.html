@@ -6,7 +6,7 @@
     Bokeh.set_log_level("error");
 </script>
 {% for index,element in enumerate(comp_list) %}
-<div class="row" id="_col_{{ index + 1 }}" data-column="{{ index }}">
+<div>
     {% raw element["div"] %}
     {% raw element["script"] %}
 </div>
