@@ -7,7 +7,7 @@ bokeh==3.1.1
 PyMySQL==1.0.3
 requests==2.31.0
 Logbook==1.5.3
-SQLAlchemy==2.0.15
+SQLAlchemy==2.0.16
 tornado==6.3.2
 tqdm==4.65.0
 easytrader==0.23.0
