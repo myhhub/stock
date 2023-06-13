@@ -8,20 +8,31 @@
             <h3>功能介绍</h3>
         </div>
     </div>
-    <p dir="auto" class="red">一：计算股票指标：</p>
+    <p dir="auto" class="red">一：股票每日数据：</p>
     <div class="snippet-clipboard-content notranslate position-relative overflow-auto">
         <pre class="notranslate"><code>
-        基于talib、pandas 计算指标，计算高效准确。调整个别指标公式，确保结果和同花顺、通信达结果一致。 指标：
+            包括每日股票数据、股票龙虎榜、股票大宗交易、股票基本面数据、每日ETF数据。
 
-        1、MACD 2、KDJ 3、BOLL 4、TRIX，TRMA 5、CR 6、SMA 7、RSI
-        8、VR，MAVR 9、ROC 10、DMI，+DI，-DI，DX，ADX，ADXR 11、W&R
-        12、CCI 13、TR、ATR 14、DMA、AMA 15、OBV 16、SAR 17、PSY
-        18、BRAR 19、EMV 20、BIAS 21、TEMA  22、MFI 23、VWMA  24、PPO
-        25、WT  26、Supertrend  27、DPO  28、VHF  29、RVI 30、FI 31、ENE
+            抓取A股票每日数据，主要为一些关键数据，同时封装抓取方法，方便扩展系统获取个人关注的数据。
         </code></pre>
     </div>
 
-    <p dir="auto" class="red">二：根据指标判定可能买入卖出的股票：</p>
+
+    <p dir="auto" class="red">二：计算股票指标：</p>
+    <div class="snippet-clipboard-content notranslate position-relative overflow-auto">
+        <pre class="notranslate"><code>
+            基于talib、pandas 计算指标，计算高效准确。调整个别指标公式，确保结果和同花顺、通信达结果一致。 指标：
+
+            1、MACD 2、KDJ 3、BOLL 4、TRIX，TRMA 5、CR 6、SMA 7、RSI
+            8、VR，MAVR 9、ROC 10、DMI，+DI，-DI，DX，ADX，ADXR 11、W&R
+            12、CCI 13、TR、ATR 14、DMA、AMA 15、OBV 16、SAR 17、PSY
+            18、BRAR 19、EMV 20、BIAS 21、TEMA  22、MFI 23、VWMA
+            24、PPO 25、WT 26、Supertrend  27、DPO  28、VHF  29、RVI
+            30、FI 31、ENE 32、STOCHRSI
+        </code></pre>
+    </div>
+
+    <p dir="auto" class="red">三：根据指标判定可能买入卖出的股票：</p>
     <div class="snippet-clipboard-content notranslate position-relative overflow-auto">
         <pre class="notranslate"><code>
             KDJ:
@@ -50,7 +61,7 @@
         </code></pre>
     </div>
 
-    <p dir="auto" class="red">三：K线形态识别：</p>
+    <p dir="auto" class="red">四：K线形态识别：</p>
     <div class="snippet-clipboard-content notranslate position-relative overflow-auto">
         <pre class="notranslate"><code>
             K线形态识别返回的结果有三种： 负：出现卖出信号 0：没有出现该形态 正：出现买入信号
@@ -240,19 +251,61 @@
         </code></pre>
     </div>
 
-    <p dir="auto" class="red">四：策略选股：</p>
+    <p dir="auto" class="red">五：策略选股：</p>
     <div class="snippet-clipboard-content notranslate position-relative overflow-auto">
         <pre class="notranslate"><code>
             1、放量上涨
+                1）当日比前一天上涨小于2%或收盘价小于开盘价。
+                2）当日成交额不低于2亿。
+                3）当日成交量/5日平均成交量>=2。
+            <br>
             2、均线多头
+                MA30向上
+                1）30日前的30日均线<20日前的30日均线<10日前的30日均线<当日的30日均线。
+                2）(当日的30日均线/30日前的30日均线)>1.2。
+            <br>
             3、停机坪
+                1）最近15日有涨幅大于9.5%，且必须是放量上涨。
+                2）紧接的下个交易日必须高开，收盘价必须上涨，且与开盘价不能大于等于相差3%。
+                3）接下2、3个交易日必须高开，收盘价必须上涨，且与开盘价不能大于等于相差3%，且每天涨跌幅在5%间。
+            <br>
             4、回踩年线
+                1）分2个时间段：前段=最近60交易日最高收盘价之前交易日(长度>0)，后段=最高价当日及后面的交易日。
+                2）前段由年线(250日)以下向上突破。
+                3）后段必须在年线以上运行，且后段最低价日与最高价日相差必须在10-50日间。
+                4）回踩伴随缩量：最高价日交易量/后段最低价日交易量>2,后段最低价/最高价<0.8。
+            <br>
             5、突破平台
+                1）60日内某日收盘价>=60日均线>开盘价。
+                2）且【1】放量上涨。
+                3）且【1】间之前时间，任意一天收盘价与60日均线偏离在-5%~20%之间。
+            <br>
             6、无大幅回撤
+                1）当日收盘价比60日前的收盘价的涨幅小于0.6。
+                2）最近60日，不能有单日跌幅超7%、高开低走7%、两日累计跌幅10%、两日高开低走累计10%。
+            <br>
             7、海龟交易法则
+                最后一个交易日收市价为指定区间内最高价。
+                1）当日收盘价>=最近60日最高收盘价。
+            <br>
             8、高而窄的旗形
-            9、放量跌停
-            10、低ATR成长策略
+                1）必须至少上市交易60日。
+                2）当日收盘价/之前24~10日的最低价>=1.9。
+                3）之前24~10日必须连续两天涨幅大于等于9.5%。
+            <br>
+            9、放量跌停。
+                1）跌>9.5%。
+                2）成交额不低于2亿。
+                3）成交量至少是5日平均成交量的4倍。
+            <br>
+            10、低ATR成长
+                1）必须至少上市交易250日。
+                2）最近10个交易日的最高收盘价必须比最近10个交易日的最低收盘价高1.1倍。
+            <br>
+            11、股票基本面选股
+                1）市盈率小于等于20，且大于0。
+                2）市净率小于等于10。
+                3）净资产收益率大于等于15。
         </code></pre>
     </div>
 
@@ -260,6 +313,45 @@
     <div class="snippet-clipboard-content notranslate position-relative overflow-auto">
         <pre class="notranslate"><code>
             对指标、策略等选出的股票进行回测，验证其准确性。
+        </code></pre>
+    </div>
+
+    <p dir="auto" class="red">六：选股验证：</p>
+    <div class="snippet-clipboard-content notranslate position-relative overflow-auto">
+        <pre class="notranslate"><code>
+            对指标、策略等选出的股票进行回测，验证策略的成功率，是否可用。
+        </code></pre>
+    </div>
+    <p dir="auto" class="red">七：自动交易：</p>
+    <div class="snippet-clipboard-content notranslate position-relative overflow-auto">
+        <pre class="notranslate"><code>
+            支持自动交易，内置自动打新股的策略及示例策略，由于涉及金钱，规避可能存在风险，没有提供其他交易策略。
+
+            具有交易日志，以及支持为每个交易策略配置交易日志。
+
+            特别提醒：交易日10:00点会触发打新，不想打新的删除stagging.py或不要启动“交易服务”。
+        </code></pre>
+    </div>
+    <p dir="auto" class="red">八：支持批量：</p>
+    <div class="snippet-clipboard-content notranslate position-relative overflow-auto">
+        <pre class="notranslate"><code>
+            可以通过时间段、枚举时间、当前时间进行指标计算、策略选股及回测等。同时支持智能识别交易日，可以输入任意日期。
+
+            具体执行设置如下：
+
+            ------整体作业，支持批量作业------
+            当前时间作业 python execute_daily_job.py
+            单个时间作业 python execute_daily_job.py 2022-03-01
+            枚举时间作业 python execute_daily_job.py 2022-01-01,2021-02-08,2022-03-12
+            区间时间作业 python execute_daily_job.py 2022-01-01 2022-03-01
+
+            ------单功能作业，支持批量作业，回测数据自动填补到当前
+            基础数据实时作业 python basic_data_daily_job.py
+            基础数据非实时作业 python basic_data_other_daily_job.py
+            指标数据作业 python indicators_data_daily_job.py
+            K线形态作业 klinepattern_data_daily_job.py
+            策略数据作业 python strategy_data_daily_job.py
+            回测数据 python backtest_data_daily_job.py
         </code></pre>
     </div>
 </div>
