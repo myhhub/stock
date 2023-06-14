@@ -88,7 +88,7 @@ CN_STOCK_FUND_FLOW = ({'name': 'stock_individual_fund_flow_rank', 'cn': '今日'
                                    'name': {'type': NVARCHAR(20), 'cn': '名称', 'size': 70},
                                    'new_price': {'type': FLOAT, 'cn': '最新价', 'size': 70},
                                    'change_rate': {'type': FLOAT, 'cn': '涨跌幅', 'size': 70},
-                                   'fund_amount': {'type': BIGINT, 'cn': '今日主力净流入-净额', 'size': 70},
+                                   'fund_amount': {'type': BIGINT, 'cn': '今日主力净流入-净额', 'size': 100},
                                    'fund_rate': {'type': FLOAT, 'cn': '今日主力净流入-净占比', 'size': 70},
                                    'fund_amount_super': {'type': BIGINT, 'cn': '今日超大单净流入-净额', 'size': 100},
                                    'fund_rate_super': {'type': FLOAT, 'cn': '今日超大单净流入-净占比', 'size': 70},
