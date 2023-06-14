@@ -15,6 +15,7 @@ import instock.core.crawling.stock_lhb_em as sle
 import instock.core.crawling.stock_lhb_sina as sls
 import instock.core.crawling.stock_dzjy_em as sde
 import instock.core.crawling.stock_hist_em as she
+import instock.core.crawling.stock_fund_em as sff
 
 __author__ = 'myh '
 __date__ = '2023/3/10 '
@@ -48,6 +49,10 @@ def is_not_st(name):
 # 过滤价格，如果没有基本上是退市了。
 def is_open(price):
     return not np.isnan(price)
+
+
+def is_open_with_line(price):
+    return price != '-'
 
 
 # 读取股票交易日历数据
@@ -96,6 +101,21 @@ def fetch_stocks(date):
         return data
     except Exception as e:
         logging.error(f"stockfetch.fetch_stocks处理异常：{e}")
+    return None
+
+
+# 读取股票资金流向
+def fetch_stocks_fund_flow(index):
+    try:
+        cn_flow = tbs.CN_STOCK_FUND_FLOW[index]
+        data = sff.stock_individual_fund_flow_rank(indicator=cn_flow['cn'])
+        if data is None or len(data.index) == 0:
+            return None
+        data.columns = list(cn_flow['columns'])
+        data = data.loc[data['code'].apply(is_a_stock)].loc[data['new_price'].apply(is_open_with_line)]
+        return data
+    except Exception as e:
+        logging.error(f"stockfetch.fetch_stocks_fund_flow：{e}")
     return None
 
 
