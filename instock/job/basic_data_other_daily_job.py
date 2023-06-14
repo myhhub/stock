@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import concurrent.futures
 import os.path
 import sys
 import pandas as pd
@@ -69,6 +70,61 @@ def save_stock_blocktrade_data(date):
         logging.error(f"basic_data_other_daily_job.save_stock_blocktrade_data处理异常：{e}")
 
 
+def save_nph_stock_fundflow_data(date, before=True):
+    if before:
+        return
+
+    try:
+        times = tuple(range(4))
+        results = run_check(times)
+        if results is None:
+            return
+
+        for t in times:
+            if t == 0:
+                data = results.get(t)
+            else:
+                r = results.get(t)
+                if r is not None:
+                    r.drop(columns=['name', 'new_price'], inplace=True)
+                    data = pd.merge(data, r, on=['code'], how='left')
+        data.insert(0, 'date', date.strftime("%Y-%m-%d"))
+
+        table_name = tbs.TABLE_CN_STOCK_FUND_FLOW['name']
+        # 删除老数据。
+        if mdb.checkTableIsExist(table_name):
+            del_sql = f"DELETE FROM `{table_name}` where `date` = '{date}'"
+            mdb.executeSql(del_sql)
+            cols_type = None
+        else:
+            cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_FUND_FLOW['columns'])
+
+        mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
+    except Exception as e:
+        logging.error(f"basic_data_other_daily_job.save_nph_stock_fundflow_data处理异常：{e}")
+
+
+def run_check(times):
+    data = {}
+    try:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=len(times)) as executor:
+            future_to_data = {executor.submit(stf.fetch_stocks_fund_flow, k): k for k in times}
+            for future in concurrent.futures.as_completed(future_to_data):
+                _time = future_to_data[future]
+                try:
+                    _data_ = future.result()
+                    if _data_ is not None:
+                        data[_time] = _data_
+                except Exception as e:
+                    logging.error(f"basic_data_other_daily_job.run_check处理异常：代码{e}")
+    except Exception as e:
+        logging.error(f"basic_data_other_daily_job.run_check处理异常：{e}")
+    if not data:
+        return None
+    else:
+        return data
+
+
 def stock_spot_buy(date):
     try:
         _table_name = tbs.TABLE_CN_STOCK_SPOT['name']
@@ -99,6 +155,7 @@ def stock_spot_buy(date):
 def main():
     runt.run_with_args(save_nph_stock_top_data)
     runt.run_with_args(save_stock_blocktrade_data)
+    runt.run_with_args(save_nph_stock_fundflow_data)
 
 
 # main函数入口

@@ -27,6 +27,17 @@ class stock_web_module_data(metaclass=singleton_type):
             mode="query",
             type="股票基本数据",
             ico="fa fa-book",
+            name=tbs.TABLE_CN_STOCK_FUND_FLOW['cn'],
+            table_name=tbs.TABLE_CN_STOCK_FUND_FLOW['name'],
+            columns=tuple(tbs.TABLE_CN_STOCK_FUND_FLOW['columns']),
+            column_names=tbs.get_field_cns(tbs.TABLE_CN_STOCK_FUND_FLOW['columns']),
+            primary_key=[],
+            is_realtime=True,
+            order_by=" code asc "
+        ), wmd.web_module_data(
+            mode="query",
+            type="股票基本数据",
+            ico="fa fa-book",
             name=tbs.TABLE_CN_STOCK_TOP['cn'],
             table_name=tbs.TABLE_CN_STOCK_TOP['name'],
             columns=tuple(tbs.TABLE_CN_STOCK_TOP['columns']),
