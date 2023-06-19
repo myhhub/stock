@@ -88,6 +88,10 @@ def save_nph_stock_fundflow_data(date, before=True):
                 if r is not None:
                     r.drop(columns=['name', 'new_price'], inplace=True)
                     data = pd.merge(data, r, on=['code'], how='left')
+
+        if data is None or len(data.index) == 0:
+            return
+
         data.insert(0, 'date', date.strftime("%Y-%m-%d"))
 
         table_name = tbs.TABLE_CN_STOCK_FUND_FLOW['name']
