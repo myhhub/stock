@@ -163,27 +163,11 @@ def checkTableIsExist(tableName):
             WHERE table_name = '{0}'
             """.format(tableName.replace('\'', '\'\'')))
 
-    if db.fetchone()[0] == 1:
-        db.close()
-        return True
+        if db.fetchone()[0] == 1:
+            return True
 
-    db.close()
     return False
 
-def checkTableIsExist(tableName):
-    with conn_with_cursor() as db:
-        db.execute("""
-            SELECT COUNT(*)
-            FROM information_schema.tables
-            WHERE table_name = '{0}'
-            """.format(tableName.replace('\'', '\'\'')))
-
-    if db.fetchone()[0] == 1:
-        db.close()
-        return True
-
-    db.close()
-    return False
 
 # 增删改数据
 def executeSql(sql, params=()):
