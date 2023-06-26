@@ -59,10 +59,10 @@ def engine_to_db(to_db):
 # DB Api -数据库连接对象connection，有游标
 def get_connection():
     try:
-        _db = pymysql.connect(**MYSQL_CONN_DBAPI)
+        return pymysql.connect(**MYSQL_CONN_DBAPI)
     except Exception as e:
         logging.error(f"database.conn_not_cursor处理异常：{MYSQL_CONN_DBAPI}{e}")
-    return _db
+    return None
 
 
 # 定义通用方法函数，插入数据库表，并创建数据库主键，保证重跑数据的时候索引唯一。
