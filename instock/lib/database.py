@@ -56,7 +56,7 @@ def engine_to_db(to_db):
     return _engine
 
 
-# DB Api -数据库连接对象connection，有游标
+# DB Api -数据库连接对象connection
 def get_connection():
     try:
         return pymysql.connect(**MYSQL_CONN_DBAPI)
