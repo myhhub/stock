@@ -57,12 +57,7 @@ def engine_to_db(to_db):
 
 
 # DB Api -数据库连接对象connection，有游标
-def conn_with_cursor():
-    return conn_not_cursor().cursor()
-
-
-# DB Api -数据库连接对象connection，无游标
-def conn_not_cursor():
+def get_connection():
     try:
         _db = pymysql.connect(**MYSQL_CONN_DBAPI)
     except Exception as e:
@@ -108,7 +103,9 @@ def insert_other_db_from_df(to_db, data, table_name, cols_type, write_index, pri
     if not ipt.get_pk_constraint(table_name)['constrained_columns']:
         try:
             # 执行数据库插入数据。
-            conn_with_cursor().execute(f'ALTER TABLE `{table_name}` ADD PRIMARY KEY ({primary_keys});')
+            with get_connection() as conn:
+                with conn.cursor() as db:
+                    db.execute(f'ALTER TABLE `{table_name}` ADD PRIMARY KEY ({primary_keys});')
         except Exception as e:
             logging.error(f"database.insert_other_db_from_df处理异常：{table_name}表{e}")
 
@@ -119,107 +116,88 @@ def update_db_from_df(data, table_name, where):
     update_string = f'UPDATE `{table_name}` set '
     where_string = ' where '
     cols = tuple(data.columns)
-    with conn_with_cursor() as db:
-        try:
-            for row in data.values:
-                sql = update_string
-                sql_where = where_string
-                for index, col in enumerate(cols):
-                    if col in where:
-                        if len(sql_where) == len(where_string):
-                            if type(row[index]) == str:
-                                sql_where = f'''{sql_where}`{col}` = '{row[index]}' '''
+    with get_connection() as conn:
+        with conn.cursor() as db:
+            try:
+                for row in data.values:
+                    sql = update_string
+                    sql_where = where_string
+                    for index, col in enumerate(cols):
+                        if col in where:
+                            if len(sql_where) == len(where_string):
+                                if type(row[index]) == str:
+                                    sql_where = f'''{sql_where}`{col}` = '{row[index]}' '''
+                                else:
+                                    sql_where = f'''{sql_where}`{col}` = {row[index]} '''
                             else:
-                                sql_where = f'''{sql_where}`{col}` = {row[index]} '''
+                                if type(row[index]) == str:
+                                    sql_where = f'''{sql_where} and `{col}` = '{row[index]}' '''
+                                else:
+                                    sql_where = f'''{sql_where} and `{col}` = {row[index]} '''
                         else:
                             if type(row[index]) == str:
-                                sql_where = f'''{sql_where} and `{col}` = '{row[index]}' '''
+                                if row[index] is None or row[index] != row[index]:
+                                    sql = f'''{sql}`{col}` = NULL, '''
+                                else:
+                                    sql = f'''{sql}`{col}` = '{row[index]}', '''
                             else:
-                                sql_where = f'''{sql_where} and `{col}` = {row[index]} '''
-                    else:
-                        if type(row[index]) == str:
-                            if row[index] is None or row[index] != row[index]:
-                                sql = f'''{sql}`{col}` = NULL, '''
-                            else:
-                                sql = f'''{sql}`{col}` = '{row[index]}', '''
-                        else:
-                            if row[index] is None or row[index] != row[index]:
-                                sql = f'''{sql}`{col}` = NULL, '''
-                            else:
-                                sql = f'''{sql}`{col}` = {row[index]}, '''
-                sql = f'{sql[:-2]}{sql_where}'
-                db.execute(sql)
-            db.close()
-        except Exception as e:
-            logging.error(f"database.update_db_from_df处理异常：{sql}{e}")
+                                if row[index] is None or row[index] != row[index]:
+                                    sql = f'''{sql}`{col}` = NULL, '''
+                                else:
+                                    sql = f'''{sql}`{col}` = {row[index]}, '''
+                    sql = f'{sql[:-2]}{sql_where}'
+                    db.execute(sql)
+            except Exception as e:
+                logging.error(f"database.update_db_from_df处理异常：{sql}{e}")
 
 
 # 检查表是否存在
 def checkTableIsExist(tableName):
-    with conn_with_cursor() as db:
-        db.execute("""
-            SELECT COUNT(*)
-            FROM information_schema.tables
-            WHERE table_name = '{0}'
-            """.format(tableName.replace('\'', '\'\'')))
-
-    if db.fetchone()[0] == 1:
-        db.close()
-        return True
-
-    db.close()
+    with get_connection() as conn:
+        with conn.cursor() as db:
+            db.execute("""
+                SELECT COUNT(*)
+                FROM information_schema.tables
+                WHERE table_name = '{0}'
+                """.format(tableName.replace('\'', '\'\'')))
+            if db.fetchone()[0] == 1:
+                return True
     return False
 
-def checkTableIsExist(tableName):
-    with conn_with_cursor() as db:
-        db.execute("""
-            SELECT COUNT(*)
-            FROM information_schema.tables
-            WHERE table_name = '{0}'
-            """.format(tableName.replace('\'', '\'\'')))
-
-    if db.fetchone()[0] == 1:
-        db.close()
-        return True
-
-    db.close()
-    return False
 
 # 增删改数据
 def executeSql(sql, params=()):
-    with conn_with_cursor() as db:
-        try:
-            db.execute(sql, params)
-            db.close()
-        except Exception as e:
-            logging.error(f"database.executeSql处理异常：{sql}{e}")
+    with get_connection() as conn:
+        with conn.cursor() as db:
+            try:
+                db.execute(sql, params)
+            except Exception as e:
+                logging.error(f"database.executeSql处理异常：{sql}{e}")
 
 
 # 查询数据
 def executeSqlFetch(sql, params=()):
-    with conn_with_cursor() as db:
-        try:
-            db.execute(sql, params)
-        except Exception as e:
-            logging.error(f"database.executeSqlFetch处理异常：{sql}{e}")
-
-        result = db.fetchall()
-        db.close()
-        return result
+    with get_connection() as conn:
+        with conn.cursor() as db:
+            try:
+                db.execute(sql, params)
+                return db.fetchall()
+            except Exception as e:
+                logging.error(f"database.executeSqlFetch处理异常：{sql}{e}")
+            return None
 
 
 # 计算数量
 def executeSqlCount(sql, params=()):
-    with conn_with_cursor() as db:
-        try:
-            db.execute(sql, params)
-        except Exception as e:
-            logging.error(f"database.select_count计算数量处理异常：{e}")
-
-        result = db.fetchall()
-        db.close()
-        # 只有一个数组中的第一个数据
-        if len(result) == 1:
-            return int(result[0][0])
-        else:
+    with get_connection() as conn:
+        with conn.cursor() as db:
+            try:
+                db.execute(sql, params)
+                result = db.fetchall()
+                if len(result) == 1:
+                    return int(result[0][0])
+                else:
+                    return 0
+            except Exception as e:
+                logging.error(f"database.select_count计算数量处理异常：{e}")
             return 0
