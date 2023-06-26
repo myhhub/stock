@@ -4,7 +4,7 @@ py_mini_racer==0.6.0
 TA_Lib==0.4.26
 arrow==1.2.3
 bokeh==3.2.0
-PyMySQL==1.0.3
+PyMySQL==1.1.0
 requests==2.31.0
 Logbook==1.5.3
 SQLAlchemy==2.0.17
