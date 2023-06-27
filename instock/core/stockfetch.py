@@ -16,6 +16,8 @@ import instock.core.crawling.stock_lhb_sina as sls
 import instock.core.crawling.stock_dzjy_em as sde
 import instock.core.crawling.stock_hist_em as she
 import instock.core.crawling.stock_fund_em as sff
+import instock.core.crawling.stock_fhps_em as sfe
+
 
 __author__ = 'myh '
 __date__ = '2023/3/10 '
@@ -115,7 +117,25 @@ def fetch_stocks_fund_flow(index):
         data = data.loc[data['code'].apply(is_a_stock)].loc[data['new_price'].apply(is_open_with_line)]
         return data
     except Exception as e:
-        logging.error(f"stockfetch.fetch_stocks_fund_flow：{e}")
+        logging.error(f"stockfetch.fetch_stocks_fund_flow处理异常：{e}")
+    return None
+
+
+# 读取股票分红配送
+def fetch_stocks_bonus(date):
+    try:
+        data = sfe.stock_fhps_em(date=trd.get_bonus_report_date())
+        if data is None or len(data.index) == 0:
+            return None
+        if date is None:
+            data.insert(0, 'date', datetime.datetime.now().strftime("%Y-%m-%d"))
+        else:
+            data.insert(0, 'date', date.strftime("%Y-%m-%d"))
+        data.columns = list(tbs.TABLE_CN_STOCK_BONUS['columns'])
+        data = data.loc[data['code'].apply(is_a_stock)]
+        return data
+    except Exception as e:
+        logging.error(f"stockfetch.fetch_stocks_bonus处理异常：{e}")
     return None
 
 

@@ -153,5 +153,28 @@ def get_quarterly_report_date():
         month_day = '0630'
     else:
         month_day = '0930'
+    return f"{year}{month_day}"
 
+
+def get_bonus_report_date():
+    now_time = datetime.datetime.now()
+    year = now_time.year
+    month = now_time.month
+    if 2 <= month <= 6:
+        year -= 1
+        month_day = '1231'
+    elif 8 <= month <= 12:
+        month_day = '0630'
+    elif month == 7:
+        if now_time.day > 25:
+            month_day = '0630'
+        else:
+            year -= 1
+            month_day = '1231'
+    else:
+        year -= 1
+        if now_time.day > 25:
+            month_day = '1231'
+        else:
+            month_day = '0630'
     return f"{year}{month_day}"

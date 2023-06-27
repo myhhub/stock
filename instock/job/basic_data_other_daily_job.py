@@ -19,10 +19,7 @@ __author__ = 'myh '
 __date__ = '2023/3/10 '
 
 
-# 龙虎榜-个股上榜统计
-# 接口: stock_lhb_ggtj_sina
-# 目标地址: http://vip.stock.finance.sina.com.cn/q/go.php/vLHBData/kind/ggtj/index.phtml
-# 描述: 获取新浪财经-龙虎榜-个股上榜统计
+# 每日股票龙虎榜
 def save_nph_stock_top_data(date, before=True):
     if before:
         return
@@ -46,10 +43,7 @@ def save_nph_stock_top_data(date, before=True):
     stock_spot_buy(date)
 
 
-# 每日统计
-# 接口: stock_dzjy_mrtj
-# 目标地址: http://data.eastmoney.com/dzjy/dzjy_mrtj.aspx
-# 描述: 获取东方财富网-数据中心-大宗交易-每日统计
+# 每日股票大宗交易
 def save_stock_blocktrade_data(date):
     try:
         data = stf.fetch_stock_blocktrade_data(date)
@@ -70,6 +64,7 @@ def save_stock_blocktrade_data(date):
         logging.error(f"basic_data_other_daily_job.save_stock_blocktrade_data处理异常：{e}")
 
 
+# 每日股票资金流向
 def save_nph_stock_fundflow_data(date, before=True):
     if before:
         return
@@ -129,6 +124,30 @@ def run_check(times):
         return data
 
 
+# 每日股票分红配送
+def save_nph_stock_bonus(date, before=True):
+    if before:
+        return
+
+    try:
+        data = stf.fetch_stocks_bonus(date)
+        if data is None or len(data.index) == 0:
+            return
+
+        table_name = tbs.TABLE_CN_STOCK_BONUS['name']
+        # 删除老数据。
+        if mdb.checkTableIsExist(table_name):
+            del_sql = f"DELETE FROM `{table_name}` where `date` = '{date}'"
+            mdb.executeSql(del_sql)
+            cols_type = None
+        else:
+            cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_BONUS['columns'])
+        mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
+    except Exception as e:
+        logging.error(f"basic_data_other_daily_job.save_nph_stock_bonus处理异常：{e}")
+
+
+# 基本面选股
 def stock_spot_buy(date):
     try:
         _table_name = tbs.TABLE_CN_STOCK_SPOT['name']
@@ -159,6 +178,7 @@ def stock_spot_buy(date):
 def main():
     runt.run_with_args(save_nph_stock_top_data)
     runt.run_with_args(save_stock_blocktrade_data)
+    runt.run_with_args(save_nph_stock_bonus)
     runt.run_with_args(save_nph_stock_fundflow_data)
 
 
