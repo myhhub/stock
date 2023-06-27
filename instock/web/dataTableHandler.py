@@ -123,10 +123,7 @@ class GetStockDataHandler(webBase.BaseHandler, ABC):
         count_sql = " SELECT count(1) as num FROM `%s` %s " % (web_module_data.table_name, search_sql)
 
         stock_web_list = self.db.query(sql)
-        self.db.close()
-
         stock_web_size = self.db.query(count_sql)
-        self.db.close()
 
         obj = {
             "recordsTotal": stock_web_size[0]["num"],
