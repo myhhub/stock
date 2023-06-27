@@ -184,7 +184,7 @@ def executeSqlFetch(sql, params=()):
                 return db.fetchall()
             except Exception as e:
                 logging.error(f"database.executeSqlFetch处理异常：{sql}{e}")
-            return None
+    return None
 
 
 # 计算数量
@@ -200,4 +200,4 @@ def executeSqlCount(sql, params=()):
                     return 0
             except Exception as e:
                 logging.error(f"database.select_count计算数量处理异常：{e}")
-            return 0
+    return 0
