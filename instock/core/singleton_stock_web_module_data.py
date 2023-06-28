@@ -32,7 +32,7 @@ class stock_web_module_data(metaclass=singleton_type):
             columns=tuple(tbs.TABLE_CN_STOCK_FUND_FLOW['columns']),
             column_names=tbs.get_field_cns(tbs.TABLE_CN_STOCK_FUND_FLOW['columns']),
             primary_key=[],
-            is_realtime=True,
+            is_realtime=False,
             order_by=" code asc "
         ), wmd.web_module_data(
             mode="query",
@@ -43,7 +43,7 @@ class stock_web_module_data(metaclass=singleton_type):
             columns=tuple(tbs.TABLE_CN_STOCK_BONUS['columns']),
             column_names=tbs.get_field_cns(tbs.TABLE_CN_STOCK_BONUS['columns']),
             primary_key=[],
-            is_realtime=True,
+            is_realtime=False,
             order_by=" code asc "
         ), wmd.web_module_data(
             mode="query",
@@ -54,7 +54,7 @@ class stock_web_module_data(metaclass=singleton_type):
             columns=tuple(tbs.TABLE_CN_STOCK_TOP['columns']),
             column_names=tbs.get_field_cns(tbs.TABLE_CN_STOCK_TOP['columns']),
             primary_key=[],
-            is_realtime=True,
+            is_realtime=False,
             order_by=" code asc "
         ), wmd.web_module_data(
             mode="query",
