@@ -35,6 +35,22 @@ jQuery(function($) {
     $('[data-rel=popover]').popover({html:true});
 });
 </script>
+<div id="navbar" class="navbar navbar-default ace-save-state" style="display:none;">
+    <div class="navbar-container ace-save-state" id="navbar-container">
+        <button type="button" class="navbar-toggle menu-toggler pull-left" id="menu-toggler" data-target="#sidebar">
+            <span class="sr-only">Toggle sidebar</span>
+
+            <span class="icon-bar"></span>
+
+            <span class="icon-bar"></span>
+
+            <span class="icon-bar"></span>
+        </button>
+    </div>
+</div>
+<script type="text/javascript">
+    if('ontouchstart' in document.documentElement) document.getElementById('navbar').style.display = "block";
+</script>
 <div id="sidebar" class="sidebar responsive ace-save-state navbar_fixed sidebar-fixed">
     <ul class="nav nav-list">
         <li class="">
