@@ -1,5 +1,5 @@
 numpy==1.25.0
-pandas==2.0.2
+pandas==2.0.3
 py_mini_racer==0.6.0
 TA_Lib==0.4.26
 arrow==1.2.3
