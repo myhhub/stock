@@ -234,6 +234,7 @@ def fetch_etf_hist(data_base, date_start=None, date_end=None, adjust='qfq'):
         data = data.sort_index()  # 将数据按照日期排序下。
         if data is not None:
             data.loc[:, 'p_change'] = tl.ROC(data['close'].values, 1)
+            data['p_change'].values[np.isnan(data['p_change'].values)] = 0.0
             data["volume"] = data['volume'].values.astype('double') * 100  # 成交量单位从手变成股。
         return data
     except Exception as e:
@@ -253,6 +254,7 @@ def fetch_stock_hist(data_base, date_start=None, is_cache=True):
         data = stock_hist_cache(code, date_start, None, is_cache, 'qfq')
         if data is not None:
             data.loc[:, 'p_change'] = tl.ROC(data['close'].values, 1)
+            data['p_change'].values[np.isnan(data['p_change'].values)] = 0.0
             data["volume"] = data['volume'].values.astype('double') * 100  # 成交量单位从手变成股。
         return data
     except Exception as e:
