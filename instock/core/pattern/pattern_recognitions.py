@@ -20,7 +20,10 @@ def get_pattern_recognitions(data, stock_column, end_date=None, threshold=120, c
         data = data.copy()
 
     for k in stock_column:
-        data.loc[:, k] = stock_column[k]['func'](data['open'].values, data['high'].values, data['low'].values, data['close'].values)
+        try:
+            data.loc[:, k] = stock_column[k]['func'](data['open'].values, data['high'].values, data['low'].values, data['close'].values)
+        except Exception as e:
+            pass
 
     if data is None or len(data.index) == 0:
         return None
@@ -40,6 +43,9 @@ def get_pattern_recognition(code_name, data, stock_column, date=None, calc_thres
             end_date = date.strftime("%Y-%m-%d")
 
         code = code_name[1]
+        if code=='301170':
+            pass
+
         # 设置返回数组。
         # 增加空判断，如果是空返回 0 数据。
         if len(data.index) <= 1:
