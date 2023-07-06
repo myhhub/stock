@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from sqlalchemy import DATE, NVARCHAR, FLOAT, BIGINT, SmallInteger
+from sqlalchemy import DATE, NVARCHAR, FLOAT, BIGINT, SmallInteger, DATETIME
 from sqlalchemy.dialects.mysql import BIT
 import talib as tl
 from instock.core.strategy import enter
@@ -19,6 +19,10 @@ __author__ = 'myh '
 __date__ = '2023/3/10 '
 
 RATE_FIELDS_COUNT = 100  # N日收益率字段数目，即N值
+
+TABLE_CN_STOCK_ATTENTION = {'name': 'cn_stock_attention', 'cn': '我的关注',
+                            'columns': {'datetime': {'type': DATETIME, 'cn': '时间', 'size': 0},
+                                        'code': {'type': NVARCHAR(6), 'cn': '代码', 'size': 60}}}
 
 TABLE_CN_ETF_SPOT = {'name': 'cn_etf_spot', 'cn': '每日ETF数据',
                      'columns': {'date': {'type': DATE, 'cn': '日期', 'size': 0},

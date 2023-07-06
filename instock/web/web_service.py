@@ -42,6 +42,8 @@ class Application(tornado.web.Application):
             (r"/instock/data", dataTableHandler.GetStockHtmlHandler),
             # 获得股票指标数据。
             (r"/instock/data/indicators", dataIndicatorsHandler.GetDataIndicatorsHandler),
+            # 加入关注
+            (r"/instock/control/attention", dataIndicatorsHandler.SaveCollectHandler),
         ]
         settings = dict(  # 配置
             template_path=os.path.join(os.path.dirname(__file__), "templates"),

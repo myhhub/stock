@@ -83,10 +83,19 @@
                 {% for column in web_module_data.columns %}
                 {% if column == 'code' %}
                 {
+                {% if web_module_data.order_columns is not None %}
                     "data": "{{ column }}", "render": function (data, type, row, meta) {
-                        data = '<a href="/instock/data/indicators?code=' + data + '&date=' + row.date + '&name=' + row.name + '" target="_blank">' + data + '</a>';
-                        return data;
+                        if (row.cdatetime === null){
+                            return '<a href="/instock/data/indicators?code=' + data + '&date=' + row.date + '&name=' + row.name + '" target="_blank">' + data + '</a>';
+                        }else{
+                            return '<a href="/instock/data/indicators?code=' + data + '&date=' + row.date + '&name=' + row.name + '" target="_blank"><span style="color:red">' + data + '</span></a>';
+                        }
                     }
+                {% else %}
+                    "data": "{{ column }}", "render": function (data, type, row, meta) {
+                        return '<a href="/instock/data/indicators?code=' + data + '&date=' + row.date + '&name=' + row.name + '" target="_blank">' + data + '</a>';
+                    }
+                {% end %}
                 },
                 {% elif column == 'change_rate' %}
                 {
@@ -103,7 +112,8 @@
                 {"data": "{{ column }}"},
                 {% end %}
                 {% end %}
-            ]
+            ],
+            order: []
         });
 
         $('input.column_filter').on( 'keyup', function () {

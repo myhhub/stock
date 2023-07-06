@@ -66,13 +66,13 @@ def get_connection():
 
 
 # 定义通用方法函数，插入数据库表，并创建数据库主键，保证重跑数据的时候索引唯一。
-def insert_db_from_df(data, table_name, cols_type, write_index, primary_keys):
+def insert_db_from_df(data, table_name, cols_type, write_index, primary_keys, indexs=None):
     # 插入默认的数据库。
-    insert_other_db_from_df(None, data, table_name, cols_type, write_index, primary_keys)
+    insert_other_db_from_df(None, data, table_name, cols_type, write_index, primary_keys, indexs)
 
 
 # 增加一个插入到其他数据库的方法。
-def insert_other_db_from_df(to_db, data, table_name, cols_type, write_index, primary_keys):
+def insert_other_db_from_df(to_db, data, table_name, cols_type, write_index, primary_keys, indexs=None):
     # 定义engine
     if to_db is None:
         engine_mysql = engine()
@@ -106,6 +106,9 @@ def insert_other_db_from_df(to_db, data, table_name, cols_type, write_index, pri
             with get_connection() as conn:
                 with conn.cursor() as db:
                     db.execute(f'ALTER TABLE `{table_name}` ADD PRIMARY KEY ({primary_keys});')
+                    if indexs is not None:
+                        for k in indexs:
+                            db.execute(f'ALTER TABLE `{table_name}` ADD INDEX IN{k}({indexs[k]});')
         except Exception as e:
             logging.error(f"database.insert_other_db_from_df处理异常：{table_name}表{e}")
 

@@ -22,7 +22,8 @@ class stock_web_module_data(metaclass=singleton_type):
             column_names=tbs.get_field_cns(tbs.TABLE_CN_STOCK_SPOT['columns']),
             primary_key=[],
             is_realtime=True,
-            order_by=" code asc "
+            order_columns=f"(SELECT `datetime` FROM `{tbs.TABLE_CN_STOCK_ATTENTION['name']}` WHERE `code`=`{tbs.TABLE_CN_STOCK_SPOT['name']}`.`code`) AS `cdatetime`",
+            order_by=" `cdatetime` DESC"
         ), wmd.web_module_data(
             mode="query",
             type="股票基本数据",
@@ -33,7 +34,8 @@ class stock_web_module_data(metaclass=singleton_type):
             column_names=tbs.get_field_cns(tbs.TABLE_CN_STOCK_FUND_FLOW['columns']),
             primary_key=[],
             is_realtime=False,
-            order_by=" code asc "
+            order_columns=f"(SELECT `datetime` FROM `{tbs.TABLE_CN_STOCK_ATTENTION['name']}` WHERE `code`=`{tbs.TABLE_CN_STOCK_FUND_FLOW['name']}`.`code`) AS `cdatetime`",
+            order_by=" `cdatetime` DESC"
         ), wmd.web_module_data(
             mode="query",
             type="股票基本数据",
@@ -44,7 +46,8 @@ class stock_web_module_data(metaclass=singleton_type):
             column_names=tbs.get_field_cns(tbs.TABLE_CN_STOCK_BONUS['columns']),
             primary_key=[],
             is_realtime=False,
-            order_by=" code asc "
+            order_columns=f"(SELECT `datetime` FROM `{tbs.TABLE_CN_STOCK_ATTENTION['name']}` WHERE `code`=`{tbs.TABLE_CN_STOCK_BONUS['name']}`.`code`) AS `cdatetime`",
+            order_by=" `cdatetime` DESC"
         ), wmd.web_module_data(
             mode="query",
             type="股票基本数据",
@@ -55,7 +58,8 @@ class stock_web_module_data(metaclass=singleton_type):
             column_names=tbs.get_field_cns(tbs.TABLE_CN_STOCK_TOP['columns']),
             primary_key=[],
             is_realtime=False,
-            order_by=" code asc "
+            order_columns=f"(SELECT `datetime` FROM `{tbs.TABLE_CN_STOCK_ATTENTION['name']}` WHERE `code`=`{tbs.TABLE_CN_STOCK_TOP['name']}`.`code`) AS `cdatetime`",
+            order_by=" `cdatetime` DESC"
         ), wmd.web_module_data(
             mode="query",
             type="股票基本数据",
@@ -66,7 +70,8 @@ class stock_web_module_data(metaclass=singleton_type):
             column_names=tbs.get_field_cns(tbs.TABLE_CN_STOCK_BLOCKTRADE['columns']),
             primary_key=[],
             is_realtime=False,
-            order_by=" code asc "
+            order_columns=f"(SELECT `datetime` FROM `{tbs.TABLE_CN_STOCK_ATTENTION['name']}` WHERE `code`=`{tbs.TABLE_CN_STOCK_BLOCKTRADE['name']}`.`code`) AS `cdatetime`",
+            order_by=" `cdatetime` DESC"
         ), wmd.web_module_data(
             mode="query",
             type="股票基本数据",
@@ -76,8 +81,7 @@ class stock_web_module_data(metaclass=singleton_type):
             columns=tuple(tbs.TABLE_CN_ETF_SPOT['columns']),
             column_names=tbs.get_field_cns(tbs.TABLE_CN_ETF_SPOT['columns']),
             primary_key=[],
-            is_realtime=True,
-            order_by=" code asc "
+            is_realtime=True
         ), wmd.web_module_data(
             mode="query",
             type="股票指标数据",
@@ -88,7 +92,8 @@ class stock_web_module_data(metaclass=singleton_type):
             column_names=tbs.get_field_cns(tbs.TABLE_CN_STOCK_INDICATORS['columns']),
             primary_key=[],
             is_realtime=False,
-            order_by=" code desc  "
+            order_columns=f"(SELECT `datetime` FROM `{tbs.TABLE_CN_STOCK_ATTENTION['name']}` WHERE `code`=`{tbs.TABLE_CN_STOCK_INDICATORS['name']}`.`code`) AS `cdatetime`",
+            order_by=" `cdatetime` DESC"
         ), wmd.web_module_data(
             mode="query",
             type="股票指标数据",
@@ -99,7 +104,8 @@ class stock_web_module_data(metaclass=singleton_type):
             column_names=tbs.get_field_cns(tbs.TABLE_CN_STOCK_INDICATORS_BUY['columns']),
             primary_key=[],
             is_realtime=False,
-            order_by=" code desc  "
+            order_columns=f"(SELECT `datetime` FROM `{tbs.TABLE_CN_STOCK_ATTENTION['name']}` WHERE `code`=`{tbs.TABLE_CN_STOCK_INDICATORS_BUY['name']}`.`code`) AS `cdatetime`",
+            order_by=" `cdatetime` DESC"
         ), wmd.web_module_data(
             mode="query",
             type="股票指标数据",
@@ -110,7 +116,8 @@ class stock_web_module_data(metaclass=singleton_type):
             column_names=tbs.get_field_cns(tbs.TABLE_CN_STOCK_INDICATORS_SELL['columns']),
             primary_key=[],
             is_realtime=False,
-            order_by=" code desc  "
+            order_columns=f"(SELECT `datetime` FROM `{tbs.TABLE_CN_STOCK_ATTENTION['name']}` WHERE `code`=`{tbs.TABLE_CN_STOCK_INDICATORS_SELL['name']}`.`code`) AS `cdatetime`",
+            order_by=" `cdatetime` DESC"
         ), wmd.web_module_data(
             mode="query",
             type="股票K线形态",
@@ -121,7 +128,8 @@ class stock_web_module_data(metaclass=singleton_type):
             column_names=tbs.get_field_cns(tbs.TABLE_CN_STOCK_KLINE_PATTERN['columns']),
             primary_key=[],
             is_realtime=False,
-            order_by=" code desc  "
+            order_columns=f"(SELECT `datetime` FROM `{tbs.TABLE_CN_STOCK_ATTENTION['name']}` WHERE `code`=`{tbs.TABLE_CN_STOCK_KLINE_PATTERN['name']}`.`code`) AS `cdatetime`",
+            order_by=" `cdatetime` DESC"
         ), wmd.web_module_data(
             mode="query",
             type="股票策略数据",
@@ -132,7 +140,8 @@ class stock_web_module_data(metaclass=singleton_type):
             column_names=tbs.get_field_cns(tbs.TABLE_CN_STOCK_SPOT_BUY['columns']),
             primary_key=[],
             is_realtime=False,
-            order_by=" code desc  "
+            order_columns=f"(SELECT `datetime` FROM `{tbs.TABLE_CN_STOCK_ATTENTION['name']}` WHERE `code`=`{tbs.TABLE_CN_STOCK_SPOT_BUY['name']}`.`code`) AS `cdatetime`",
+            order_by=" `cdatetime` DESC"
         )]
 
         for table in tbs.TABLE_CN_STOCK_STRATEGIES:
@@ -147,7 +156,8 @@ class stock_web_module_data(metaclass=singleton_type):
                     column_names=tbs.get_field_cns(table['columns']),
                     primary_key=[],
                     is_realtime=False,
-                    order_by=" code asc "
+                    order_columns=f"(SELECT `datetime` FROM `{tbs.TABLE_CN_STOCK_ATTENTION['name']}` WHERE `code`=`{table['name']}`.`code`) AS `cdatetime`",
+                    order_by=" `cdatetime` DESC"
                 )
             )
         for tmp in self.data_list:

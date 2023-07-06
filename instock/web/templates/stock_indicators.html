@@ -4,6 +4,23 @@
 <script type="text/javascript" src="/static/js/bokeh-widgets-3.2.0.min.js"></script>
 <script type="text/javascript">
     Bokeh.set_log_level("error");
+    function attention(code,obj){
+            $.ajax({
+                type : "get",
+                url : "/instock/control/attention",
+                data : {code:code,otype:obj.value},
+                dateType: "json",
+                success:function(json){
+                    if (obj.value==="1"){
+                        obj.value="0";
+                        obj.innerText="关注";
+                    }else{
+                        obj.value="1";
+                        obj.innerText="取消关注";
+                    }
+                }
+            });
+        }
 </script>
 {% for element in comp_list %}
 <div>

@@ -185,6 +185,27 @@ def get_plot_kline(code, stock, date, stock_name):
             {'.bk-tab': Styles(padding='1px 2.5px'),
              '.bk-tab.bk-active': Styles(background_color='yellow', color='red')}])
 
+        # 关注
+        if code.startswith(('1', '5')):
+            div_attention = Div()
+        else:
+            import instock.lib.database as mdb
+            table_name = tbs.TABLE_CN_STOCK_ATTENTION['name']
+            _sql = f"SELECT COUNT(`code`) FROM `{table_name}` where `code` = '{code}'"
+            try:
+                rc = mdb.executeSqlCount(_sql)
+            except Exception as e:
+                rc = 0
+            if rc == 0:
+                cvalue = "0"
+                cname = "关注"
+            else:
+                cvalue = "1"
+                cname = "取消关注"
+            div_attention = Div(
+                text=f"""<button id="attentionId" value="{cvalue}" onclick="attention('{code}',this);return false;">{cname}</button>""",
+                width=90)
+
         # 东方财富股票页面
         if code.startswith("6"):
             code_name = f"SH{code}"
@@ -205,7 +226,7 @@ def get_plot_kline(code, stock, date, stock_name):
 
         # 组合图
         layouts = layout(
-            row(column(row(children=[div_dfcf_hq, div_dfcf_zl, div_dfcf_pr, select_all, select_none], align='end'),
+            row(column(row(children=[div_attention, div_dfcf_hq, div_dfcf_zl, div_dfcf_pr, select_all, select_none], align='end'),
                        p_kline,
                        p_volume, tabs_indicators), ck))
         script, div = components(layouts)
