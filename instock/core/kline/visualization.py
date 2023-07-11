@@ -149,8 +149,8 @@ def get_plot_kline(code, stock, date, stock_name):
         ck = column(row(pattern_checkboxes))
 
         # 按钮
-        select_all = Button(label="全选(形态)")
-        select_none = Button(label='全不选(形态)')
+        select_all = Button(label="全选")
+        select_none = Button(label='全弃')
         select_all.js_on_event("button_click", CustomJS(args={'pcs': pattern_checkboxes, 'pls': pattern_labels},
                                                         code="pcs.active = Array.from(pls, (x, i) => i);"))
         select_none.js_on_event("button_click", CustomJS(args={'pcs': pattern_checkboxes},
@@ -182,7 +182,7 @@ def get_plot_kline(code, stock, date, stock_name):
             div_indicator = Div(text=f"""★★★★★指标详细解读：{conf["desc"]}""", width=p_kline.width)
             tabs.append(TabPanel(child=column(p_indicator, row(div_indicator)), title=conf["title"]))
         tabs_indicators = Tabs(tabs=tabs, tabs_location='below', width=p_kline.width, stylesheets=[
-            {'.bk-tab': Styles(padding='1px 2.5px'),
+            {'.bk-tab': Styles(padding='1px 1.4px', font_size='xx-small'),
              '.bk-tab.bk-active': Styles(background_color='yellow', color='red')}])
 
         # 关注
@@ -201,10 +201,10 @@ def get_plot_kline(code, stock, date, stock_name):
                 cname = "关注"
             else:
                 cvalue = "1"
-                cname = "取消关注"
+                cname = "取关"
             div_attention = Div(
                 text=f"""<button id="attentionId" value="{cvalue}" onclick="attention('{code}',this);return false;">{cname}</button>""",
-                width=90)
+                width=47)
 
         # 东方财富股票页面
         if code.startswith("6"):
@@ -212,21 +212,22 @@ def get_plot_kline(code, stock, date, stock_name):
         else:
             code_name = f"SZ{code}"
         div_dfcf_hq = Div(
-            text=f"""<a href="https://quote.eastmoney.com/{code_name}.html" target="_blank">{code}&nbsp;{stock_name}-行情</a>""",
-            width=150)
+            text=f"""<a href="https://quote.eastmoney.com/{code_name}.html" target="_blank">{code}{stock_name}行情</a>""",
+            width=125)
         if code.startswith(('1', '5')):
             div_dfcf_zl = Div()
         else:
             div_dfcf_zl = Div(
-                text=f"""<a href="https://emweb.eastmoney.com/PC_HSF10/OperationsRequired/Index?code={code_name}" target="_blank">{code}&nbsp;{stock_name}-资料</a>""",
-                width=150)
+                text=f"""<a href="https://emweb.eastmoney.com/PC_HSF10/OperationsRequired/Index?code={code_name}" target="_blank">资料</a>""",
+                width=40)
         div_dfcf_pr = Div(
-            text=f"""<a href="https://www.ljjyy.com/archives/2023/04/100718.html" target="_blank">K线形态解读</a>""",
-            width=80)
+            text=f"""<a href="https://www.ljjyy.com/archives/2023/04/100718.html" target="_blank">形态</a>""",
+            width=40)
 
         # 组合图
-        layouts = layout(
-            row(column(row(children=[div_attention, div_dfcf_hq, div_dfcf_zl, div_dfcf_pr, select_all, select_none], align='end'),
+        layouts = layout(row(
+            column(
+                row(children=[div_attention, div_dfcf_hq, div_dfcf_zl, div_dfcf_pr, select_all, select_none], align='end'),
                        p_kline,
                        p_volume, tabs_indicators), ck))
         script, div = components(layouts)
