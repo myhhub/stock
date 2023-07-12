@@ -5,7 +5,6 @@ from abc import ABC
 from tornado import gen
 import logging
 import instock.core.stockfetch as stf
-import instock.lib.version as version
 import instock.core.kline.visualization as vis
 import instock.web.base as webBase
 
@@ -46,23 +45,16 @@ class SaveCollectHandler(webBase.BaseHandler, ABC):
     @gen.coroutine
     def get(self):
         import datetime
-        import pandas as pd
-        import instock.lib.database as mdb
         import instock.core.tablestructure as tbs
         code = self.get_argument("code", default=None, strip=False)
         otype = self.get_argument("otype", default=None, strip=False)
         try:
             table_name = tbs.TABLE_CN_STOCK_ATTENTION['name']
             if otype == '1':
-                del_sql = f"DELETE FROM `{table_name}` where `code` = '{code}'"
-                mdb.executeSql(del_sql)
+                sql = f"DELETE FROM `{table_name}` WHERE `code` = '{code}'"
             else:
-                data = pd.DataFrame([[datetime.datetime.now(), code]], columns=tbs.TABLE_CN_STOCK_ATTENTION['columns'])
-                if mdb.checkTableIsExist(table_name):
-                    cols_type = None
-                else:
-                    cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_ATTENTION['columns'])
-                mdb.insert_db_from_df(data, table_name, cols_type, False, "`code`", {"IX_DATETIME": "`datetime`"})
+                sql = f"INSERT INTO `{table_name}`(`datetime`, `code`) VALUE('{datetime.datetime.now()}','{code}')"
+            self.db.query(sql)
         except Exception as e:
             err = {"error": str(e)}
             logging.info(err)

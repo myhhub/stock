@@ -32,26 +32,22 @@ def create_new_database():
 
 # 创建基础表。
 def create_new_base_table():
-    try:
-        with pymysql.connect(**mdb.MYSQL_CONN_DBAPI) as conn:
-            with conn.cursor() as db:
-                create_table_sql = """CREATE TABLE `cn_stock_attention`  (
-                                      `datetime` datetime(0) NULL DEFAULT NULL, 
-                                      `code` varchar(6) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
-                                      PRIMARY KEY (`code`) USING BTREE,
-                                      INDEX `INIX_DATETIME`(`datetime`) USING BTREE
-                                    ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;"""
-                db.execute(create_table_sql)
-    except Exception as e:
-        pass
+    with pymysql.connect(**mdb.MYSQL_CONN_DBAPI) as conn:
+        with conn.cursor() as db:
+            # db.execute(" select 1 ")
+            create_table_sql = """CREATE TABLE IF NOT EXISTS `cn_stock_attention`  (
+                                  `datetime` datetime(0) NULL DEFAULT NULL, 
+                                  `code` varchar(6) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+                                  PRIMARY KEY (`code`) USING BTREE,
+                                  INDEX `INIX_DATETIME`(`datetime`) USING BTREE
+                                ) CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;"""
+            db.execute(create_table_sql)
 
 
 def main():
     # 检查，如果执行 select 1 失败，说明数据库不存在，然后创建一个新的数据库。
     try:
-        with pymysql.connect(**mdb.MYSQL_CONN_DBAPI) as conn:
-            with conn.cursor() as db:
-                db.execute(" select 1 ")
+        create_new_base_table()
     except Exception as e:
         logging.error("执行信息：数据库不存在，将创建。")
         # 检查数据库失败，
