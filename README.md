@@ -33,7 +33,7 @@ Docker镜像：https://hub.docker.com/r/mayanghua/instock **镜像优化构建�
 抓取A股票每日数据，主要为一些关键数据，同时封装抓取方法，方便扩展系统获取个人关注的数据。
 
 ![](img/00.jpg)
-
+![](img/12.jpg)
 ## 二：股票指标计算
 基于talib、pandas 计算指标，计算高效准确。调整个别指标公式，确保结果和同花顺、通信达结果一致。
 指标：
@@ -49,6 +49,7 @@ Docker镜像：https://hub.docker.com/r/mayanghua/instock **镜像优化构建�
 
 ![](img/01.jpg)
 ![](img/06.jpg)
+![](img/13.jpg)
 ![](img/10.jpg)
 ![](img/02.jpg)
 
