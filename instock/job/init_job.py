@@ -25,8 +25,25 @@ def create_new_database():
             try:
                 create_sql = f"CREATE DATABASE IF NOT EXISTS `{mdb.db_database}` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci"
                 db.execute(create_sql)
+                create_new_base_table()
             except Exception as e:
                 logging.error(f"init_job.create_new_database处理异常：{e}")
+
+
+# 创建基础表。
+def create_new_base_table():
+    try:
+        with pymysql.connect(**mdb.MYSQL_CONN_DBAPI) as conn:
+            with conn.cursor() as db:
+                create_table_sql = """CREATE TABLE `cn_stock_attention`  (
+                                      `datetime` datetime(0) NULL DEFAULT NULL, 
+                                      `code` varchar(6) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+                                      PRIMARY KEY (`code`) USING BTREE,
+                                      INDEX `INIX_DATETIME`(`datetime`) USING BTREE
+                                    ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;"""
+                db.execute(create_table_sql)
+    except Exception as e:
+        pass
 
 
 def main():
