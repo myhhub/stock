@@ -3,8 +3,13 @@
 	<head>
 		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
 		<meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=0.39, maximum-scale=1.0" />
 		<title>InStock股票系统</title>
+        <script type="text/javascript">
+            const meta = document.createElement('meta');
+            meta.setAttribute('name','viewport');
+            meta.setAttribute('content','width=device-width,initial-scale=' + (window.screen.width / 1000) + ', maximum-scale=1.0');//1000为页面实际宽度
+            document.getElementsByTagName('head')[0].appendChild(meta);
+        </script>
 		{% block meta %}{% end %}
 	</head>
 
