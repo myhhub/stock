@@ -213,7 +213,7 @@ def get_plot_kline(code, stock, date, stock_name):
             code_name = f"SZ{code}"
         div_dfcf_hq = Div(
             text=f"""<a href="https://quote.eastmoney.com/{code_name}.html" target="_blank">{code}{stock_name}行情</a>""",
-            width=125)
+            width=150)
         if code.startswith(('1', '5')):
             div_dfcf_zl = Div()
         else:
