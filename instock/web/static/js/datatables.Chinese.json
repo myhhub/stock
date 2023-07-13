@@ -237,8 +237,8 @@
         "renameLabel": "%s 的新名称:",
         "renameTitle": "重命名状态"
     },
-    "info": "正在显示第 _START_ 至 _END_ 条记录，共 _TOTAL_ 条",
-    "infoEmpty": "正在显示第 0 至 0 条记录，共 0 条",
-    "infoFiltered": "(筛选自全部 _MAX_ 条记录)",
-    "lengthMenu": "显示 _MENU_ 条记录"
+    "info": "正在第 _START_ 至 _END_ 条，共 _TOTAL_ 条",
+    "infoEmpty": "目前第 0 至 0 条，共 0 条",
+    "infoFiltered": "(筛选自全部 _MAX_ 条)",
+    "lengthMenu": "每页 _MENU_ 条"
 }
