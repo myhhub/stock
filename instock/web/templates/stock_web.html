@@ -18,14 +18,12 @@
 		{% for index,element in enumerate(web_module_data.columns) %}
 		{% if index <= 2 %}
 			{% if element != 'eastmoney_url' %}
-			<div class="col-md-4" style="display:inline-block;float:left;height:100%;">
-				<div style="width:35px;display:inline-block;float:left;text-overflow:ellipsis;white-space:nowrap;">
-                {{ web_module_data.column_names[index] }}
+			<div class="col-md-4" style="width:33.3%;display:inline-block;float:left;height:100%;">
+				<div style="width:30px;display:inline-block;float:left;text-overflow:ellipsis;white-space:nowrap;">
+                    {{ web_module_data.column_names[index] }}
                 </div>
-                <div style="width:calc(100% - 35px);display:inline-block;float:right;" id="filter_col{{ index + 1 }}" data-column="{{ index }}">
-  				<input type="text" class="column_filter input-group-sm form-control {% if element == 'date' %}date-picker{% end %}"
-					   {% if element == 'date' %} value="{{ date_now }}" readonly="readonly" {% end %}
-					   id="col{{ index }}_filter">
+                <div style="width:calc(100% - 30px);display:inline-block;float:right;" id="filter_col{{ index + 1 }}" data-column="{{ index }}">
+  				    <input type="text" style="width:calc(100% + 20px)" class="column_filter input-group-sm form-control {% if element == 'date' %}date-picker{% end %}" {% if element == 'date' %} value="{{ date_now }}" readonly="readonly" {% end %} id="col{{ index }}_filter">
                 </div>
 			</div>
 			{% end %}
