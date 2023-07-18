@@ -121,6 +121,20 @@ def fetch_stocks_fund_flow(index):
     return None
 
 
+# 读取板块资金流向
+def fetch_stocks_sector_fund_flow(index_sector, index_indicator):
+    try:
+        cn_flow = tbs.CN_STOCK_SECTOR_FUND_FLOW[1][index_indicator]
+        data = sff.stock_sector_fund_flow_rank(indicator=cn_flow['cn'], sector_type=tbs.CN_STOCK_SECTOR_FUND_FLOW[0][index_sector])
+        if data is None or len(data.index) == 0:
+            return None
+        data.columns = list(cn_flow['columns'])
+        return data
+    except Exception as e:
+        logging.error(f"stockfetch.fetch_stocks_sector_fund_flow处理异常：{e}")
+    return None
+
+
 # 读取股票分红配送
 def fetch_stocks_bonus(date):
     try:

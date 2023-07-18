@@ -16,8 +16,7 @@
     </div>
 	<div class="row" style="width:100%;height:35px;">
 		{% for index,element in enumerate(web_module_data.columns) %}
-		{% if index <= 2 %}
-			{% if element != 'eastmoney_url' %}
+		{% if index <= 2 and element != 'change_rate' %}
 			<div class="col-md-4" style="width:33.3%;display:inline-block;float:left;height:100%;">
 				<div style="width:30px;display:inline-block;float:left;text-overflow:ellipsis;white-space:nowrap;">
                     {{ web_module_data.column_names[index] }}
@@ -26,8 +25,8 @@
   				    <input type="text" style="width:calc(100% + 20px)" class="column_filter input-group-sm form-control {% if element == 'date' %}date-picker{% end %}" {% if element == 'date' %} value="{{ date_now }}" readonly="readonly" {% end %} id="col{{ index }}_filter">
                 </div>
 			</div>
-			{% end %}
-		{% end %}{% end %}
+		{% end %}
+        {% end %}
 	</div>
 	<div style="width:100%;">
 		<table id="dynamic-table" class="table table-striped table-bordered table-hover compact display nowrap" style="width:100%;white-space: nowrap;">

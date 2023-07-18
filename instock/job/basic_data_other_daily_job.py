@@ -65,13 +65,13 @@ def save_stock_blocktrade_data(date):
 
 
 # 每日股票资金流向
-def save_nph_stock_fundflow_data(date, before=True):
+def save_nph_stock_fund_flow_data(date, before=True):
     if before:
         return
 
     try:
         times = tuple(range(4))
-        results = run_check(times)
+        results = run_check_stock_fund_flow(times)
         if results is None:
             return
 
@@ -100,10 +100,10 @@ def save_nph_stock_fundflow_data(date, before=True):
 
         mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
     except Exception as e:
-        logging.error(f"basic_data_other_daily_job.save_nph_stock_fundflow_data处理异常：{e}")
+        logging.error(f"basic_data_other_daily_job.save_nph_stock_fund_flow_data处理异常：{e}")
 
 
-def run_check(times):
+def run_check_stock_fund_flow(times):
     data = {}
     try:
         with concurrent.futures.ThreadPoolExecutor(max_workers=len(times)) as executor:
@@ -115,9 +115,78 @@ def run_check(times):
                     if _data_ is not None:
                         data[_time] = _data_
                 except Exception as e:
-                    logging.error(f"basic_data_other_daily_job.run_check处理异常：代码{e}")
+                    logging.error(f"basic_data_other_daily_job.run_check_stock_fund_flow处理异常：代码{e}")
     except Exception as e:
-        logging.error(f"basic_data_other_daily_job.run_check处理异常：{e}")
+        logging.error(f"basic_data_other_daily_job.run_check_stock_fund_flow处理异常：{e}")
+    if not data:
+        return None
+    else:
+        return data
+
+
+# 每日行业资金流向
+def save_nph_stock_sector_fund_flow_data(date, before=True):
+    if before:
+        return
+
+    times = tuple(range(2))
+    with concurrent.futures.ThreadPoolExecutor(max_workers=len(times)) as executor:
+        {executor.submit(stock_sector_fund_flow_data, date, k): k for k in times}
+
+
+def stock_sector_fund_flow_data(date, index_sector):
+    try:
+        times = tuple(range(3))
+        results = run_check_stock_sector_fund_flow(index_sector, times)
+        if results is None:
+            return
+
+        for t in times:
+            if t == 0:
+                data = results.get(t)
+            else:
+                r = results.get(t)
+                if r is not None:
+                    data = pd.merge(data, r, on=['name'], how='left')
+
+        if data is None or len(data.index) == 0:
+            return
+
+        data.insert(0, 'date', date.strftime("%Y-%m-%d"))
+
+        if index_sector == 0:
+            tbs_table = tbs.TABLE_CN_STOCK_FUND_FLOW_INDUSTRY
+        else:
+            tbs_table = tbs.TABLE_CN_STOCK_FUND_FLOW_CONCEPT
+        table_name = tbs_table['name']
+        # 删除老数据。
+        if mdb.checkTableIsExist(table_name):
+            del_sql = f"DELETE FROM `{table_name}` where `date` = '{date}'"
+            mdb.executeSql(del_sql)
+            cols_type = None
+        else:
+            cols_type = tbs.get_field_types(tbs_table['columns'])
+
+        mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`name`")
+    except Exception as e:
+        logging.error(f"basic_data_other_daily_job.stock_sector_fund_flow_data处理异常：{e}")
+
+
+def run_check_stock_sector_fund_flow(index_sector, times):
+    data = {}
+    try:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=len(times)) as executor:
+            future_to_data = {executor.submit(stf.fetch_stocks_sector_fund_flow, index_sector, k): k for k in times}
+            for future in concurrent.futures.as_completed(future_to_data):
+                _time = future_to_data[future]
+                try:
+                    _data_ = future.result()
+                    if _data_ is not None:
+                        data[_time] = _data_
+                except Exception as e:
+                    logging.error(f"basic_data_other_daily_job.run_check_stock_sector_fund_flow处理异常：代码{e}")
+    except Exception as e:
+        logging.error(f"basic_data_other_daily_job.run_check_stock_sector_fund_flow处理异常：{e}")
     if not data:
         return None
     else:
@@ -179,7 +248,8 @@ def main():
     runt.run_with_args(save_nph_stock_top_data)
     runt.run_with_args(save_stock_blocktrade_data)
     runt.run_with_args(save_nph_stock_bonus)
-    runt.run_with_args(save_nph_stock_fundflow_data)
+    runt.run_with_args(save_nph_stock_fund_flow_data)
+    runt.run_with_args(save_nph_stock_sector_fund_flow_data)
 
 
 # main函数入口

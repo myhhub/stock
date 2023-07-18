@@ -91,7 +91,7 @@ CN_STOCK_FUND_FLOW = ({'name': 'stock_individual_fund_flow_rank', 'cn': '今日'
                        'columns': {'code': {'type': NVARCHAR(6), 'cn': '代码', 'size': 60},
                                    'name': {'type': NVARCHAR(20), 'cn': '名称', 'size': 70},
                                    'new_price': {'type': FLOAT, 'cn': '最新价', 'size': 70},
-                                   'change_rate': {'type': FLOAT, 'cn': '涨跌幅', 'size': 70},
+                                   'change_rate': {'type': FLOAT, 'cn': '今日涨跌幅', 'size': 70},
                                    'fund_amount': {'type': BIGINT, 'cn': '今日主力净流入-净额', 'size': 100},
                                    'fund_rate': {'type': FLOAT, 'cn': '今日主力净流入-净占比', 'size': 70},
                                    'fund_amount_super': {'type': BIGINT, 'cn': '今日超大单净流入-净额', 'size': 100},
@@ -152,6 +152,61 @@ TABLE_CN_STOCK_FUND_FLOW = {'name': 'cn_stock_fund_flow', 'cn': '股票资金流
                             'columns': {'date': {'type': DATE, 'cn': '日期', 'size': 0}}}
 for cf in CN_STOCK_FUND_FLOW:
     TABLE_CN_STOCK_FUND_FLOW['columns'].update(cf['columns'].copy())
+
+CN_STOCK_SECTOR_FUND_FLOW = (('行业资金流', '概念资金流'),
+                             ({'name': 'stock_sector_fund_flow_rank', 'cn': '今日',
+                              'columns': {'name': {'type': NVARCHAR(30), 'cn': '名称', 'size': 70},
+                                          'change_rate': {'type': FLOAT, 'cn': '今日涨跌幅', 'size': 70},
+                                          'fund_amount': {'type': BIGINT, 'cn': '今日主力净流入-净额', 'size': 100},
+                                          'fund_rate': {'type': FLOAT, 'cn': '今日主力净流入-净占比', 'size': 70},
+                                          'fund_amount_super': {'type': BIGINT, 'cn': '今日超大单净流入-净额', 'size': 100},
+                                          'fund_rate_super': {'type': FLOAT, 'cn': '今日超大单净流入-净占比', 'size': 70},
+                                          'fund_amount_large': {'type': BIGINT, 'cn': '今日大单净流入-净额', 'size': 100},
+                                          'fund_rate_large': {'type': FLOAT, 'cn': '今日大单净流入-净占比', 'size': 70},
+                                          'fund_amount_medium': {'type': BIGINT, 'cn': '今日中单净流入-净额', 'size': 100},
+                                          'fund_rate_medium': {'type': FLOAT, 'cn': '今日中单净流入-净占比', 'size': 70},
+                                          'fund_amount_small': {'type': BIGINT, 'cn': '今日小单净流入-净额', 'size': 100},
+                                          'fund_rate_small': {'type': FLOAT, 'cn': '今日小单净流入-净占比', 'size': 70},
+                                          'stock_name': {'type': NVARCHAR(20), 'cn': '今日主力净流入最大股', 'size': 70}}},
+                             {'name': 'stock_individual_fund_flow_rank', 'cn': '5日',
+                              'columns': {'name': {'type': NVARCHAR(30), 'cn': '名称', 'size': 70},
+                                          'change_rate_5': {'type': FLOAT, 'cn': '5日涨跌幅', 'size': 70},
+                                          'fund_amount_5': {'type': BIGINT, 'cn': '5日主力净流入-净额', 'size': 100},
+                                          'fund_rate_5': {'type': FLOAT, 'cn': '5日主力净流入-净占比', 'size': 70},
+                                          'fund_amount_super_5': {'type': BIGINT, 'cn': '5日超大单净流入-净额', 'size': 100},
+                                          'fund_rate_super_5': {'type': FLOAT, 'cn': '5日超大单净流入-净占比', 'size': 70},
+                                          'fund_amount_large_5': {'type': BIGINT, 'cn': '5日大单净流入-净额', 'size': 100},
+                                          'fund_rate_large_5': {'type': FLOAT, 'cn': '5日大单净流入-净占比', 'size': 70},
+                                          'fund_amount_medium_5': {'type': BIGINT, 'cn': '5日中单净流入-净额', 'size': 100},
+                                          'fund_rate_medium_5': {'type': FLOAT, 'cn': '5日中单净流入-净占比', 'size': 70},
+                                          'fund_amount_small_5': {'type': BIGINT, 'cn': '5日小单净流入-净额', 'size': 100},
+                                          'fund_rate_small_5': {'type': FLOAT, 'cn': '5日小单净流入-净占比', 'size': 70},
+                                          'stock_name_5': {'type': NVARCHAR(20), 'cn': '5日主力净流入最大股', 'size': 70}}},
+                             {'name': 'stock_individual_fund_flow_rank', 'cn': '10日',
+                              'columns': {'name': {'type': NVARCHAR(30), 'cn': '名称', 'size': 70},
+                                          'change_rate_10': {'type': FLOAT, 'cn': '10日涨跌幅', 'size': 70},
+                                          'fund_amount_10': {'type': BIGINT, 'cn': '10日主力净流入-净额', 'size': 100},
+                                          'fund_rate_10': {'type': FLOAT, 'cn': '10日主力净流入-净占比', 'size': 70},
+                                          'fund_amount_super_10': {'type': BIGINT, 'cn': '10日超大单净流入-净额', 'size': 100},
+                                          'fund_rate_super_10': {'type': FLOAT, 'cn': '10日超大单净流入-净占比', 'size': 70},
+                                          'fund_amount_large_10': {'type': BIGINT, 'cn': '10日大单净流入-净额', 'size': 100},
+                                          'fund_rate_large_10': {'type': FLOAT, 'cn': '10日大单净流入-净占比', 'size': 70},
+                                          'fund_amount_medium_10': {'type': BIGINT, 'cn': '10日中单净流入-净额', 'size': 100},
+                                          'fund_rate_medium_10': {'type': FLOAT, 'cn': '10日中单净流入-净占比', 'size': 70},
+                                          'fund_amount_small_10': {'type': BIGINT, 'cn': '10日小单净流入-净额', 'size': 100},
+                                          'fund_rate_small_10': {'type': FLOAT, 'cn': '10日小单净流入-净占比', 'size': 70},
+                                          'stock_name_10': {'type': NVARCHAR(20), 'cn': '10日主力净流入最大股', 'size': 70}}}))
+
+TABLE_CN_STOCK_FUND_FLOW_INDUSTRY = {'name': 'cn_stock_fund_flow_industry', 'cn': '行业资金流向',
+                                     'columns': {'date': {'type': DATE, 'cn': '日期', 'size': 0}}}
+for cf in CN_STOCK_SECTOR_FUND_FLOW[1]:
+    TABLE_CN_STOCK_FUND_FLOW_INDUSTRY['columns'].update(cf['columns'].copy())
+
+TABLE_CN_STOCK_FUND_FLOW_CONCEPT = {'name': 'cn_stock_fund_flow_concept', 'cn': '概念资金流向',
+                                    'columns': {'date': {'type': DATE, 'cn': '日期', 'size': 0}}}
+for cf in CN_STOCK_SECTOR_FUND_FLOW[1]:
+    TABLE_CN_STOCK_FUND_FLOW_CONCEPT['columns'].update(cf['columns'].copy())
+
 
 TABLE_CN_STOCK_BONUS = {'name': 'cn_stock_bonus', 'cn': '股票分红配送',
                         'columns': {'date': {'type': DATE, 'cn': '日期', 'size': 0},
