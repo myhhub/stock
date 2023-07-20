@@ -53,7 +53,8 @@ def get_plot_kline(code, stock, date, stock_name):
         # 悬停
         tooltips = [('日期', '@date'), ('开盘', '@open'),
                     ('最高', '@high'), ('最低', '@low'),
-                    ('收盘', '@close'), ('涨跌', '@quote_change%')]
+                    ('收盘', '@close'), ('涨跌', '@quote_change%'),
+                    ('金额', '@amount{¥0}'), ('换手', '@turnover%')]
 
         hover = HoverTool(tooltips=tooltips, description="悬停")
 
