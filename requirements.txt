@@ -3,11 +3,11 @@ pandas==2.0.3
 py_mini_racer==0.6.0
 TA_Lib==0.4.27
 arrow==1.2.3
-bokeh==3.2.1
+bokeh==3.2.2
 PyMySQL==1.1.0
 requests==2.31.0
 Logbook==1.6.0
-SQLAlchemy==2.0.19
+SQLAlchemy==2.0.20
 tornado==6.3.3
 tqdm==4.66.1
 easytrader==0.23.0
