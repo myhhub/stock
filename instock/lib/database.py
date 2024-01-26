@@ -4,6 +4,7 @@
 import logging
 import os
 import pymysql
+import psycopg2
 from sqlalchemy import create_engine
 from sqlalchemy.types import NVARCHAR
 from sqlalchemy import inspect
@@ -11,6 +12,7 @@ from sqlalchemy import inspect
 __author__ = 'myh '
 __date__ = '2023/3/10 '
 
+db_type = "postgres"
 db_host = "localhost"  # 数据库服务主机
 db_user = "root"  # 数据库访问用户
 db_password = "root"  # 数据库访问密码
@@ -19,6 +21,9 @@ db_port = 3306  # 数据库服务端口
 db_charset = "utf8mb4"  # 数据库字符集
 
 # 使用环境变量获得数据库,docker -e 传递
+_db_type = os.environ.get('db_type')
+if _db_type is not None:
+    db_type = _db_type
 _db_host = os.environ.get('db_host')
 if _db_host is not None:
     db_host = _db_host
@@ -35,12 +40,20 @@ _db_port = os.environ.get('db_port')
 if _db_port is not None:
     db_port = int(_db_port)
 
-MYSQL_CONN_URL = "mysql+pymysql://%s:%s@%s:%s/%s?charset=%s" % (
+if db_type == "mysql":
+    CONN_URL = "mysql+pymysql://%s:%s@%s:%s/%s?charset=%s" % (
     db_user, db_password, db_host, db_port, db_database, db_charset)
-logging.info(f"数据库链接信息：{ MYSQL_CONN_URL}")
-
-MYSQL_CONN_DBAPI = {'host': db_host, 'user': db_user, 'password': db_password, 'database': db_database,
+    CONN_DBAPI = {'host': db_host, 'user': db_user, 'password': db_password, 'database': db_database,
                     'charset': db_charset, 'port': db_port, 'autocommit': True}
+elif db_type == "postgres":
+    CONN_URL = "postgresql://%s:%s@%s:%s/%s" % (
+    db_user, db_password, db_host, db_port, db_database)
+    CONN_DBAPI = {'host': db_host, 'user': db_user, 'password': db_password, 'database': db_database,'port': db_port}
+else:
+    CONN_URL = "postgresql://%s:%s@%s:%s/%s" % (
+    db_user, db_password, db_host, db_port, db_database)
+    CONN_DBAPI = {'host': db_host, 'user': db_user, 'password': db_password, 'database': db_database,'port': db_port}
+logging.info(f"数据库链接信息：{CONN_URL}")
 
 MYSQL_CONN_TORNDB = {'host': f'{db_host}:{str(db_port)}', 'user': db_user, 'password': db_password,
                      'database': db_database, 'charset': db_charset, 'max_idle_time': 3600, 'connect_timeout': 1000}
@@ -48,18 +61,23 @@ MYSQL_CONN_TORNDB = {'host': f'{db_host}:{str(db_port)}', 'user': db_user, 'pass
 
 # 通过数据库链接 engine
 def engine():
-    return create_engine(MYSQL_CONN_URL)
+    return create_engine(CONN_URL)
 
 
 def engine_to_db(to_db):
-    _engine = create_engine(MYSQL_CONN_URL.replace(f'/{db_database}?', f'/{to_db}?'))
+    _engine = create_engine(CONN_URL.replace(f'/{db_database}?', f'/{to_db}?'))
     return _engine
 
 
 # DB Api -数据库连接对象connection
 def get_connection():
     try:
-        return pymysql.connect(**MYSQL_CONN_DBAPI)
+        if db_type == "mysql":
+            return pymysql.connect(**CONN_DBAPI)
+        elif db_type == "postgres":
+            return psycopg2.connect(**CONN_DBAPI)
+        else:
+            return psycopg2.connect(**CONN_DBAPI)
     except Exception as e:
         logging.error(f"database.conn_not_cursor处理异常：{MYSQL_CONN_DBAPI}{e}")
     return None
