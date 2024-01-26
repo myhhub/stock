@@ -24,8 +24,8 @@ RUN sed -i 's#http://archive.ubuntu.com/#http://mirrors.tuna.tsinghua.edu.cn/#' 
 index-url = https://pypi.tuna.tsinghua.edu.cn/simple\n\
 trusted-host = pypi.tuna.tsinghua.edu.cn" > /etc/pip.conf && \
     ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
-    echo "Asia/Shanghai" > /etc/timezone && \
-    apt-get update && \
+    echo "Asia/Shanghai" > /etc/timezone
+RUN apt-get update && \
     apt-get install -y cron gcc make python3-dev default-lib curl && \
     conda install requests arrow numpy SQLAlchemy PyMySQL psycopg2 Logbook  tqdm beautifulsoup4  bokeh  pandas tornado -y && \
     pip install supervisor && \
