@@ -41,7 +41,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           platforms: linux/amd64
-          context: ./docker
+          context: .
           push: true
           tags: |
             ghcr.io/shadowofgost/instock:latest
