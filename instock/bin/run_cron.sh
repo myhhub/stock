@@ -2,7 +2,7 @@
 
 export PYTHONIOENCODING=utf-8
 export LANG=zh_CN.UTF-8
-export PYTHONPATH=/data/InStock
+export PYTHONPATH=/data/instock
 export LC_CTYPE=zh_CN.UTF-8
 
 # 环境变量输出
