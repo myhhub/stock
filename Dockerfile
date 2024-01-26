@@ -2,7 +2,7 @@
 # https://hub.docker.com/_/python/tags?page=1&name=3.11-rc-rc-slim
 FROM continuumio/miniconda3:23.3.1-0
 
-MAINTAINER myh
+MAINTAINER shadowofgost@outlook.com
 #增加语言utf-8
 ENV LANG=zh_CN.UTF-8
 ENV LC_CTYPE=zh_CN.UTF-8
@@ -47,13 +47,13 @@ COPY ./cron/cron.monthly /etc/cron.monthly
 #add cron sesrvice.
 #任务调度
 RUN chmod 755 /data/instock/bin/run_*.sh && \
-    chmod 755 /etc/cron.hourly/* && chmod 755 /etc/cron.workdayly/* && chmod 755 /etc/cron.monthly/* 
-RUN echo "SHELL=/bin/sh \n\
+    chmod 755 /etc/cron.hourly/* && chmod 755 /etc/cron.workdayly/* && chmod 755 /etc/cron.monthly/* && \
+    echo "SHELL=/bin/sh \n\
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin \n\
 # min hour day month weekday command \n\
 */30 9,10,11,13,14,15 * * 1-5 /bin/run-parts /etc/cron.hourly \n\
 30 17 * * 1-5 /bin/run-parts /etc/cron.workdayly \n\
-30 10 * * 3,6 /bin/run-parts /etc/cron.monthly \n" > /var/spool/cron/crontabs/root 
-Run chmod 777 /var/spool/cron/crontabs/root
+30 10 * * 3,6 /bin/run-parts /etc/cron.monthly \n" > /var/spool/cron/crontabs/root && \
+    chmod 600 /var/spool/cron/crontabs/root
 
 ENTRYPOINT ["supervisord","-n","-c","/data/InStock/supervisor/supervisord.conf"]
