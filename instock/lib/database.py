@@ -12,7 +12,7 @@ from sqlalchemy import inspect
 __author__ = 'myh '
 __date__ = '2023/3/10 '
 
-db_type = "postgres"
+db_type = "mysql"
 db_host = "localhost"  # 数据库服务主机
 db_user = "root"  # 数据库访问用户
 db_password = "root"  # 数据库访问密码
