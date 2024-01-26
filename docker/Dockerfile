@@ -8,6 +8,8 @@ ENV LANG=zh_CN.UTF-8
 ENV LC_CTYPE=zh_CN.UTF-8
 ENV LC_ALL=C
 ENV PYTHONPATH=/data/InStock
+ENV CONDA_DIR=/opt/conda
+ENV PATH=${CONDA_DIR}/bin:${PATH}
 EXPOSE 9988
 
 # 使用使用国内镜像地址加速。修改debian apt更新地址，pip地址，设置时区
@@ -24,24 +26,14 @@ trusted-host = pypi.tuna.tsinghua.edu.cn" > /etc/pip.conf && \
     ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
     echo "Asia/Shanghai" > /etc/timezone && \
     apt-get update && \
-    apt-get install -y cron gcc make python3-dev default-libmysqlclient-dev curl && \
+    apt-get install -y cron gcc make python3-dev default-lib curl && \
+    conda install requests arrow numpy SQLAlchemy PyMySQL psycopg2 Logbook  tqdm beautifulsoup4  bokeh  pandas tornado -y && \
     pip install supervisor && \
-    pip install mysqlclient && \
-    pip install requests && \
-    pip install arrow && \
-    pip install numpy && \
-    pip install SQLAlchemy && \
-    pip install PyMySQL && \
-    pip install psycopg2 && \
-    pip install Logbook && \
     pip install python_dateutil && \
     pip install py_mini_racer && \
-    pip install tqdm && \
-    pip install beautifulsoup4 && \
-    pip install bokeh && \
-    pip install pandas && \
-    pip install tornado && \
     pip install easytrader && \
+    conda clean --tarballs --index-cache --packages --yes && \
+    conda clean --force-pkgs-dirs --all --yes  && \
     curl -SL https://codeload.github.com/TA-Lib/ta-lib-python/tar.gz/refs/tags/TA_Lib-0.4.28 | tar -xzC . && \
     cd ta-lib/  && \
     ./configure --prefix=/usr && \
@@ -50,7 +42,7 @@ trusted-host = pypi.tuna.tsinghua.edu.cn" > /etc/pip.conf && \
     cd .. && \
     pip install TA-Lib && \
     rm -rf ta-lib* && \
-    apt-get --purge remove -y gcc make python3-dev default-libmysqlclient-dev curl && \
+    apt-get --purge remove -y gcc make python3-dev default-lib curl && \
     rm -rf /root/.cache/* && rm -rf /var/lib/apt/lists/* && apt-get clean && apt-get autoclean && apt-get autoremove -y 
 
 WORKDIR /data
