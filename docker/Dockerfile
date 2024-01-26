@@ -1,6 +1,6 @@
 # 基础镜像
 # https://hub.docker.com/_/python/tags?page=1&name=3.11-rc-rc-slim
-FROM docker.io/python:3.11-rc-slim
+FROM continuumio/miniconda3:latest
 
 MAINTAINER myh
 #增加语言utf-8
@@ -32,6 +32,7 @@ trusted-host = pypi.tuna.tsinghua.edu.cn" > /etc/pip.conf && \
     pip install numpy && \
     pip install SQLAlchemy && \
     pip install PyMySQL && \
+    pip install psycopg2 && \
     pip install Logbook && \
     pip install python_dateutil && \
     pip install py_mini_racer && \
@@ -41,7 +42,7 @@ trusted-host = pypi.tuna.tsinghua.edu.cn" > /etc/pip.conf && \
     pip install pandas && \
     pip install tornado && \
     pip install easytrader && \
-    curl -SL https://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz | tar -xzC . && \
+    curl -SL https://codeload.github.com/TA-Lib/ta-lib-python/tar.gz/refs/tags/TA_Lib-0.4.28 | tar -xzC . && \
     cd ta-lib/  && \
     ./configure --prefix=/usr && \
     make && \
@@ -50,7 +51,7 @@ trusted-host = pypi.tuna.tsinghua.edu.cn" > /etc/pip.conf && \
     pip install TA-Lib && \
     rm -rf ta-lib* && \
     apt-get --purge remove -y gcc make python3-dev default-libmysqlclient-dev curl && \
-    rm -rf /root/.cache/* && apt-get clean && apt-get autoremove -y
+    rm -rf /root/.cache/* && rm -rf /var/lib/apt/lists/* && apt-get clean && apt-get autoclean && apt-get autoremove -y 
 
 WORKDIR /data
 #InStock软件
