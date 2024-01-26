@@ -19,13 +19,13 @@ EXPOSE 9988
 # 安装 依赖库
 # apt-get autoremove -y 删除没有用的依赖lib
 # apt-get --purge remove 软件包名称 , 删除已安装包（不保留配置文件)
-RUN sed -i "s@http://\(deb\|security\).debian.org@https://mirrors.aliyun.com@g" /etc/apt/sources.list && \
-    echo  "[global]\n\
-index-url = https://pypi.tuna.tsinghua.edu.cn/simple\n\
-trusted-host = pypi.tuna.tsinghua.edu.cn" > /etc/pip.conf && \
-    ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
-    echo "Asia/Shanghai" > /etc/timezone
-RUN apt-get update && \
+# RUN sed -i "s@http://\(deb\|security\).debian.org@https://mirrors.aliyun.com@g" /etc/apt/sources.list && \
+#     echo  "[global]\n\
+# index-url = https://pypi.tuna.tsinghua.edu.cn/simple\n\
+# trusted-host = pypi.tuna.tsinghua.edu.cn" > /etc/pip.conf  
+RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
+    echo "Asia/Shanghai" > /etc/timezone && \
+    apt-get update && \
     apt-get install -y cron gcc make python3-dev default-libmysqlclient-dev curl && \
     conda install requests arrow numpy SQLAlchemy PyMySQL psycopg2 Logbook  tqdm beautifulsoup4  bokeh  pandas tornado -y && \
     pip install supervisor && \
