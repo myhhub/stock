@@ -1,6 +1,6 @@
 # 基础镜像
 # https://hub.docker.com/_/python/tags?page=1&name=3.11-rc-rc-slim
-FROM continuumio/miniconda3:latest
+FROM continuumio/miniconda3:23.3.1-0
 
 MAINTAINER myh
 #增加语言utf-8
@@ -27,6 +27,7 @@ RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
     echo "Asia/Shanghai" > /etc/timezone && \
     apt-get update && \
     rm -rf /root/.cache/* && rm -rf /var/lib/apt/lists/* && apt-get clean && apt-get autoclean && apt-get autoremove -y && \
+    conda update --all && \
     conda install -c conda-forge requests arrow numpy SQLAlchemy PyMySQL psycopg2 Logbook  tqdm beautifulsoup4  bokeh  pandas tornado ta-lib -y && \
     pip install supervisor && \
     pip install python_dateutil && \
