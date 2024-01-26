@@ -1,0 +1,48 @@
+name: build
+
+on:
+  workflow_dispatch:
+  release:
+    types:
+      - created
+  pull_request:
+    branches: [ main ]
+  pull_request_target:
+    types: [assigned, opened, synchronize, reopened]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Login to ghcr.io
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      # Runs a single command using the runners shell
+      - name: Build and push instock Docker images to docker.io and ghcr.io
+        uses: docker/build-push-action@v4
+        with:
+          platforms: linux/amd64
+          context: .
+          push: true
+          tags: |
+            ghcr.io/shadowofgost/instock:latest
+            shadowofgost/instock:latest
