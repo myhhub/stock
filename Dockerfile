@@ -27,7 +27,7 @@ RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
     echo "Asia/Shanghai" > /etc/timezone && \
     apt-get update && \
     rm -rf /root/.cache/* && rm -rf /var/lib/apt/lists/* && apt-get clean && apt-get autoclean && apt-get autoremove -y && \
-    conda update --all && \
+    conda update -y --all && \
     conda install -c conda-forge requests arrow numpy SQLAlchemy PyMySQL psycopg2 Logbook  tqdm beautifulsoup4  bokeh  pandas tornado ta-lib -y && \
     pip install supervisor && \
     pip install python_dateutil && \
