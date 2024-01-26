@@ -19,7 +19,7 @@ EXPOSE 9988
 # 安装 依赖库
 # apt-get autoremove -y 删除没有用的依赖lib
 # apt-get --purge remove 软件包名称 , 删除已安装包（不保留配置文件)
-RUN sed -i "s@http://\(deb\|security\).debian.org@https://mirrors.aliyun.com@g" /etc/apt/sources.list && \
+RUN sed -i 's#http://archive.ubuntu.com/#http://mirrors.tuna.tsinghua.edu.cn/#' /etc/apt/sources.list && \
     echo  "[global]\n\
 index-url = https://pypi.tuna.tsinghua.edu.cn/simple\n\
 trusted-host = pypi.tuna.tsinghua.edu.cn" > /etc/pip.conf && \
@@ -27,6 +27,13 @@ trusted-host = pypi.tuna.tsinghua.edu.cn" > /etc/pip.conf && \
     echo "Asia/Shanghai" > /etc/timezone && \
     apt-get update && \
     apt-get install -y cron gcc make python3-dev default-lib curl && \
+    conda install requests arrow numpy SQLAlchemy PyMySQL psycopg2 Logbook  tqdm beautifulsoup4  bokeh  pandas tornado -y && \
+    pip install supervisor && \
+    pip install python_dateutil && \
+    pip install py_mini_racer && \
+    pip install easytrader && \
+    conda clean --tarballs --index-cache --packages --yes && \
+    conda clean --force-pkgs-dirs --all --yes  && \
     curl -SL https://codeload.github.com/TA-Lib/ta-lib-python/tar.gz/refs/tags/TA_Lib-0.4.28 | tar -xzC . && \
     cd ta-lib/  && \
     ./configure --prefix=/usr && \
