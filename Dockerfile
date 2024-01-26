@@ -35,8 +35,7 @@ RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
     conda clean --tarballs --index-cache --packages --yes && \
     conda clean --force-pkgs-dirs --all --yes  && \
     curl -SL https://codeload.github.com/TA-Lib/ta-lib-python/tar.gz/refs/tags/TA_Lib-0.4.28 | tar -xzC . && \
-    cd ta-lib-python-TA_Lib-0.4.28  && \
-    ./configure --prefix=/usr && \
+    cd ta-lib-python-TA_Lib-0.4.28/  && \
     make && \
     make install && \
     cd .. && \
