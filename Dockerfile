@@ -39,14 +39,14 @@ RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
 
 WORKDIR /data
 #InStock软件
-COPY ./instock /data/InStock
+COPY ./instock /data/instock
 COPY ./cron/cron.hourly /etc/cron.hourly
 COPY ./cron/cron.workdayly /etc/cron.workdayly
 COPY ./cron/cron.monthly /etc/cron.monthly
 
 #add cron sesrvice.
 #任务调度
-RUN chmod 755 /data/InStock/instock/bin/run_*.sh && \
+RUN chmod 755 /data/instock/bin/run_*.sh && \
     chmod 755 /etc/cron.hourly/* && chmod 755 /etc/cron.workdayly/* && chmod 755 /etc/cron.monthly/* 
 RUN echo "SHELL=/bin/sh \n\
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin \n\
