@@ -26,23 +26,14 @@ EXPOSE 9988
 RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
     echo "Asia/Shanghai" > /etc/timezone && \
     apt-get update && \
-    apt-get install -y cron gcc make python3-dev default-libmysqlclient-dev curl && \
-    conda install requests arrow numpy SQLAlchemy PyMySQL psycopg2 Logbook  tqdm beautifulsoup4  bokeh  pandas tornado -y && \
+    rm -rf /root/.cache/* && rm -rf /var/lib/apt/lists/* && apt-get clean && apt-get autoclean && apt-get autoremove -y && \
+    conda install requests arrow numpy SQLAlchemy PyMySQL psycopg2 Logbook  tqdm beautifulsoup4  bokeh  pandas tornado ta-lib -y && \
     pip install supervisor && \
     pip install python_dateutil && \
     pip install py_mini_racer && \
     pip install easytrader && \
     conda clean --tarballs --index-cache --packages --yes && \
-    conda clean --force-pkgs-dirs --all --yes  && \
-    curl -SL https://codeload.github.com/TA-Lib/ta-lib-python/tar.gz/refs/tags/TA_Lib-0.4.28 | tar -xzC . && \
-    cd ta-lib-python-TA_Lib-0.4.28/  && \
-    make && \
-    make install && \
-    cd .. && \
-    pip install TA-Lib && \
-    rm -rf ta-lib* && \
-    apt-get --purge remove -y gcc make python3-dev default-libmysqlclient-dev curl && \
-    rm -rf /root/.cache/* && rm -rf /var/lib/apt/lists/* && apt-get clean && apt-get autoclean && apt-get autoremove -y 
+    conda clean --force-pkgs-dirs --all --yes  
 
 WORKDIR /data
 #InStock软件
