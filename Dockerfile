@@ -40,6 +40,7 @@ RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
 WORKDIR /data
 #InStock软件
 COPY ./instock /data/instock
+COPY ./supervisor /data/instock/supervisor
 COPY ./cron/cron.hourly /etc/cron.hourly
 COPY ./cron/cron.workdayly /etc/cron.workdayly
 COPY ./cron/cron.monthly /etc/cron.monthly
@@ -56,4 +57,4 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin \n\
 30 10 * * 3,6 /bin/run-parts /etc/cron.monthly \n" > /var/spool/cron/crontabs/root && \
     chmod 600 /var/spool/cron/crontabs/root
 
-ENTRYPOINT ["supervisord","-n","-c","/data/InStock/supervisor/supervisord.conf"]
+ENTRYPOINT ["supervisord","-n","-c","/data/instock/supervisor/supervisord.conf"]
