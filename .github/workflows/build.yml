@@ -37,7 +37,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       # Runs a single command using the runners shell
-      - name: Build and push ip_derper Docker images to docker.io and ghcr.io
+      - name: Build and push instock Docker images to docker.io and ghcr.io
         uses: docker/build-push-action@v4
         with:
           platforms: linux/amd64
