@@ -1,0 +1,86 @@
+# 当提交推送到默认分支时，此工作流将构建 Docker 容器并将其推送到 Azure Web 应用程序。
+#
+# 此工作流假设您已创建目标 Azure 应用服务 Web 应用。
+#相关说明，请参阅 https://docs.microsoft.com/en-us/azure/app-service/quickstart-custom-container?tabs=dotnet&pivots=container-linux
+#
+# 配置此工作流程：
+#
+# 1.下载Azure Web应用程序的发布配置文件。您可以从Azure门户中Web应用程序的概述页面下载此文件。
+#相关详细信息：https://docs.microsoft.com/en-us/azure/app-service/deploy-github-actions?tabs=applevel#generate-deployment-credentials
+#
+# 2. 在存储库中创建一个名为 AZURE_WEBAPP_PUBLISH_PROFILE 的密钥，将发布配置文件内容粘贴为密钥的值。
+# 有关获取发布配置文件的说明，请参阅：https://docs.microsoft.com/azure/app-service/deploy-github-actions#configure-the-github-secret
+#
+# 3.创建具有“repo”和“read:packages”权限的GitHub个人访问令牌。
+#
+# 4.在Azure Web应用程序上创建三个应用程序设置：
+# DOCKER_REGISTRY_SERVER_URL：将其设置为“https://ghcr.io”
+# DOCKER_REGISTRY_SERVER_USERNAME：将其设置为拥有存储库的GitHub用户名或组织
+# DOCKER_REGISTRY_SERVER_PASSWORD：将其设置为上一步中PAT令牌的值
+#
+# 5.更改 AZURE_WEBAPP_NAME 的值。
+#
+#相关Azure的GitHub Actions的更多信息：https://github.com/Azure/Actions
+# 有关 Azure Web Apps 部署操作的更多信息：https://github.com/Azure/webapps-deploy
+# 有关开始使用 GitHub Action 工作流部署到 ​​Azure 的更多示例：https://github.com/Azure/actions-workflow-samples
+
+名称：名称：构建容器并将其部署到 Azure Web App
+
+环境：
+: AZURE_WEBAPP_NAME   : your-app-name # 将其设置为您的 Azure Web 应用程序的名称# 将其设置为您的 Azure Web 应用程序的名称
+
+在：
+  推：
+    分支: [    分支：[ “主” ] “master”     ]
+  工作流程_调度：
+
+权限：
+  内容： 内容： 阅读
+
+工作：
+  建造者：
+    running-on     :     运行：ubuntu-latest
+
+    脚步：
+      -使用:           - 使用：actions/checkout@v3
+
+      -姓名  :         - 名称：设置 Docker Buildx
+        使用：         使用： docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226 # v3.0.0# v3.0.0
+
+      - name :         - 名称：登录GitHubContainer
+使用： docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0# v3.0.0
+        和：
+          开花： 开花：ghcr.io
+          用户名： 用户名：$ {    { github.actor }     }      {       { github.actor }        }
+          密码： 密码：$ {       { github.token }      }     {    { github.token }   }
+
+      -姓名 :       - name：小写的存储库名称和用户名
+        run :         运行： echo "REPO=${GITHUB_REPOSITORY,,}" >>$ { GITHUB_ENV }  “REPO=$ { GITHUB_REPOSITORY ,  ,  } ” >>$ { GITHUB_ENV }
+
+      -名称：           -名称：建造容器将其容器容器中
+        使用： 使用： docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5.0.0# v5.0.0
+        和：
+          推：真
+          标签:           标签：ghcr.io/$ {  { env.REPO } }  : $ { { github.sha }  }   {    { env.REPO }     }    : $ {     { github.sha }  }                                  
+          文件： 文件：./Dockerfile
+
+  部署：
+    权限：
+      内容： 内容：无
+    连续运行    :     运行：ubuntu-latest
+    需求： 需求： 建设
+    环境：
+      名称：《发展》
+      url :       网址：$ {  { steps.deploy-to-webapp.outputs.webapp-url }   }    {    { steps.deploy-to-webapp.outputs.webapp-url }   }
+
+    脚步：
+      -姓名 :        - name：小写的存储库名称和用户名
+        运行：echo “REPO=$ { GITHUB_REPOSITORY ,  ,  } ” >>$ { GITHUB_ENV }
+
+      -姓名：部署到Azure Web App
+        ID ：部署到webapp
+        用途：azure/webapps-deploy@v2
+        和：
+          应用程序名称：$ {  { env.AZURE_WEBAPP_NAME }  }
+          发布配置文件：$ {  { Secrets.AZURE_WEBAPP_PUBLISH_PROFILE }  }
+          图片：'ghcr.io/${{ env.REPO }}:${{ github.sha }}'
