@@ -519,3 +519,5 @@ docker rmi mayanghua/instock:latest library/mariadb:latest
 # 特别声明
 
 股市有风险投资需谨慎，本系统只能用于学习、股票分析，投资盈亏概不负责。
+
+本系统中的表格为第三方商业控件，仅使用了评估版进行学习及测试。
