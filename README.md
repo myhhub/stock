@@ -474,7 +474,7 @@ cat InStock/instock/bin/run_job.sh
 枚举时间作业 python execute_daily_job.py 2022-01-01,2021-02-08,2022-03-12
 区间时间作业 python execute_daily_job.py 2022-01-01 2022-03-01
 ------单功能作业，支持批量作业，回测数据自动填补到当前
-基础数据实时作业 python selection_data_daily_job.py
+综合选股作业 python selection_data_daily_job.py
 基础数据实时作业 python basic_data_daily_job.py
 基础数据收盘2小时后作业 python backtest_data_daily_job.py
 基础数据非实时作业 python basic_data_other_daily_job.py
