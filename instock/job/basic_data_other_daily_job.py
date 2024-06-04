@@ -108,10 +108,11 @@ def save_nph_stock_sector_fund_flow_data(date, before=True):
     if before:
         return
 
-    times = tuple(range(2))
-    with concurrent.futures.ThreadPoolExecutor(max_workers=len(times)) as executor:
-        {executor.submit(stock_sector_fund_flow_data, date, k): k for k in times}
-
+    # times = tuple(range(2))
+    # with concurrent.futures.ThreadPoolExecutor(max_workers=len(times)) as executor:
+    #     {executor.submit(stock_sector_fund_flow_data, date, k): k for k in times}
+    stock_sector_fund_flow_data(date, 0)
+    stock_sector_fund_flow_data(date, 1)
 
 def stock_sector_fund_flow_data(date, index_sector):
     try:
