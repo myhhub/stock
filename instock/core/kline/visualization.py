@@ -47,9 +47,9 @@ def get_plot_kline(code, stock, date, stock_name):
         # 工具条
         tools = pan, box_select, box_zoom, wheel_zoom, zoom_in, zoom_out, undo, redo, reset, save = \
             PanTool(description="平移"), BoxSelectTool(description="方框选取"), BoxZoomTool(description="方框缩放"), \
-            WheelZoomTool(description="滚轮缩放"), ZoomInTool(description="放大"), ZoomOutTool(description="缩小"), \
-            UndoTool(description="撤销"), RedoTool(description="重做"), ResetTool(description="重置"),\
-            SaveTool(description="保存", filename=f"InStock_{code}({date})")
+                WheelZoomTool(description="滚轮缩放"), ZoomInTool(description="放大"), ZoomOutTool(description="缩小"), \
+                UndoTool(description="撤销"), RedoTool(description="重做"), ResetTool(description="重置"), \
+                SaveTool(description="保存", filename=f"InStock_{code}({date})")
         # 悬停
         tooltips = [('日期', '@date'), ('开盘', '@open'),
                     ('最高', '@high'), ('最低', '@low'),
@@ -83,7 +83,7 @@ def get_plot_kline(code, stock, date, stock_name):
         p_kline.add_tools(hover, crosshair)
 
         # 形态信息
-        pattern_is_show = False # 形态缺省是否显示
+        pattern_is_show = True  # 形态缺省是否显示
         checkboxes_args = {}
         checkboxes_code = """let acts = cb_obj.active;"""
         pattern_labels = []
@@ -99,7 +99,8 @@ def get_plot_kline(code, stock, date, stock_name):
                 locals()[f'pattern_labels_u_{str(i)}'] = LabelSet(x='index', y='high', text="label_cn",
                                                                   source=label_source_u, x_offset=7, y_offset=5,
                                                                   angle=90, angle_units='deg', text_color='red',
-                                                                  text_font_style='bold', text_font_size="9pt", visible=pattern_is_show)
+                                                                  text_font_style='bold', text_font_size="9pt",
+                                                                  visible=pattern_is_show)
                 p_kline.add_layout(locals()[f'pattern_labels_u_{str(i)}'])
                 checkboxes_args[f'lsu{str(i)}'] = locals()[f'pattern_labels_u_{str(i)}']
                 checkboxes_code = f"{checkboxes_code}lsu{i}.visible = acts.includes({i});"
@@ -115,7 +116,8 @@ def get_plot_kline(code, stock, date, stock_name):
                                                                   source=label_source_d, x_offset=-7, y_offset=-5,
                                                                   angle=270, angle_units='deg',
                                                                   text_color='green',
-                                                                  text_font_style='bold', text_font_size="9pt", visible=pattern_is_show)
+                                                                  text_font_style='bold', text_font_size="9pt",
+                                                                  visible=pattern_is_show)
                 p_kline.add_layout(locals()[f'pattern_labels_d_{str(i)}'])
                 checkboxes_args[f'lsd{str(i)}'] = locals()[f'pattern_labels_d_{str(i)}']
                 checkboxes_code = f"{checkboxes_code}lsd{i}.visible = acts.includes({i});"
@@ -142,7 +144,8 @@ def get_plot_kline(code, stock, date, stock_name):
         # p_volume.xaxis.major_label_orientation = pi / 4
 
         # 形态复选框
-        pattern_checkboxes = CheckboxGroup(labels=pattern_labels, active=list(range(len(pattern_labels))) if pattern_is_show else [])
+        pattern_checkboxes = CheckboxGroup(labels=pattern_labels,
+                                           active=list(range(len(pattern_labels))) if pattern_is_show else [])
         # pattern_checkboxes.inline = True
         pattern_checkboxes.height = p_kline.height + p_volume.height
         if checkboxes_args:
@@ -228,9 +231,10 @@ def get_plot_kline(code, stock, date, stock_name):
         # 组合图
         layouts = layout(row(
             column(
-                row(children=[div_attention, div_dfcf_hq, div_dfcf_zl, div_dfcf_pr, select_all, select_none], align='end'),
-                       p_kline,
-                       p_volume, tabs_indicators), ck))
+                row(children=[div_attention, div_dfcf_hq, div_dfcf_zl, div_dfcf_pr, select_all, select_none],
+                    align='end'),
+                p_kline,
+                p_volume, tabs_indicators), ck))
         script, div = components(layouts)
 
         return {"script": script, "div": div}

@@ -50,7 +50,9 @@ def run_with_args(run_fun, *args):
             run_date, run_date_nph = trd.get_trade_date_last()
             if run_fun.__name__.startswith('save_nph'):
                 run_fun(run_date_nph, False)
-            else:
+            elif run_fun.__name__.startswith('save_after_close'):
                 run_fun(run_date, *args)
+            else:
+                run_fun(run_date_nph, *args)
         except Exception as e:
             logging.error(f"run_template.run_with_args处理异常：{run_fun}{sys.argv}{e}")

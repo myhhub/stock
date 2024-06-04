@@ -5,11 +5,12 @@ import logging
 import os.path
 import sys
 from abc import ABC
+
 import tornado.escape
-from tornado import gen
 import tornado.httpserver
 import tornado.ioloop
 import tornado.options
+from tornado import gen
 
 # 在项目运行时，临时将项目路径添加到环境变量
 cpath_current = os.path.dirname(os.path.dirname(__file__))

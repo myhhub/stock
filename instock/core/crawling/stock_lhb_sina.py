@@ -10,8 +10,6 @@ import requests
 from bs4 import BeautifulSoup
 from tqdm import tqdm
 
-__author__ = 'myh '
-__date__ = '2023/5/22 '
 
 def stock_lhb_detail_daily_sina(
     trade_date: str = "20200730", symbol: str = "当日无价格涨跌幅限制的A股，出现异常波动停牌的股票"

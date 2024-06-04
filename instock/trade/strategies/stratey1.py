@@ -51,8 +51,6 @@ class Strategy(StrategyTemplate):
         """
         if event.data.clock_event == self.name:
             self.strategy()
-        elif event.data.clock_event == 1.5:
-            pass
 
     def log_handler(self):
         """自定义 log 记录方式"""

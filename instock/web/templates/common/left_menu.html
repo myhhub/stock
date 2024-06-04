@@ -4,36 +4,24 @@
 <script src="/static/js/ace.min.js"></script>
 <script src="/static/js/ace-elements.min.js"></script>
 <script src="/static/js/ace-extra.min.js"></script>
-<script type='text/javascript'>
-jQuery(function($) {
-    //初始化窗口。
-    $('.modal.aside').ace_aside();
-    $('#aside-inside-modal').addClass('aside').ace_aside({container: ""});
-    $(document).one('ajaxloadstart.page', function(e) {
-        $('.modal.aside').remove();
-        $(window).off('.aside')
+<script type="text/javascript">
+    try{ace.settings.loadState('sidebar')}catch(e){}
+    $.extend({
+        getUrlVars: function(){
+            let vars = [], hash;
+            const hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+            for(let i = 0; i < hashes.length; i++)
+            {
+                hash = hashes[i].split('=');
+                vars.push(hash[0]);
+                vars[hash[0]] = hash[1];
+            }
+            return vars;
+        },
+        getUrlVar: function(name){
+            return $.getUrlVars()[name];
+        }
     });
-})
-$.extend({
-	getUrlVars: function(){
-        let vars = [], hash;
-        const hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
-        for(let i = 0; i < hashes.length; i++)
-		{
-			hash = hashes[i].split('=');
-			vars.push(hash[0]);
-			vars[hash[0]] = hash[1];
-		}
-		return vars;
-	},
-	getUrlVar: function(name){
-		return $.getUrlVars()[name];
-	}
-});
-jQuery(function($) {
-    $('[data-rel=tooltip]').tooltip();
-    $('[data-rel=popover]').popover({html:true});
-});
 </script>
 <div id="navbar" class="navbar navbar-default ace-save-state" style="display:none;">
     <div class="navbar-container ace-save-state" id="navbar-container">

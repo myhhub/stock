@@ -8,9 +8,6 @@ http://data.eastmoney.com/dzjy/dzjy_sctj.aspx
 import pandas as pd
 import requests
 
-__author__ = 'myh '
-__date__ = '2023/5/22 '
-
 
 def stock_dzjy_sctj() -> pd.DataFrame:
     """

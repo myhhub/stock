@@ -43,7 +43,6 @@ def get_pattern_recognition(code_name, data, stock_column, date=None, calc_thres
             end_date = date.strftime("%Y-%m-%d")
 
         code = code_name[1]
-
         # 设置返回数组。
         # 增加空判断，如果是空返回 0 数据。
         if len(data.index) <= 1:

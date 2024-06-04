@@ -11,13 +11,13 @@ import instock.core.tablestructure as tbs
 import instock.lib.trade_time as trd
 import instock.core.crawling.trade_date_hist as tdh
 import instock.core.crawling.fund_etf_em as fee
+import instock.core.crawling.stock_selection as sst
 import instock.core.crawling.stock_lhb_em as sle
 import instock.core.crawling.stock_lhb_sina as sls
 import instock.core.crawling.stock_dzjy_em as sde
 import instock.core.crawling.stock_hist_em as she
 import instock.core.crawling.stock_fund_em as sff
 import instock.core.crawling.stock_fhps_em as sfe
-
 
 __author__ = 'myh '
 __date__ = '2023/3/10 '
@@ -103,6 +103,18 @@ def fetch_stocks(date):
         return data
     except Exception as e:
         logging.error(f"stockfetch.fetch_stocks处理异常：{e}")
+    return None
+
+
+def fetch_stock_selection():
+    try:
+        data = sst.stock_selection()
+        if data is None or len(data.index) == 0:
+            return None
+        data.columns = list(tbs.TABLE_CN_STOCK_SELECTION['columns'])
+        return data
+    except Exception as e:
+        logging.error(f"stockfetch.fetch_stocks_selection处理异常：{e}")
     return None
 
 

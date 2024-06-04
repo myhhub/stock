@@ -6,10 +6,8 @@ Desc: 东方财富网-行情首页-沪深京 A 股
 """
 import requests
 import pandas as pd
-from functools import lru_cache
 
-__author__ = 'myh '
-__date__ = '2023/5/22 '
+from functools import lru_cache
 
 
 def stock_zh_a_spot_em() -> pd.DataFrame:

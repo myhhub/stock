@@ -4,7 +4,6 @@
 import logging
 import os.path
 import sys
-import pandas as pd
 
 cpath_current = os.path.dirname(os.path.dirname(__file__))
 cpath = os.path.abspath(os.path.join(cpath_current, os.pardir))
@@ -39,6 +38,7 @@ def save_nph_stock_spot_data(date, before=True):
             cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_SPOT['columns'])
 
         mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
+
     except Exception as e:
         logging.error(f"basic_data_daily_job.save_stock_spot_data处理异常：{e}")
 
@@ -65,7 +65,6 @@ def save_nph_etf_spot_data(date, before=True):
         mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
     except Exception as e:
         logging.error(f"basic_data_daily_job.save_nph_etf_spot_data处理异常：{e}")
-
 
 
 def main():
