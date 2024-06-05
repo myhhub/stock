@@ -24,7 +24,7 @@ trusted-host = pypi.tuna.tsinghua.edu.cn" > /etc/pip.conf && \
     ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
     echo "Asia/Shanghai" > /etc/timezone && \
     apt-get update && \
-    apt-get install -y cron gcc make python3-dev default-libmysqlclient-dev curl && \
+    apt-get install -y cron gcc make python3-dev default-libmysqlclient-dev build-essential pkg-config curl && \
     pip install supervisor && \
     pip install mysqlclient && \
     pip install requests && \
@@ -49,7 +49,7 @@ trusted-host = pypi.tuna.tsinghua.edu.cn" > /etc/pip.conf && \
     cd .. && \
     pip install TA-Lib && \
     rm -rf ta-lib* && \
-    apt-get --purge remove -y gcc make python3-dev default-libmysqlclient-dev curl && \
+    apt-get --purge remove -y gcc make python3-dev default-libmysqlclient-dev build-essential pkg-config curl && \
     rm -rf /root/.cache/* && rm -rf /var/lib/apt/lists/* && apt-get clean && apt-get autoclean && apt-get autoremove -y
 
 WORKDIR /data
