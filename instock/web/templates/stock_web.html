@@ -62,13 +62,13 @@
         initEvent(spread, statusBar);
         const elem = document.querySelector('#instock-data')
         {
-          let prevWidth
+          let prevWidth;
           new ResizeObserver(changes => {
             for(const change of changes){
-              if(change.contentRect.width === prevWidth) return
+              if(change.contentRect.width === prevWidth) {return;}
               spread.refresh();
             }
-          }).observe(elem)
+          }).observe(elem);
         };
 
         $( ".date-picker" ).datepicker({
