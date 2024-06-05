@@ -41,7 +41,7 @@ trusted-host = pypi.tuna.tsinghua.edu.cn" > /etc/pip.conf && \
     pip install pandas && \
     pip install tornado && \
     pip install easytrader && \
-    curl -SL https://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz | tar -xzC . && \
+    curl -SL https://codeload.github.com/TA-Lib/ta-lib-python/tar.gz/refs/tags/TA_Lib-0.4.30 | tar -xzC . && \
     cd ta-lib/  && \
     ./configure --prefix=/usr && \
     make && \
@@ -50,7 +50,7 @@ trusted-host = pypi.tuna.tsinghua.edu.cn" > /etc/pip.conf && \
     pip install TA-Lib && \
     rm -rf ta-lib* && \
     apt-get --purge remove -y gcc make python3-dev default-libmysqlclient-dev curl && \
-    rm -rf /root/.cache/* && apt-get clean && apt-get autoremove -y
+    rm -rf /root/.cache/* && rm -rf /var/lib/apt/lists/* && apt-get clean && apt-get autoclean && apt-get autoremove -y
 
 WORKDIR /data
 #InStock软件
