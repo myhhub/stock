@@ -8,7 +8,26 @@
             <h3>功能介绍</h3>
         </div>
     </div>
-    <p dir="auto" class="red">一：股票每日数据</p>
+     <p dir="auto" class="red">一：综合选股</p>
+    <div class="snippet-clipboard-content notranslate position-relative overflow-auto">
+        <pre class="notranslate"><code>
+            综合选股支持股票范围、基本面、技术面、消息面、人气指标、行情数据等方面共200多个信息栏目进行自由组合选股。选股条件分为以下大类：
+            1.股票范围
+            市场、 行业、地区、 概念、 风格、指数成份、 上市时间。
+            2.基本面
+            估值指标、每股指标、盈利能力、成长能力、资本结构与偿债能力、股本股东。
+            3.技术面
+            MACD金叉、KDJ金叉、放量突破、低位资金净流入、高位资金净流出、向上突破均线、均线多头排列、均线空头排列、连涨放量、下跌无量、一根大阳线、两根大阳线、旭日东升、强势多方、炮拨云见日、七仙女下凡(七连阴)、八仙过海(八连阳)、九阳神功(九连阳)、四串阳、天量法则、放量上攻、穿头破脚、倒转锤头、射击之星、黄昏之星、曙光初现、身怀六甲、乌云盖顶、早晨之星、窄幅整理。
+            4.消息面
+            公告大事、机构关注情况、机构持股家数、机构持股比例。
+            5.人气指标
+            股吧人气排名、人气排名变化、人气排名连涨、人气排名连跌、人气排名创新高、人气排名创新低、新晋粉丝占比、铁杆粉丝占比、7日关注排名、今日浏览排名。
+            6.行情数据
+            股价表现、成交情况、资金流向、行情统计、沪深股通。
+        </code></pre>
+    </div>
+
+    <p dir="auto" class="red">二：股票每日数据</p>
     <div class="snippet-clipboard-content notranslate position-relative overflow-auto">
         <pre class="notranslate"><code>
             包括每日股票数据、股票资金流向、股票分红配送、股票龙虎榜、股票大宗交易、股票基本面数据、行业资金流向、概念资金流向、每日ETF数据。
@@ -18,7 +37,7 @@
     </div>
 
 
-    <p dir="auto" class="red">二：计算股票指标</p>
+    <p dir="auto" class="red">三：计算股票指标</p>
     <div class="snippet-clipboard-content notranslate position-relative overflow-auto">
         <pre class="notranslate"><code>
             基于talib、pandas 计算指标，计算高效准确。调整个别指标公式，确保结果和同花顺、通信达结果一致。 指标：
@@ -32,7 +51,7 @@
         </code></pre>
     </div>
 
-    <p dir="auto" class="red">三：根据指标判定可能买入卖出的股票</p>
+    <p dir="auto" class="red">四：根据指标判定可能买入卖出的股票</p>
     <div class="snippet-clipboard-content notranslate position-relative overflow-auto">
         <pre class="notranslate"><code>
             KDJ:
@@ -61,7 +80,7 @@
         </code></pre>
     </div>
 
-    <p dir="auto" class="red">四：K线形态识别</p>
+    <p dir="auto" class="red">五：K线形态识别</p>
     <div class="snippet-clipboard-content notranslate position-relative overflow-auto">
         <pre class="notranslate"><code>
             K线形态识别返回的结果有三种： 负：出现卖出信号 0：没有出现该形态 正：出现买入信号
@@ -251,7 +270,7 @@
         </code></pre>
     </div>
 
-    <p dir="auto" class="red">五：策略选股</p>
+    <p dir="auto" class="red">六：策略选股</p>
     <div class="snippet-clipboard-content notranslate position-relative overflow-auto">
         <pre class="notranslate"><code>
             1、放量上涨
@@ -309,20 +328,20 @@
         </code></pre>
     </div>
 
-    <p dir="auto" class="red">五：选股验证</p>
+    <p dir="auto" class="red">七：选股验证</p>
     <div class="snippet-clipboard-content notranslate position-relative overflow-auto">
         <pre class="notranslate"><code>
             对指标、策略等选出的股票进行回测，验证其准确性。
         </code></pre>
     </div>
 
-    <p dir="auto" class="red">六：选股验证</p>
+    <p dir="auto" class="red">八：选股验证</p>
     <div class="snippet-clipboard-content notranslate position-relative overflow-auto">
         <pre class="notranslate"><code>
             对指标、策略等选出的股票进行回测，验证策略的成功率，是否可用。
         </code></pre>
     </div>
-    <p dir="auto" class="red">七：自动交易</p>
+    <p dir="auto" class="red">九：自动交易</p>
     <div class="snippet-clipboard-content notranslate position-relative overflow-auto">
         <pre class="notranslate"><code>
             支持自动交易，内置自动打新股的策略及示例策略，由于涉及金钱，规避可能存在风险，没有提供其他交易策略。
@@ -332,13 +351,13 @@
             特别提醒：交易日10:00点会触发打新，不想打新的删除stagging.py或不要启动“交易服务”。
         </code></pre>
     </div>
-    <p dir="auto" class="red">八：关注功能</p>
+    <p dir="auto" class="red">十：关注功能</p>
     <div class="snippet-clipboard-content notranslate position-relative overflow-auto">
         <pre class="notranslate"><code>
             支持股票关注，关注股票在各个模块(含有的)置顶、标红显示。
         </code></pre>
     </div>
-    <p dir="auto" class="red">九：支持批量</p>
+    <p dir="auto" class="red">十一：支持批量</p>
     <div class="snippet-clipboard-content notranslate position-relative overflow-auto">
         <pre class="notranslate"><code>
             可以通过时间段、枚举时间、当前时间进行指标计算、策略选股及回测等。同时支持智能识别交易日，可以输入任意日期。
@@ -352,7 +371,9 @@
             区间时间作业 python execute_daily_job.py 2022-01-01 2022-03-01
 
             ------单功能作业，支持批量作业，回测数据自动填补到当前
+            综合选股作业 python selection_data_daily_job.py
             基础数据实时作业 python basic_data_daily_job.py
+            基础数据收盘2小时后作业 python backtest_data_daily_job.py
             基础数据非实时作业 python basic_data_other_daily_job.py
             指标数据作业 python indicators_data_daily_job.py
             K线形态作业 klinepattern_data_daily_job.py
