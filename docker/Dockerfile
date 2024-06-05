@@ -1,5 +1,5 @@
 # 基础镜像
-# https://hub.docker.com/_/python/tags?page=1&name=3.11-rc-rc-slim
+# https://hub.docker.com/_/python/tags?page=1&name=3.11-rc-slim
 FROM docker.io/python:3.11-rc-slim
 
 MAINTAINER myh
