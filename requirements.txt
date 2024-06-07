@@ -8,7 +8,7 @@ PyMySQL==1.1.1
 requests==2.32.3
 Logbook==1.7.0.post0
 SQLAlchemy==2.0.30
-tornado==6.4
+tornado==6.4.1
 tqdm==4.66.4
 easytrader==0.23.0
 beautifulsoup4==4.12.3
