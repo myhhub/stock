@@ -1,6 +1,6 @@
 # 基础镜像
-# https://hub.docker.com/_/python/tags?page=1&name=3.11-rc-slim
-FROM docker.io/python:3.11-rc-slim
+# https://hub.docker.com/_/python/tags?page=1&name=3.11.9-slim-bullseye
+FROM docker.io/python:3.11.9-slim-bullseye
 
 MAINTAINER myh
 #增加语言utf-8
