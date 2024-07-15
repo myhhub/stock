@@ -41,8 +41,8 @@ def fund_etf_spot_em() -> pd.DataFrame:
             "f12": "代码",
             "f14": "名称",
             "f2": "最新价",
-            "f4": "涨跌额",
             "f3": "涨跌幅",
+            "f4": "涨跌额",
             "f5": "成交量",
             "f6": "成交额",
             "f17": "开盘价",
@@ -60,8 +60,8 @@ def fund_etf_spot_em() -> pd.DataFrame:
             "代码",
             "名称",
             "最新价",
-            "涨跌额",
             "涨跌幅",
+            "涨跌额",
             "成交量",
             "成交额",
             "开盘价",
@@ -74,8 +74,8 @@ def fund_etf_spot_em() -> pd.DataFrame:
         ]
     ]
     temp_df["最新价"] = pd.to_numeric(temp_df["最新价"], errors="coerce")
-    temp_df["涨跌额"] = pd.to_numeric(temp_df["涨跌额"], errors="coerce")
     temp_df["涨跌幅"] = pd.to_numeric(temp_df["涨跌幅"], errors="coerce")
+    temp_df["涨跌额"] = pd.to_numeric(temp_df["涨跌额"], errors="coerce")
     temp_df["成交量"] = pd.to_numeric(temp_df["成交量"], errors="coerce")
     temp_df["成交额"] = pd.to_numeric(temp_df["成交额"], errors="coerce")
     temp_df["开盘价"] = pd.to_numeric(temp_df["开盘价"], errors="coerce")
