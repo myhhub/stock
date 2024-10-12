@@ -546,10 +546,6 @@
 .gc-filter-disable-item i:hover {
   color: #c4bec2;
 }
-.gc-filter-disable-item.gc-filter-hover {
-  background-color: transparent;
-  border: 1px solid #c5c5c5;
-}
 
 .gc-search-outer-div {
   border: none;
@@ -5562,6 +5558,9 @@ div[gcUIElement=gcSpread] .gc-base-spread-div {
   display: flex;
   width: fit-content;
 }
+.gc-defined-column-container .gc-defined-column-checkbox-container .gc-defined-column-checkbox-item-container:focus {
+  outline: none;
+}
 .gc-defined-column-container .gc-defined-column-checkbox-container .gc-defined-column-check-container {
   align-self: center;
 }
@@ -5607,6 +5606,10 @@ div[gcUIElement=gcSpread] .gc-base-spread-div {
 .gc-defined-column-container sjs-select.gc-define-column-invalid {
   --sjs-theme-border-color: var(--sjs-dc-invalid-color);
 }
+.gc-defined-column-container sjs-select::part(container) {
+  --sjs-dp-root-height: 32px;
+  --sjs-dp-value-root-height: 30px;
+}
 .gc-defined-column-container sjs-color-picker.gc-defined-column-field-input-container-input {
   display: block;
 }
@@ -5646,6 +5649,9 @@ div[gcUIElement=gcSpread] .gc-base-spread-div {
 }
 .gc-defined-column-container .gc-defined-column-list-container .gc-defined-column-list-item-container.gc-defined-column-list-item-selected {
   background-color: var(--sjs-dc-hover-background-color);
+}
+.gc-defined-column-container .gc-defined-column-list-container .gc-defined-column-list-item-container:focus {
+  outline: none;
 }
 .gc-defined-column-container .gc-defined-column-list-container .gc-defined-column-list-item-container .gc-defined-column-list-item-text,
 .gc-defined-column-container .gc-defined-column-list-container .gc-defined-column-list-item-container .gc-defined-column-list-item-value {
@@ -5901,6 +5907,9 @@ div[gcUIElement=gcSpread] .gc-base-spread-div {
 }
 .gc-defined-column-container .gc-defined-column-barcode-options-container .gc-defined-column-field-item-small-container {
   grid-column: span 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 .gc-defined-column-container .gc-defined-column-attachment-margins-container {
   display: grid;
@@ -5920,6 +5929,9 @@ div[gcUIElement=gcSpread] .gc-base-spread-div {
   padding-bottom: 0.25rem;
   cursor: pointer;
   opacity: 0.75;
+}
+.gc-defined-column-container .gc-defined-column-tab-item-container:focus {
+  outline: none;
 }
 .gc-defined-column-container .gc-defined-column-tab-item-container:hover {
   opacity: 1;
