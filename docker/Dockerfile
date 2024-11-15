@@ -29,7 +29,7 @@ trusted-host = mirrors.aliyun.com" > /etc/pip.conf && \
     pip install mysqlclient && \
     pip install requests && \
     pip install arrow && \
-    pip install numpy==1.26.4 && \
+    pip install numpy && \
     pip install SQLAlchemy && \
     pip install PyMySQL && \
     pip install Logbook && \
