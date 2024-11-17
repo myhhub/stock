@@ -26,7 +26,10 @@ def run_with_args(run_fun, *args):
             with concurrent.futures.ThreadPoolExecutor() as executor:
                 while run_date <= end_date:
                     if trd.is_trade_date(run_date):
-                        executor.submit(run_fun, run_date, *args)
+                        if run_fun.__name__.startswith('save_nph'):
+                            executor.submit(run_fun, run_date, False)
+                        else:
+                            executor.submit(run_fun, run_date, *args)
                         time.sleep(2)
                     run_date += datetime.timedelta(days=1)
         except Exception as e:
@@ -40,7 +43,10 @@ def run_with_args(run_fun, *args):
                     tmp_year, tmp_month, tmp_day = date.split("-")
                     run_date = datetime.datetime(int(tmp_year), int(tmp_month), int(tmp_day)).date()
                     if trd.is_trade_date(run_date):
-                        executor.submit(run_fun, run_date, *args)
+                        if run_fun.__name__.startswith('save_nph'):
+                            executor.submit(run_fun, run_date, False)
+                        else:
+                            executor.submit(run_fun, run_date, *args)
                         time.sleep(2)
         except Exception as e:
             logging.error(f"run_template.run_with_args处理异常：{run_fun}{sys.argv}{e}")
