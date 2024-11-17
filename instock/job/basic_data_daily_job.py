@@ -24,7 +24,10 @@ def save_nph_stock_spot_data(date, before=True):
         return
     # 股票列表
     try:
-        data = stock_data(date).get_data()
+        if len(sys.argv) == 1:  #当日一天
+            data = stock_data(date).get_data() 
+        else:  #多参数多天
+            data = stf.fetch_stocks(date)
         if data is None or len(data.index) == 0:
             return
 
