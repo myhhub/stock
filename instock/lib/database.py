@@ -3,6 +3,7 @@
 
 import logging
 import os
+import json
 import pymysql
 from sqlalchemy import create_engine
 from sqlalchemy.types import NVARCHAR
@@ -10,13 +11,20 @@ from sqlalchemy import inspect
 
 __author__ = 'myh '
 __date__ = '2023/3/10 '
+current_dir = os.path.dirname(__file__)
+db_config_path = os.path.join(current_dir, 'database.json')
+if os.path.exists(db_config_path):
+    with open(db_config_path, 'r', encoding='utf-8') as f:
+        db_config = json.load(f)
+else:
+    db_config = {}
 
-db_host = "localhost"  # 数据库服务主机
-db_user = "root"  # 数据库访问用户
-db_password = "root"  # 数据库访问密码
-db_database = "instockdb"  # 数据库名称
-db_port = 3306  # 数据库服务端口
-db_charset = "utf8mb4"  # 数据库字符集
+db_host = db_config.get("db_host", "localhost")           # 数据库服务主机
+db_user = db_config.get("db_user", "root")                # 数据库访问用户
+db_password = db_config.get("db_password", "root")        # 数据库访问密码
+db_database = db_config.get("db_database", "instockdb")   # 数据库名称
+db_port = db_config.get("db_port", 3306)                  # 数据库服务端口
+db_charset = db_config.get("db_charset", "utf8mb4")       # 数据库字符集
 
 # 使用环境变量获得数据库,docker -e 传递
 _db_host = os.environ.get('db_host')

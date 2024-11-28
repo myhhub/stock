@@ -320,14 +320,27 @@ Navicat是一套可创建多个连接的数据库管理工具，用以方便管�
 
 一般可能会修改的信息是”数据库访问密码“。
 
-修改database.py相关信息:
-
+修改database相关信息:
+将配置文件`instock/lib/database_default.json`重命名为`instock/lib/database.json`，并将其内容按实际情况进行修改。
+`instock/lib/database.py`会读取`database.json`中的数据库配置信息。
 ```
-db_host = "localhost"  # 数据库服务主机
-db_user = "root"  # 数据库访问用户
-db_password = "root"  # 数据库访问密码
-db_port = 3306  # 数据库服务端口
-db_charset = "utf8mb4"  # 数据库字符集
+{
+    "db_host": "localhost",
+    "db_user": "root",
+    "db_password": "root",
+    "db_database": "instockdb",
+    "db_port": 3306,
+    "db_charset": "utf8mb4"
+}
+```
+如果未找到配置文件，则会采用默认值：
+```
+db_host = db_config.get("db_host", "localhost")           # 数据库服务主机
+db_user = db_config.get("db_user", "root")                # 数据库访问用户
+db_password = db_config.get("db_password", "root")        # 数据库访问密码
+db_database = db_config.get("db_database", "instockdb")   # 数据库名称
+db_port = db_config.get("db_port", 3306)                  # 数据库服务端口
+db_charset = db_config.get("db_charset", "utf8mb4")       # 数据库字符集
 ```
 
 ### 7.安装自动交易（可选）
