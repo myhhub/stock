@@ -9,6 +9,7 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 from tqdm import tqdm
+from io import StringIO
 
 
 def stock_lhb_detail_daily_sina(
@@ -100,7 +101,8 @@ def stock_lhb_ggtj_sina(recent_day: str = "30") -> pd.DataFrame:
             "p": page,
         }
         r = requests.get(url, params=params)
-        temp_df = pd.read_html(r.text)[0].iloc[0:, :]
+        temp_df = pd.read_html(StringIO(r.text))[0].iloc[0:, :]
+        # temp_df = pd.read_html(r.text)[0].iloc[0:, :]
         big_df = pd.concat([big_df, temp_df], ignore_index=True)
     big_df["股票代码"] = big_df["股票代码"].astype(str).str.zfill(6)
     big_df.columns = ["股票代码", "股票名称", "上榜次数", "累积购买额", "累积卖出额", "净额", "买入席位数", "卖出席位数"]

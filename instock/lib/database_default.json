@@ -1,0 +1,8 @@
+{
+    "db_host": "localhost",
+    "db_user": "root",
+    "db_password": "root",
+    "db_database": "instockdb",
+    "db_port": 3306,
+    "db_charset": "utf8mb4"
+}

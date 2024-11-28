@@ -46,6 +46,7 @@ def stock_fhps_em(date: str = "20210630") -> pd.DataFrame:
         r = requests.get(url, params=params)
         data_json = r.json()
         temp_df = pd.DataFrame(data_json["result"]["data"])
+        temp_df = temp_df.dropna(axis=1, how='all')
         big_df = pd.concat([big_df, temp_df], ignore_index=True)
 
     big_df.columns = [
