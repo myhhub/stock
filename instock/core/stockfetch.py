@@ -200,7 +200,7 @@ def fetch_stock_top_entity_data(date):
 # 描述: 获取新浪财经-龙虎榜-个股上榜统计
 def fetch_stock_top_data(date):
     try:
-        data = sls.stock_lhb_ggtj_sina(recent_day="5")
+        data = sls.stock_lhb_ggtj_sina()
         if data is None or len(data.index) == 0:
             return None
         _columns = list(tbs.TABLE_CN_STOCK_TOP['columns'])
