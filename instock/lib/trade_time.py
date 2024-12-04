@@ -113,7 +113,7 @@ def is_open(now_time):
 def get_trade_hist_interval(date):
     tmp_year, tmp_month, tmp_day = date.split("-")
     date_end = datetime.datetime(int(tmp_year), int(tmp_month), int(tmp_day))
-    date_start = (date_end + datetime.timedelta(days=-(365 * 3))).strftime("%Y%m%d")
+    date_start = (date_end + datetime.timedelta(days=-(365 * 1))).strftime("%Y%m%d")
 
     now_time = datetime.datetime.now()
     now_date = now_time.date()

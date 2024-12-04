@@ -14,3 +14,6 @@ easytrader==0.23.0
 beautifulsoup4==4.12.3
 pycryptodome==3.21.0
 python_dateutil==2.9.0.post0
+backtrader~=1.9.78.123
+matplotlib~=3.9.3
+python-dateutil~=2.9.0.post0
