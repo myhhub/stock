@@ -4,7 +4,7 @@
 from sqlalchemy import DATE, NVARCHAR, FLOAT, BIGINT, SmallInteger, DATETIME
 from sqlalchemy.dialects.mysql import BIT
 import talib as tl
-from instock.core.strategy import enter
+from instock.core.strategy import enter, volume_break_strategy
 from instock.core.strategy import turtle_trade
 from instock.core.strategy import climax_limitdown
 from instock.core.strategy import low_atr
@@ -365,28 +365,30 @@ TABLE_CN_STOCK_INDICATORS_SELL = {'name': 'cn_stock_indicators_sell', 'cn': '股
                                   'columns': _tmp_columns}
 
 TABLE_CN_STOCK_STRATEGIES = [
-    {'name': 'cn_stock_strategy_enter', 'cn': '放量上涨', 'size': 70, 'func': enter.check_volume,
-     'columns': _tmp_columns},
-    {'name': 'cn_stock_strategy_keep_increasing', 'cn': '均线多头', 'size': 70, 'func': keep_increasing.check,
-     'columns': _tmp_columns},
-    {'name': 'cn_stock_strategy_parking_apron', 'cn': '停机坪', 'size': 70, 'func': parking_apron.check,
-     'columns': _tmp_columns},
-    {'name': 'cn_stock_strategy_backtrace_ma250', 'cn': '回踩年线', 'size': 70, 'func': backtrace_ma250.check,
-     'columns': _tmp_columns},
-    {'name': 'cn_stock_strategy_breakthrough_platform', 'cn': '突破平台', 'size': 70,
-     'func': breakthrough_platform.check,
-     'columns': _tmp_columns},
-    {'name': 'cn_stock_strategy_low_backtrace_increase', 'cn': '无大幅回撤', 'size': 70,
-     'func': low_backtrace_increase.check,
-     'columns': _tmp_columns},
-    {'name': 'cn_stock_strategy_turtle_trade', 'cn': '海龟交易法则', 'size': 70, 'func': turtle_trade.check_enter,
-     'columns': _tmp_columns},
-    {'name': 'cn_stock_strategy_high_tight_flag', 'cn': '高而窄的旗形', 'size': 70,
-     'func': high_tight_flag.check_high_tight,
-     'columns': _tmp_columns},
-    {'name': 'cn_stock_strategy_climax_limitdown', 'cn': '放量跌停', 'size': 70, 'func': climax_limitdown.check,
-     'columns': _tmp_columns},
-    {'name': 'cn_stock_strategy_low_atr', 'cn': '低ATR成长', 'size': 70, 'func': low_atr.check_low_increase,
+    # {'name': 'cn_stock_strategy_enter', 'cn': '放量上涨', 'size': 70, 'func': enter.check_volume,
+    #  'columns': _tmp_columns},
+    # {'name': 'cn_stock_strategy_keep_increasing', 'cn': '均线多头', 'size': 70, 'func': keep_increasing.check,
+    #  'columns': _tmp_columns},
+    # {'name': 'cn_stock_strategy_parking_apron', 'cn': '停机坪', 'size': 70, 'func': parking_apron.check,
+    #  'columns': _tmp_columns},
+    # {'name': 'cn_stock_strategy_backtrace_ma250', 'cn': '回踩年线', 'size': 70, 'func': backtrace_ma250.check,
+    #  'columns': _tmp_columns},
+    # {'name': 'cn_stock_strategy_breakthrough_platform', 'cn': '突破平台', 'size': 70,
+    #  'func': breakthrough_platform.check,
+    #  'columns': _tmp_columns},
+    # {'name': 'cn_stock_strategy_low_backtrace_increase', 'cn': '无大幅回撤', 'size': 70,
+    #  'func': low_backtrace_increase.check,
+    #  'columns': _tmp_columns},
+    # {'name': 'cn_stock_strategy_turtle_trade', 'cn': '海龟交易法则', 'size': 70, 'func': turtle_trade.check_enter,
+    #  'columns': _tmp_columns},
+    # {'name': 'cn_stock_strategy_high_tight_flag', 'cn': '高而窄的旗形', 'size': 70,
+    #  'func': high_tight_flag.check_high_tight,
+    #  'columns': _tmp_columns},
+    # {'name': 'cn_stock_strategy_climax_limitdown', 'cn': '放量跌停', 'size': 70, 'func': climax_limitdown.check,
+    #  'columns': _tmp_columns},
+    # {'name': 'cn_stock_strategy_low_atr', 'cn': '低ATR成长', 'size': 70, 'func': low_atr.check_low_increase,
+    #  'columns': _tmp_columns},
+    {'name': 'volume_break_strategy', 'cn': '回调选股', 'size': 60, 'func': volume_break_strategy.check,
      'columns': _tmp_columns}
 ]
 

@@ -1,4 +1,6 @@
 import backtrader as bt
+
+
 class BaseStrategy(bt.Strategy):
     params = (
         ('stop_loss', 0.06),
@@ -31,35 +33,46 @@ class BaseStrategy(bt.Strategy):
 
             self.orders[data] = self.buy(data=data, size=size)
             self.position_value[data] = size * data.close[0]
+        else:
+            self.log(f'可用资金不足，无法买入: {data._name}, 可用资金: {self.broker.getvalue() - sum(self.position_value.values())}')
 
-    def calculate_buy_size(self, data):
+    def calculate_buy_size(self, data, ratio=None):
         available_cash = self.broker.getvalue() - sum(self.position_value.values())
         if available_cash <= 0:
             return 0
-        ratio = 0.5
+        if ratio is None:
+            if self.position:
+                ratio = 0.2
+            else:
+                ratio = 0.5
         return int(round(available_cash * ratio / data.close[0] / 100) * 100)
 
     def check_sell_strategy(self, data):
         position = self.getposition(data)
         if not position:
-           return
+            return True
         if data in self.stop_loss_price and data.close[0] <= self.stop_loss_price[data]:
             self.log(f'触发止损: {data._name}, 价格: {data.close[0]}')
             self.close(data)
-        if data.low[0] < data.low[-1] and data.high[0] < data.high[-1]\
-                and data.low[-1] < data.low[-2] and data.high[-1] < data.high[-2]:
+            return True
+        if data.low[0] < data.low[-1] < data.low[-2] and data.high[0] < data.high[-1] < data.high[-2]:
             self.log(f'触发最高和最低点低于昨日卖出: {data._name}, 价格: {data.close[0]}')
             self.close(data)
+            return True
         if data in self.take_profit_price and data.close[0] >= self.take_profit_price[data]:
             if data.low[0] < data.low[-1] and data.high[0] < data.high[-1]:
                 self.log(f'触发最低点低于昨日最低点卖出: {data._name}, 价格: {data.close[0]}')
                 self.close(data)
+                return True
 
-        if data.volume[0] == max(data.volume.get(size=7)) and data.close[0] < data.low[-1]:
+        if data.volume[0] == max(data.volume.get(size=7) or [0]) and data.close[0] < data.low[-1]:
             self.log(f'触发成交量和价格条件卖出: {data._name}, 价格: {data.close[0]}')
             self.close(data)
+            return True
+        return False
 
-    def calculate_limit_up_price(self, data):
+    @staticmethod
+    def calculate_limit_up_price(data):
         previous_close = data.close[-1]
         stock_code = data._name[:6]
         limit_up_ratio = 0.20 if stock_code.startswith('300') else 0.10
@@ -90,7 +103,7 @@ class BaseStrategy(bt.Strategy):
                 buycomm = self.buycomm[order.data]
                 sellprice = order.executed.price
                 sellcomm = order.executed.comm
-                profit = (sellprice - buyprice) * order.executed.size * -1  - buycomm - sellcomm
+                profit = (sellprice - buyprice) * order.executed.size * -1 - buycomm - sellcomm
                 profit_pct = (profit / (buyprice * order.executed.size)) * 100 * -1
                 self.log(
                     f'卖出执行: {order.data._name}, 价格: {sellprice:.2f}, '

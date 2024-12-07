@@ -11,7 +11,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 
 import instock.core.tablestructure as tbs
-from instock.core.backtest.Chan import ChanStrategy
+from instock.core.backtest.Chan import ImprovedChanStrategy
 from instock.core.backtest.volume_break_strategy import VolumeBreakStrategy
 from instock.core.singleton_stock import stock_hist_data, stock_data
 from instock.lib.singleton_type import singleton_type
@@ -22,12 +22,12 @@ sys.path.append(cpath)
 
 
 class back_test(metaclass=singleton_type):
-    def bt_strategy(self, date=None, strategy=None):
+    def bt_strategy(self, date=None, strategy=None,rand_num=2):
         if date is None:
             date = datetime.now() - timedelta(days=1)
         if strategy is None:
             raise Exception("策略类为空")
-        data = self.get_data(date, rand_num=2)
+        data = self.get_data(date=date, rand_num=rand_num)
         cerebro = bt.Cerebro()
         cerebro.addstrategy(strategy)
         cerebro.broker.set_cash(100000.0)
@@ -142,4 +142,5 @@ class back_test(metaclass=singleton_type):
 
 if __name__ == '__main__':
     test = back_test()
-    test.bt_strategy_multiple(strategy=VolumeBreakStrategy,  iterations=25)
+    test.bt_strategy_multiple(strategy=VolumeBreakStrategy,  iterations=200)
+    # test.bt_strategy(strategy=VolumeBreakStrategy, rand_num=10)
