@@ -2,10 +2,11 @@ import backtrader as bt
 import numpy as np
 from instock.core.backtest.base_strategy import BaseStrategy
 
+
 class VolumeBreakStrategy(BaseStrategy):
     params = (
         ('volume_threshold', 1.5),  # 成交量阈值
-        ('price_drop_threshold', 0.15),  # 价格下跌阈值
+        ('price_drop_threshold', 0.10),  # 价格下跌阈值
         ('lookback_period', 7),  # 回看天数
     )
 
@@ -28,12 +29,17 @@ class VolumeBreakStrategy(BaseStrategy):
         if self.orders.get(data):
             return
 
-        if not self.position:
-            if self.buy_condition(data):
-                self.log(f'买入信号: {data._name}, 价格: {data.close[0]}')
-                self.buy_stock(data)
 
-        self.check_sell_strategy(data)
+        position = self.getposition(data)
+        if position:
+            sell_signal = self.check_sell_strategy(data)
+            if sell_signal:
+                return
+        if self.buy_condition(data):
+            self.log(f'买入信号: {data._name}, 价格: {data.close[0]}')
+            self.buy_stock(data)
+            return
+
 
     def buy_condition(self, data):
         # 条件1: 最近七天有一天成交量大于当天-7天成交量均值的150%
