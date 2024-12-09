@@ -115,3 +115,7 @@ class Strategy(StrategyTemplate):
     def shutdown(self):
         """关闭进程前的调用"""
         self.log.info("假装在关闭前保存了策略数据")
+
+if __name__ == '__main__':
+    # 测试
+    Strategy()
