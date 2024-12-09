@@ -275,7 +275,7 @@ def stock_sector_fund_flow_rank(
     text_data = r.text
     json_data = json.loads(text_data[text_data.find("{") : -2])
     temp_df = pd.DataFrame(json_data["data"]["diff"])
-    # temp_df = temp_df[~temp_df["f3"].isin(["-"])]
+    temp_df = temp_df[~temp_df["f2"].isin(["-"])]
     if indicator == "今日":
         temp_df.columns = [
             "-",
