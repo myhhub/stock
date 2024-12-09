@@ -59,6 +59,7 @@ def stock_individual_fund_flow_rank(indicator: str = "5日") -> pd.DataFrame:
     r = requests.get(url, params=params)
     data_json = r.json()
     temp_df = pd.DataFrame(data_json["data"]["diff"])
+    temp_df = temp_df[~temp_df["f2"].isin(["-"])]
     if indicator == "今日":
         temp_df.columns = [
             "最新价",
@@ -215,6 +216,7 @@ def stock_individual_fund_flow_rank(indicator: str = "5日") -> pd.DataFrame:
                 "10日小单净流入-净占比",
             ]
         ]
+        # temp_df['最新价'] = pd.to_numeric(temp_df['最新价'], errors="coerce").fillna(0)
     return temp_df
 
 
@@ -273,6 +275,7 @@ def stock_sector_fund_flow_rank(
     text_data = r.text
     json_data = json.loads(text_data[text_data.find("{") : -2])
     temp_df = pd.DataFrame(json_data["data"]["diff"])
+    # temp_df = temp_df[~temp_df["f3"].isin(["-"])]
     if indicator == "今日":
         temp_df.columns = [
             "-",
@@ -312,17 +315,6 @@ def stock_sector_fund_flow_rank(
                 "今日主力净流入最大股",
             ]
         ]
-        # temp_df['今日涨跌幅'] = pd.to_numeric(temp_df['今日涨跌幅'])
-        # temp_df['今日主力净流入-净额'] = pd.to_numeric(temp_df['今日主力净流入-净额'])
-        # temp_df['今日主力净流入-净占比'] = pd.to_numeric(temp_df['今日主力净流入-净占比'])
-        # temp_df['今日超大单净流入-净额'] = pd.to_numeric(temp_df['今日超大单净流入-净额'])
-        # temp_df['今日超大单净流入-净占比'] = pd.to_numeric(temp_df['今日超大单净流入-净占比'])
-        # temp_df['今日大单净流入-净额'] = pd.to_numeric(temp_df['今日大单净流入-净额'])
-        # temp_df['今日大单净流入-净占比'] = pd.to_numeric(temp_df['今日大单净流入-净占比'])
-        # temp_df['今日中单净流入-净额'] = pd.to_numeric(temp_df['今日中单净流入-净额'])
-        # temp_df['今日中单净流入-净占比'] = pd.to_numeric(temp_df['今日中单净流入-净占比'])
-        # temp_df['今日小单净流入-净额'] = pd.to_numeric(temp_df['今日小单净流入-净额'])
-        # temp_df['今日小单净流入-净占比'] = pd.to_numeric(temp_df['今日小单净流入-净占比'])
     elif indicator == "5日":
         temp_df.columns = [
             "-",
@@ -362,17 +354,6 @@ def stock_sector_fund_flow_rank(
                 "5日主力净流入最大股",
             ]
         ]
-        # temp_df['5日涨跌幅'] = pd.to_numeric(temp_df['5日涨跌幅'])
-        # temp_df['5日主力净流入-净额'] = pd.to_numeric(temp_df['5日主力净流入-净额'])
-        # temp_df['5日主力净流入-净占比'] = pd.to_numeric(temp_df['5日主力净流入-净占比'])
-        # temp_df['5日超大单净流入-净额'] = pd.to_numeric(temp_df['5日超大单净流入-净额'])
-        # temp_df['5日超大单净流入-净占比'] = pd.to_numeric(temp_df['5日超大单净流入-净占比'])
-        # temp_df['5日大单净流入-净额'] = pd.to_numeric(temp_df['5日大单净流入-净额'])
-        # temp_df['5日大单净流入-净占比'] = pd.to_numeric(temp_df['5日大单净流入-净占比'])
-        # temp_df['5日中单净流入-净额'] = pd.to_numeric(temp_df['5日中单净流入-净额'])
-        # temp_df['5日中单净流入-净占比'] = pd.to_numeric(temp_df['5日中单净流入-净占比'])
-        # temp_df['5日小单净流入-净额'] = pd.to_numeric(temp_df['5日小单净流入-净额'])
-        # temp_df['5日小单净流入-净占比'] = pd.to_numeric(temp_df['5日小单净流入-净占比'])
     elif indicator == "10日":
         temp_df.columns = [
             "-",
@@ -412,17 +393,6 @@ def stock_sector_fund_flow_rank(
                 "10日主力净流入最大股",
             ]
         ]
-        # temp_df['10日涨跌幅'] = pd.to_numeric(temp_df['10日涨跌幅'])
-        # temp_df['10日主力净流入-净额'] = pd.to_numeric(temp_df['10日主力净流入-净额'])
-        # temp_df['10日主力净流入-净占比'] = pd.to_numeric(temp_df['10日主力净流入-净占比'])
-        # temp_df['10日超大单净流入-净额'] = pd.to_numeric(temp_df['10日超大单净流入-净额'])
-        # temp_df['10日超大单净流入-净占比'] = pd.to_numeric(temp_df['10日超大单净流入-净占比'])
-        # temp_df['10日大单净流入-净额'] = pd.to_numeric(temp_df['10日大单净流入-净额'])
-        # temp_df['10日大单净流入-净占比'] = pd.to_numeric(temp_df['10日大单净流入-净占比'])
-        # temp_df['10日中单净流入-净额'] = pd.to_numeric(temp_df['10日中单净流入-净额'])
-        # temp_df['10日中单净流入-净占比'] = pd.to_numeric(temp_df['10日中单净流入-净占比'])
-        # temp_df['10日小单净流入-净额'] = pd.to_numeric(temp_df['10日小单净流入-净额'])
-        # temp_df['10日小单净流入-净占比'] = pd.to_numeric(temp_df['10日小单净流入-净占比'])
 
     return temp_df
 
