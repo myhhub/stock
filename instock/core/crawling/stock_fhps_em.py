@@ -50,7 +50,8 @@ def stock_fhps_em(date: str = "20231231") -> pd.DataFrame:
         r = requests.get(url, params=params)
         data_json = r.json()
         temp_df = pd.DataFrame(data_json["result"]["data"])
-        big_df = pd.concat(objs=[big_df, temp_df], ignore_index=True)
+        if not temp_df.empty:
+            big_df = pd.concat(objs=[big_df, temp_df], ignore_index=True)
 
     big_df.columns = [
         "_",
