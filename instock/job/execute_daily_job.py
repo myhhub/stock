@@ -27,6 +27,7 @@ import strategy_data_daily_job as sdj
 import backtest_data_daily_job as bdj
 import klinepattern_data_daily_job as kdj
 import selection_data_daily_job as sddj
+import strategy_position_daily_job as spdj
 
 __author__ = 'myh '
 __date__ = '2023/3/10 '
@@ -57,6 +58,9 @@ def main():
 
     # # # # 第7步创建股票闭盘后才有的数据
     acdj.main()
+
+    # # # # 第8步持仓股票数据分析
+    spdj.main()
 
     logging.info("######## 完成任务, 使用时间: %s 秒 #######" % (time.time() - start))
 

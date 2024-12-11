@@ -7,6 +7,8 @@ import datetime
 import concurrent.futures
 import sys
 import time
+import traceback
+
 import instock.lib.trade_time as trd
 
 __author__ = 'myh '
@@ -30,7 +32,7 @@ def run_with_args(run_fun, *args):
                         time.sleep(2)
                     run_date += datetime.timedelta(days=1)
         except Exception as e:
-            logging.error(f"run_template.run_with_args处理异常：{run_fun}{sys.argv}{e}")
+            logging.error(f"run_template.run_with_args处理异常：{run_fun}{sys.argv}\n{traceback.format_exc()}")
     elif len(sys.argv) == 2:
         # N个时间作业 python xxx.py 2023-03-01,2023-03-02
         dates = sys.argv[1].split(',')
@@ -43,7 +45,7 @@ def run_with_args(run_fun, *args):
                         executor.submit(run_fun, run_date, *args)
                         time.sleep(2)
         except Exception as e:
-            logging.error(f"run_template.run_with_args处理异常：{run_fun}{sys.argv}{e}")
+            logging.error(f"run_template.run_with_args处理异常：{run_fun}{sys.argv}\n{traceback.format_exc()}")
     else:
         # 当前时间作业 python xxx.py
         try:
@@ -55,4 +57,4 @@ def run_with_args(run_fun, *args):
             else:
                 run_fun(run_date_nph, *args)
         except Exception as e:
-            logging.error(f"run_template.run_with_args处理异常：{run_fun}{sys.argv}{e}")
+            logging.error(f"run_template.run_with_args处理异常：{run_fun}{sys.argv}\n{traceback.format_exc()}")

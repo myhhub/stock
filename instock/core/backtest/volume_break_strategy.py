@@ -31,10 +31,8 @@ class VolumeBreakStrategy(BaseStrategy):
 
 
         position = self.getposition(data)
-        if position:
-            sell_signal = self.check_sell_strategy(data)
-            if sell_signal:
-                return
+        if self.check_sell_strategy(data):
+            return
         if self.buy_condition(data):
             self.log(f'买入信号: {data._name}, 价格: {data.close[0]}')
             self.buy_stock(data)

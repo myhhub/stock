@@ -49,25 +49,26 @@ class BaseStrategy(bt.Strategy):
 
     def check_sell_strategy(self, data):
         position = self.getposition(data)
-        if not position:
-            return True
-        if data in self.stop_loss_price and data.close[0] <= self.stop_loss_price[data]:
-            self.log(f'触发止损: {data._name}, 价格: {data.close[0]}')
-            self.close(data)
-            return True
-        if data.low[0] < data.low[-1] < data.low[-2] and data.high[0] < data.high[-1] < data.high[-2]:
-            self.log(f'触发最高和最低点低于昨日卖出: {data._name}, 价格: {data.close[0]}')
-            self.close(data)
-            return True
-        if data in self.take_profit_price and data.close[0] >= self.take_profit_price[data]:
-            if data.low[0] < data.low[-1] and data.high[0] < data.high[-1]:
-                self.log(f'触发最低点低于昨日最低点卖出: {data._name}, 价格: {data.close[0]}')
+        if position:
+            if data in self.stop_loss_price and data.close[0] <= self.stop_loss_price[data]:
+                self.log(f'触发止损: {data._name}, 价格: {data.close[0]}')
                 self.close(data)
                 return True
+            if data in self.take_profit_price and data.close[0] >= self.take_profit_price[data]:
+                if data.low[0] < data.low[-1] and data.high[0] < data.high[-1]:
+                    self.log(f'触发最低点低于昨日最低点卖出: {data._name}, 价格: {data.close[0]}')
+                    self.close(data)
+                    return True
+        if data.low[0] < data.low[-1] < data.low[-2] and data.high[0] < data.high[-1] < data.high[-2]:
+            if position:
+                self.log(f'触发最高和最低点低于昨日卖出: {data._name}, 价格: {data.close[0]}')
+                self.close(data)
+            return True
 
         if data.volume[0] == max(data.volume.get(size=7) or [0]) and data.close[0] < data.low[-1]:
-            self.log(f'触发成交量和价格条件卖出: {data._name}, 价格: {data.close[0]}')
-            self.close(data)
+            if position:
+                self.log(f'触发成交量和价格条件卖出: {data._name}, 价格: {data.close[0]}')
+                self.close(data)
             return True
         return False
 

@@ -126,9 +126,11 @@ class back_test(metaclass=singleton_type):
         random_stocks = random.sample(stocks, rand_num)
         data_list = []
         df = stock_hist_data(date=date, stocks=random_stocks).get_data()
+
         for idx, row in df.items():
             if len(row) <= 100:
                 continue
+            # row = row.iloc[-30:]
             row['datetime'] = pd.to_datetime(row['date'])
             row.set_index('datetime', inplace=True)
             data = bt.feeds.PandasData(
