@@ -60,13 +60,15 @@ class BaseStrategy(bt.Strategy):
                     self.close(data)
                     return True
         if data.low[0] < data.low[-1] < data.low[-2] and data.high[0] < data.high[-1] < data.high[-2]:
-            self.log(f'触发最高和最低点低于昨日卖出: {data._name}, 价格: {data.close[0]}')
-            self.close(data)
+            if position:
+                self.log(f'触发最高和最低点低于昨日卖出: {data._name}, 价格: {data.close[0]}')
+                self.close(data)
             return True
 
         if data.volume[0] == max(data.volume.get(size=7) or [0]) and data.close[0] < data.low[-1]:
-            self.log(f'触发成交量和价格条件卖出: {data._name}, 价格: {data.close[0]}')
-            self.close(data)
+            if position:
+                self.log(f'触发成交量和价格条件卖出: {data._name}, 价格: {data.close[0]}')
+                self.close(data)
             return True
         return False
 

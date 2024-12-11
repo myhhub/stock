@@ -420,10 +420,48 @@ TABLE_CN_STOCK_STRATEGIES = [
 ]
 
 #持仓卖出策略
-TABLE_CN_STOCK_POSITION_CHECK = [
+TABLE_CN_STOCK_POSITION_SELL = [
     {'name': 'common_sell_strategy', 'cn': '通用卖出策略', 'size': 30, 'func': common_sell_check.check,
      'columns': TABLE_CN_STOCK_FOREIGN_KEY['columns'].copy()}
 ]
+
+#持仓买入策略
+TABLE_CN_STOCK_BUY_DATA = {'name': 'cn_stock_buy_data', 'cn': '持仓买入出策略',
+                           'columns': {'date': {'type': DATE, 'cn': '日期', 'size': 0},
+                                       'code': {'type': NVARCHAR(6), 'cn': '代码', 'size': 60},
+                                       'name': {'type': NVARCHAR(20), 'cn': '名称', 'size': 70},
+                                       'open': {'type': FLOAT, 'cn': '开盘'},
+                                       'close': {'type': FLOAT, 'cn': '收盘'},
+                                       'high': {'type': FLOAT, 'cn': '最高'},
+                                       'low': {'type': FLOAT, 'cn': '最低'},
+                                       'volume': {'type': FLOAT, 'cn': '成交量'},
+                                       'amount': {'type': FLOAT, 'cn': '成交额'},
+                                       'amplitude': {'type': FLOAT, 'cn': '振幅'},
+                                       'quote_change': {'type': FLOAT, 'cn': '涨跌幅'},
+                                       'ups_downs': {'type': FLOAT, 'cn': '涨跌额'},
+                                       'turnover': {'type': FLOAT, 'cn': '换手率'},
+                                       'p_change': {'type': FLOAT, 'cn': '换手率'},
+                                       }
+                           }
+
+#持仓卖出策略
+TABLE_CN_STOCK_SELL_DATA = {'name': 'cn_stock_sell_data', 'cn': '持仓卖出出策略',
+                           'columns': {'date': {'type': DATE, 'cn': '日期', 'size': 0},
+                                       'code': {'type': NVARCHAR(6), 'cn': '代码', 'size': 60},
+                                       'name': {'type': NVARCHAR(20), 'cn': '名称', 'size': 70},
+                                       'open': {'type': FLOAT, 'cn': '开盘'},
+                                       'close': {'type': FLOAT, 'cn': '收盘'},
+                                       'high': {'type': FLOAT, 'cn': '最高'},
+                                       'low': {'type': FLOAT, 'cn': '最低'},
+                                       'volume': {'type': FLOAT, 'cn': '成交量'},
+                                       'amount': {'type': FLOAT, 'cn': '成交额'},
+                                       'amplitude': {'type': FLOAT, 'cn': '振幅'},
+                                       'quote_change': {'type': FLOAT, 'cn': '涨跌幅'},
+                                       'ups_downs': {'type': FLOAT, 'cn': '涨跌额'},
+                                       'turnover': {'type': FLOAT, 'cn': '换手率'},
+                                       'p_change': {'type': FLOAT, 'cn': '换手率'},
+                                       }
+                           }
 
 STOCK_KLINE_PATTERN_DATA = {'name': 'cn_stock_pattern_recognitions', 'cn': 'K线形态',
                             'columns': {

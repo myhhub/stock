@@ -1,8 +1,10 @@
 #!/usr/local/bin/python3
 # -*- coding: utf-8 -*-
-
+import datetime
 import logging
 import concurrent.futures
+import traceback
+
 import pandas as pd
 import os.path
 import sys
@@ -49,9 +51,46 @@ def prepare(date, strategy):
         if date.strftime("%Y-%m-%d") != data.iloc[0]['date']:
             data['date'] = date_str
         mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
+        # 增加买入数据
 
+
+        # 取出stocks_data中key为results中值的数据
+        buy_data = {k:stocks_data[k] for k in results}
+        df_list = []  # 用于存储 DataFrame 行
+        # 遍历 new_data，检查日期匹配
+        # 遍历 buy_data，检查日期匹配
+        for key, value in buy_data.items():
+            date_key, code, name = key  # 解包键
+            # 遍历值中的日期
+            for i, date_value in enumerate(value['date']):
+                if date_value == date_key:  # 如果日期匹配
+                    # 使用字典解包简化行数据的创建
+                    row = {
+                        **{k: value[k][i] for k in
+                           ['open', 'close', 'low', 'volume', 'amount', 'amplitude', 'high', 'quote_change',
+                            'ups_downs', 'turnover', 'p_change']},
+                        'date': date_value,
+                        'code': code,
+                        'name': name
+                    }
+                    df_list.append(row)  # 添加到列表中
+        df = pd.DataFrame(df_list)
+
+        # 确保数据不为空
+
+        # 删除老数据。
+        buy_data_name_ = tbs.TABLE_CN_STOCK_BUY_DATA['name']
+        if mdb.checkTableIsExist(buy_data_name_):
+            del_sql = f"DELETE FROM `{buy_data_name_}` where `date` = '{date_str}'"
+            mdb.executeSql(del_sql)
+            cols_type = None
+        else:
+            cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_BUY_DATA['columns'])
+
+        # 插入新数据
+        mdb.insert_db_from_df(df, buy_data_name_, cols_type, False, "`date`,`code`")
     except Exception as e:
-        logging.error(f"strategy_data_daily_job.prepare处理异常：{strategy}策略{e}")
+        logging.error(f"strategy_data_daily_job.prepare处理异常：{strategy}策略{traceback.format_exc()}")
 
 
 def run_check(strategy_fun, table_name, stocks, date, workers=40):

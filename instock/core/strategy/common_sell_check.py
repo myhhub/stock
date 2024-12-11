@@ -25,9 +25,10 @@ def check(code_name, data, date=None, cost=None, threshold=60):
     if end_date is not None:
         mask = (data['date'] <= end_date)
         data = data.loc[mask].copy()
+    if cost is None:
+        return False
     if len(data.index) < threshold:
         return True
-
     # 检查是否应该卖出
     if check_sell_signal(data, cost=cost, stop_loss=params['stop_loss'], take_profit=params['take_profit']):
         return True  # 如果应该卖出，则不考虑买入
