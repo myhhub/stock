@@ -58,7 +58,7 @@ user = easytrader.use('xq')
 请手动打开并登录客户端后，运用connect函数连接客户端。
 
 ```python
-user.connect(r'客户端xiadan.exe路径') # 类似 r'C:\htzqzyb2\xiadan.exe'
+ect(r'客户端xiadan.exe路径') # 类似 r'C:\htzqzyb2\xiadan.exe'
 ```
 
 ### （二）通用同花顺客户端

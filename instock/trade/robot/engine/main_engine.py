@@ -39,7 +39,7 @@ class MainEngine:
         else:
             self.user = None
             self.log.info('选择了无交易模式')
-
+        self.log.info('当前账户信息%s' % self.user.balance)
         self.event_engine = EventEngine()
         self.clock_engine = ClockEngine(self.event_engine, tzinfo)
 
