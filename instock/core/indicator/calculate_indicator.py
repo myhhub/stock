@@ -407,7 +407,7 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
             data = data.tail(n=threshold).copy()
         return data
     except Exception as e:
-        logging.error(f"calculate_indicator.get_indicators处理异常：{data['code']}代码{e}")
+        logging.error(f"calculate_indicator.get_indicators处理异常：{e}")
     return None
 
 
