@@ -7,6 +7,7 @@ import pymysql
 from sqlalchemy import create_engine
 from sqlalchemy.types import NVARCHAR
 from sqlalchemy import inspect
+from urllib.parse import quote_plus as urlquote
 
 __author__ = 'myh '
 __date__ = '2023/3/10 '
@@ -28,6 +29,7 @@ if _db_user is not None:
 _db_password = os.environ.get('db_password')
 if _db_password is not None:
     db_password = _db_password
+db_password = urlquote(db_password)
 _db_database = os.environ.get('db_database')
 if _db_database is not None:
     db_database = _db_database
