@@ -12,4 +12,7 @@ TAG1=$(date "+%Y%m")
 TAG2=latest
 
 echo " docker build -f Dockerfile -t ${DOCKER_NAME} ."
-docker build -f Dockerfile -t ${DOCKER_NAME}:${TAG1} -t ${DOCKER_NAME}:${TAG2} .
+docker buildx build --platform linux/amd64,linux/arm64 -f Dockerfile -t ${DOCKER_NAME}:${TAG1} -t ${DOCKER_NAME}:${TAG2} .
+
+rm -rf stock
+rm -rf cron

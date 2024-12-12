@@ -2,6 +2,8 @@
 # https://hub.docker.com/_/python/tags?page=1&name=3.11-slim-bullseye
 FROM docker.io/python:3.11-slim-bullseye
 
+ARG TARGETARCH
+
 MAINTAINER myh
 #增加语言utf-8
 ENV LANG=zh_CN.UTF-8
@@ -62,10 +64,11 @@ WORKDIR /data
 
 COPY ta-lib-0.4.0-src.tar.gz ./
 
-RUN tar -xf ta-lib-0.4.0-src.tar.gz && \
-    cd ta-lib/ && \
-    ./configure --prefix=/usr --build=$(uname -m)-unknown-linux-gnu && \
-    make && \
+
+RUN set -ex && tar -xf ta-lib-0.4.0-src.tar.gz && \
+    cd ta-lib && \
+    ./configure --prefix=/usr --build=($TARGETARCH)-unknown-linux-gnu && \
+    make -j$(nproc) && \
     make install && \
     cd .. && \
     pip install --no-cache-dir TA-Lib && \
