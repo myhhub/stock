@@ -158,3 +158,5 @@ cython_debug/
 .idea/
 
 docker.*
+./stock
+./cron

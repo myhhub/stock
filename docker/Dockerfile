@@ -10,50 +10,79 @@ ENV LC_ALL=C
 ENV PYTHONPATH=/data/InStock
 EXPOSE 9988
 
-# 使用国内镜像地址加速。修改debian apt更新地址，pip地址，设置时区
-# https://opsx.alibaba.com/mirror
-# https://mirrors.tuna.tsinghua.edu.cn/help/pypi/
-# cat /etc/apt/sources.list 参考原始地址，再确定怎么样替换
-# 安装依赖库
-# apt-get autoremove -y 删除没有用的依赖lib
-# apt-get --purge remove 软件包名称 , 删除已安装包（不保留配置文件)
-RUN sed -i "s@http://\(deb\|security\).debian.org@https://mirrors.aliyun.com@g" /etc/apt/sources.list && \
-    echo  "[global]\n\
-index-url = https://mirrors.aliyun.com/pypi/simple\n\
-trusted-host = mirrors.aliyun.com" > /etc/pip.conf && \
-    ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
-    echo "Asia/Shanghai" > /etc/timezone && \
+
+# 替换 Debian 源地址为阿里云
+RUN sed -i "s@http://\\(deb\\|security\\).debian.org@https://mirrors.aliyun.com@g" /etc/apt/sources.list && \
     apt-get update && \
-    apt-get install -y cron gcc make python3-dev default-libmysqlclient-dev build-essential pkg-config curl && \
-    pip install supervisor && \
-    pip install mysqlclient && \
-    pip install requests && \
-    pip install arrow && \
-    pip install numpy && \
-    pip install SQLAlchemy && \
-    pip install PyMySQL && \
-    pip install Logbook && \
-    pip install python_dateutil && \
-    pip install py_mini_racer && \
-    pip install tqdm && \
-    pip install beautifulsoup4 && \
-    pip install bokeh && \
-    pip install pandas && \
-    pip install tornado && \
-    pip install mini-racer && \
-    pip install easytrader && \
-    curl -SL https://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz | tar -xzC . && \
-    cd ta-lib/  && \
-    ./configure --prefix=/usr && \
+    apt-get install -y --no-install-recommends curl
+
+# 配置 pip 使用阿里云源
+RUN echo "[global]\nindex-url = https://mirrors.aliyun.com/pypi/simple\ntrusted-host = mirrors.aliyun.com" > /etc/pip.conf
+
+# 设置时区为上海
+RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
+    echo "Asia/Shanghai" > /etc/timezone
+
+# 安装必需的软件包
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        cron \
+        gcc \
+        make \
+        python3-dev \
+        default-libmysqlclient-dev \
+        build-essential \
+        telnet \
+        pkg-config \
+        curl && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# 安装 Python 包
+RUN pip install --no-cache-dir \
+    supervisor \
+    mysqlclient \
+    requests \
+    arrow \
+    numpy \
+    SQLAlchemy \
+    PyMySQL \
+    Logbook \
+    python_dateutil \
+    py_mini_racer \
+    tqdm \
+    beautifulsoup4 \
+    bokeh \
+    pandas \
+    tornado \
+    mini-racer \
+    easytrader
+
+
+WORKDIR /data
+
+COPY ta-lib-0.4.0-src.tar.gz ./
+
+RUN tar -xf ta-lib-0.4.0-src.tar.gz && \
+    cd ta-lib/ && \
+    ./configure --prefix=/usr --build=$(uname -m)-unknown-linux-gnu && \
     make && \
     make install && \
     cd .. && \
-    pip install TA-Lib && \
-    rm -rf ta-lib* && \
-    apt-get --purge remove -y gcc make python3-dev default-libmysqlclient-dev curl && \
-    rm -rf /root/.cache/* && rm -rf /var/lib/apt/lists/* && apt-get clean && apt-get autoclean && apt-get autoremove -y
+    pip install --no-cache-dir TA-Lib && \
+    # 清理安装文件以减少镜像大小
+    rm -rf ta-lib ta-lib-0.4.0-src.tar.gz
 
-WORKDIR /data
+# 清理开发工具和缓存
+RUN apt-get --purge remove -y \
+        gcc \
+        make \
+        python3-dev \
+        default-libmysqlclient-dev \
+        curl && \
+    apt-get autoremove -y && \
+    apt-get clean && \
+    rm -rf /root/.cache/* /var/lib/apt/lists/*
+
 #InStock软件
 COPY stock /data/InStock
 COPY cron/cron.hourly /etc/cron.hourly

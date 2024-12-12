@@ -1,0 +1,13 @@
+version: '3'
+services:
+  instock:
+    image: mayanghua/instock:latest
+    container_name: InStock
+    environment:
+      - db_user=root
+      - db_password=
+      - db_database=instockdb
+      - db_host=xxxxxx
+      - db_port=3306
+    ports:
+      - "9988:9988" 
