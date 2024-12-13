@@ -1,60 +1,65 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 """
-Date: 2022/11/19 12:00
+Date: 2024/5/10 00:00
 Desc: 新浪财经-龙虎榜
 https://vip.stock.finance.sina.com.cn/q/go.php/vInvestConsult/kind/lhb/index.phtml
 """
+
+from io import StringIO
+
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 from tqdm import tqdm
 
 
-def stock_lhb_detail_daily_sina(
-    trade_date: str = "20200730", symbol: str = "当日无价格涨跌幅限制的A股，出现异常波动停牌的股票"
-) -> pd.DataFrame:
+def stock_lhb_detail_daily_sina(date: str = "20240222") -> pd.DataFrame:
     """
     龙虎榜-每日详情
-    http://vip.stock.finance.sina.com.cn/q/go.php/vInvestConsult/kind/lhb/index.phtml
-    :param trade_date: 交易日, e.g., trade_date="20200729"
-    :type trade_date: str
-    :param symbol: 指定标题
-    :type symbol: str
+    https://vip.stock.finance.sina.com.cn/q/go.php/vInvestConsult/kind/lhb/index.phtml
+    :param date: 交易日
+    :type date: str
     :return: 龙虎榜-每日详情
     :rtype: pandas.DataFrame
     """
-    trade_date = "-".join([trade_date[:4], trade_date[4:6], trade_date[6:]])
-    url = "http://vip.stock.finance.sina.com.cn/q/go.php/vInvestConsult/kind/lhb/index.phtml"
-    params = {"tradedate": trade_date}
+    date = "-".join([date[:4], date[4:6], date[6:]])
+    url = "https://vip.stock.finance.sina.com.cn/q/go.php/vInvestConsult/kind/lhb/index.phtml"
+    params = {"tradedate": date}
     r = requests.get(url, params=params)
-    soup = BeautifulSoup(r.text, "lxml")
-    table_name_list = [
-        item.get_text().strip()
-        for item in soup.find_all(
-            "span", attrs={"style": "font-weight:bold;font-size:14px;"}
-        )
-        if item.get_text().strip() != ""
+    soup = BeautifulSoup(r.text, features="lxml")
+    selected_html = soup.find(name="div", attrs={"class": "list"}).find_all(
+        name="table", attrs={"class": "list_table"}
+    )
+    big_df = pd.DataFrame()
+    for table in selected_html:
+        temp_df = pd.read_html(StringIO(table.prettify()), header=0, skiprows=1)[0]
+        temp_symbol = pd.read_html(StringIO(table.prettify()))[0].iat[0, 0]
+        temp_df["指标"] = temp_symbol
+        big_df = pd.concat(objs=[big_df, temp_df], ignore_index=True)
+    big_df["股票代码"] = big_df["股票代码"].astype(str).str.zfill(6)
+    del big_df["查看详情"]
+    big_df.columns = [
+        "序号",
+        "股票代码",
+        "股票名称",
+        "收盘价",
+        "对应值",
+        "成交量",
+        "成交额",
+        "指标",
     ]
-    if symbol == "返回当前交易日所有可查询的指标":
-        return table_name_list
-    else:
-        position_num = table_name_list.index(symbol)
-        if len(table_name_list) == position_num + 1:
-            temp_df_1 = pd.read_html(r.text, flavor='bs4', header=1)[position_num].iloc[0:, :]
-            temp_df_2 = pd.read_html(r.text, flavor='bs4', header=1)[position_num + 1].iloc[0:, :]
-            temp_df_3 = pd.read_html(r.text, flavor='bs4', header=1)[position_num + 2].iloc[0:, :]
-            temp_df = pd.concat([temp_df_1, temp_df_2, temp_df_3], ignore_index=True)
-        else:
-            temp_df = pd.read_html(r.text, flavor='bs4', header=1)[position_num].iloc[0:, :]
-    temp_df["股票代码"] = temp_df["股票代码"].astype(str).str.zfill(6)
-    del temp_df["查看详情"]
-    temp_df.columns = ["序号", "股票代码", "股票名称", "收盘价", "对应值", "成交量", "成交额"]
-    return temp_df
+    big_df["收盘价"] = pd.to_numeric(big_df["收盘价"], errors="coerce")
+    big_df["对应值"] = pd.to_numeric(big_df["对应值"], errors="coerce")
+    big_df["成交量"] = pd.to_numeric(big_df["成交量"], errors="coerce")
+    big_df["成交额"] = pd.to_numeric(big_df["成交额"], errors="coerce")
+    return big_df
 
 
-def _find_last_page(url: str = None, recent_day: str = "60"):
-    url = "http://vip.stock.finance.sina.com.cn/q/go.php/vLHBData/kind/ggtj/index.phtml"
+def _find_last_page(
+    url: str = "https://vip.stock.finance.sina.com.cn/q/go.php/vLHBData/kind/ggtj/index.phtml",
+    recent_day: str = "60",
+):
     params = {
         "last": recent_day,
         "p": "1",
@@ -63,7 +68,7 @@ def _find_last_page(url: str = None, recent_day: str = "60"):
     soup = BeautifulSoup(r.text, "lxml")
     try:
         previous_page = int(soup.find_all(attrs={"class": "page"})[-2].text)
-    except:
+    except:  # noqa: E722
         previous_page = 1
     if previous_page != 1:
         while True:
@@ -72,7 +77,7 @@ def _find_last_page(url: str = None, recent_day: str = "60"):
                 "p": previous_page,
             }
             r = requests.get(url, params=params)
-            soup = BeautifulSoup(r.text, "lxml")
+            soup = BeautifulSoup(r.text, features="lxml")
             last_page = int(soup.find_all(attrs={"class": "page"})[-2].text)
             if last_page != previous_page:
                 previous_page = last_page
@@ -82,42 +87,55 @@ def _find_last_page(url: str = None, recent_day: str = "60"):
     return previous_page
 
 
-def stock_lhb_ggtj_sina(recent_day: str = "30") -> pd.DataFrame:
+def stock_lhb_ggtj_sina(symbol: str = "5") -> pd.DataFrame:
     """
     龙虎榜-个股上榜统计
-    http://vip.stock.finance.sina.com.cn/q/go.php/vLHBData/kind/ggtj/index.phtml
-    :param recent_day: choice of {"5": 最近 5 天; "10": 最近 10 天; "30": 最近 30 天; "60": 最近 60 天;}
-    :type recent_day: str
-    :return: 龙虎榜-每日详情
+    https://vip.stock.finance.sina.com.cn/q/go.php/vLHBData/kind/ggtj/index.phtml
+    :param symbol: choice of {"5": 最近 5 天; "10": 最近 10 天; "30": 最近 30 天; "60": 最近 60 天;}
+    :type symbol: str
+    :return: 龙虎榜-个股上榜统计
     :rtype: pandas.DataFrame
     """
-    url = "http://vip.stock.finance.sina.com.cn/q/go.php/vLHBData/kind/ggtj/index.phtml"
-    last_page_num = _find_last_page(url, recent_day)
+    url = (
+        "https://vip.stock.finance.sina.com.cn/q/go.php/vLHBData/kind/ggtj/index.phtml"
+    )
+    last_page_num = _find_last_page(url, symbol)
     big_df = pd.DataFrame()
     for page in tqdm(range(1, last_page_num + 1), leave=False):
         params = {
-            "last": recent_day,
+            "last": symbol,
             "p": page,
         }
         r = requests.get(url, params=params)
-        temp_df = pd.read_html(r.text)[0].iloc[0:, :]
-        big_df = pd.concat([big_df, temp_df], ignore_index=True)
+        temp_df = pd.read_html(StringIO(r.text))[0].iloc[0:, :]
+        big_df = pd.concat(objs=[big_df, temp_df], ignore_index=True)
     big_df["股票代码"] = big_df["股票代码"].astype(str).str.zfill(6)
-    big_df.columns = ["股票代码", "股票名称", "上榜次数", "累积购买额", "累积卖出额", "净额", "买入席位数", "卖出席位数"]
+    big_df.columns = [
+        "股票代码",
+        "股票名称",
+        "上榜次数",
+        "累积购买额",
+        "累积卖出额",
+        "净额",
+        "买入席位数",
+        "卖出席位数",
+    ]
     return big_df
 
 
-def stock_lhb_yytj_sina(recent_day: str = "5") -> pd.DataFrame:
+def stock_lhb_yytj_sina(symbol: str = "5") -> pd.DataFrame:
     """
     龙虎榜-营业部上榜统计
-    http://vip.stock.finance.sina.com.cn/q/go.php/vLHBData/kind/yytj/index.phtml
-    :param recent_day: choice of {"5": 最近 5 天; "10": 最近 10 天; "30": 最近 30 天; "60": 最近 60 天;}
-    :type recent_day: str
+    https://vip.stock.finance.sina.com.cn/q/go.php/vLHBData/kind/yytj/index.phtml
+    :param symbol: choice of {"5": 最近 5 天; "10": 最近 10 天; "30": 最近 30 天; "60": 最近 60 天;}
+    :type symbol: str
     :return: 龙虎榜-营业部上榜统计
     :rtype: pandas.DataFrame
     """
-    url = "http://vip.stock.finance.sina.com.cn/q/go.php/vLHBData/kind/yytj/index.phtml"
-    last_page_num = _find_last_page(url, recent_day)
+    url = (
+        "https://vip.stock.finance.sina.com.cn/q/go.php/vLHBData/kind/yytj/index.phtml"
+    )
+    last_page_num = _find_last_page(url, symbol)
     big_df = pd.DataFrame()
     for page in tqdm(range(1, last_page_num + 1), leave=False):
         params = {
@@ -125,60 +143,82 @@ def stock_lhb_yytj_sina(recent_day: str = "5") -> pd.DataFrame:
             "p": page,
         }
         r = requests.get(url, params=params)
-        temp_df = pd.read_html(r.text)[0].iloc[0:, :]
+        temp_df = pd.read_html(StringIO(r.text))[0].iloc[0:, :]
         big_df = pd.concat([big_df, temp_df], ignore_index=True)
-    big_df.columns = ["营业部名称", "上榜次数", "累积购买额", "买入席位数", "累积卖出额", "卖出席位数", "买入前三股票"]
-    big_df['上榜次数'] = pd.to_numeric(big_df['上榜次数'], errors="coerce")
-    big_df['买入席位数'] = pd.to_numeric(big_df['买入席位数'], errors="coerce")
-    big_df['卖出席位数'] = pd.to_numeric(big_df['卖出席位数'], errors="coerce")
+    big_df.columns = [
+        "营业部名称",
+        "上榜次数",
+        "累积购买额",
+        "买入席位数",
+        "累积卖出额",
+        "卖出席位数",
+        "买入前三股票",
+    ]
+    big_df["上榜次数"] = pd.to_numeric(big_df["上榜次数"], errors="coerce")
+    big_df["买入席位数"] = pd.to_numeric(big_df["买入席位数"], errors="coerce")
+    big_df["卖出席位数"] = pd.to_numeric(big_df["卖出席位数"], errors="coerce")
     return big_df
 
 
-def stock_lhb_jgzz_sina(recent_day: str = "5") -> pd.DataFrame:
+def stock_lhb_jgzz_sina(symbol: str = "5") -> pd.DataFrame:
     """
     龙虎榜-机构席位追踪
-    http://vip.stock.finance.sina.com.cn/q/go.php/vLHBData/kind/jgzz/index.phtml
-    :param recent_day: choice of {"5": 最近 5 天; "10": 最近 10 天; "30": 最近 30 天; "60": 最近 60 天;}
-    :type recent_day: str
+    https://vip.stock.finance.sina.com.cn/q/go.php/vLHBData/kind/jgzz/index.phtml
+    :param symbol: choice of {"5": 最近 5 天; "10": 最近 10 天; "30": 最近 30 天; "60": 最近 60 天;}
+    :type symbol: str
     :return: 龙虎榜-机构席位追踪
     :rtype: pandas.DataFrame
     """
-    url = "http://vip.stock.finance.sina.com.cn/q/go.php/vLHBData/kind/jgzz/index.phtml"
-    last_page_num = _find_last_page(url, recent_day)
+    url = (
+        "https://vip.stock.finance.sina.com.cn/q/go.php/vLHBData/kind/jgzz/index.phtml"
+    )
+    last_page_num = _find_last_page(url, symbol)
     big_df = pd.DataFrame()
     for page in tqdm(range(1, last_page_num + 1), leave=False):
         params = {
-            "last": recent_day,
+            "last": symbol,
             "p": page,
         }
         r = requests.get(url, params=params)
-        temp_df = pd.read_html(r.text)[0].iloc[0:, :]
-        big_df = pd.concat([big_df, temp_df], ignore_index=True)
+        temp_df = pd.read_html(StringIO(r.text))[0].iloc[0:, :]
+        if temp_df.empty:
+            continue
+        big_df = pd.concat(objs=[big_df, temp_df], ignore_index=True)
     big_df["股票代码"] = big_df["股票代码"].astype(str).str.zfill(6)
     del big_df["当前价"]
     del big_df["涨跌幅"]
-    big_df.columns = ["股票代码", "股票名称", "累积买入额", "买入次数", "累积卖出额", "卖出次数", "净额"]
-    big_df['买入次数'] = pd.to_numeric(big_df['买入次数'], errors="coerce")
-    big_df['卖出次数'] = pd.to_numeric(big_df['卖出次数'], errors="coerce")
+    big_df.columns = [
+        "股票代码",
+        "股票名称",
+        "累积买入额",
+        "买入次数",
+        "累积卖出额",
+        "卖出次数",
+        "净额",
+    ]
+    big_df["买入次数"] = pd.to_numeric(big_df["买入次数"], errors="coerce")
+    big_df["卖出次数"] = pd.to_numeric(big_df["卖出次数"], errors="coerce")
     return big_df
 
 
 def stock_lhb_jgmx_sina() -> pd.DataFrame:
     """
     龙虎榜-机构席位成交明细
-    http://vip.stock.finance.sina.com.cn/q/go.php/vLHBData/kind/jgmx/index.phtml
+    https://vip.stock.finance.sina.com.cn/q/go.php/vLHBData/kind/jgmx/index.phtml
     :return: 龙虎榜-机构席位成交明细
     :rtype: pandas.DataFrame
     """
-    url = "http://vip.stock.finance.sina.com.cn/q/go.php/vLHBData/kind/jgmx/index.phtml"
+    url = (
+        "https://vip.stock.finance.sina.com.cn/q/go.php/vLHBData/kind/jgmx/index.phtml"
+    )
     params = {
         "p": "1",
     }
     r = requests.get(url, params=params)
-    soup = BeautifulSoup(r.text, "lxml")
+    soup = BeautifulSoup(r.text, features="lxml")
     try:
         last_page_num = int(soup.find_all(attrs={"class": "page"})[-2].text)
-    except:
+    except:  # noqa: E722
         last_page_num = 1
     big_df = pd.DataFrame()
     for page in tqdm(range(1, last_page_num + 1), leave=False):
@@ -186,30 +226,33 @@ def stock_lhb_jgmx_sina() -> pd.DataFrame:
             "p": page,
         }
         r = requests.get(url, params=params)
-        temp_df = pd.read_html(r.text)[0].iloc[0:, :]
-        big_df = pd.concat([big_df, temp_df], ignore_index=True)
+        temp_df = pd.read_html(StringIO(r.text))[0].iloc[0:, :]
+        big_df = pd.concat(objs=[big_df, temp_df], ignore_index=True)
     big_df["股票代码"] = big_df["股票代码"].astype(str).str.zfill(6)
+    big_df["交易日期"] = pd.to_datetime(big_df["交易日期"], errors="coerce").dt.date
+    big_df.rename(
+        columns={
+            "机构席位买入额(万)": "机构席位买入额",
+            "机构席位卖出额(万)": "机构席位卖出额",
+        },
+        inplace=True,
+    )
+    big_df["机构席位买入额"] = pd.to_numeric(big_df["机构席位买入额"], errors="coerce")
+    big_df["机构席位卖出额"] = pd.to_numeric(big_df["机构席位卖出额"], errors="coerce")
     return big_df
 
 
 if __name__ == "__main__":
-    indicator_name_list = stock_lhb_detail_daily_sina(
-        trade_date="20221118", symbol="返回当前交易日所有可查询的指标"
-    )
-    print(indicator_name_list)
-
-    stock_lhb_detail_daily_sina_df = stock_lhb_detail_daily_sina(
-        trade_date="20221118", symbol="换手率达20%的证券"
-    )
+    stock_lhb_detail_daily_sina_df = stock_lhb_detail_daily_sina(date="20240222")
     print(stock_lhb_detail_daily_sina_df)
 
-    stock_lhb_ggtj_sina_df = stock_lhb_ggtj_sina(recent_day="60")
+    stock_lhb_ggtj_sina_df = stock_lhb_ggtj_sina(symbol="5")
     print(stock_lhb_ggtj_sina_df)
 
-    stock_lhb_yytj_sina_df = stock_lhb_yytj_sina(recent_day="60")
+    stock_lhb_yytj_sina_df = stock_lhb_yytj_sina(symbol="5")
     print(stock_lhb_yytj_sina_df)
 
-    stock_lhb_jgzz_sina_df = stock_lhb_jgzz_sina(recent_day="30")
+    stock_lhb_jgzz_sina_df = stock_lhb_jgzz_sina(symbol="5")
     print(stock_lhb_jgzz_sina_df)
 
     stock_lhb_jgmx_sina_df = stock_lhb_jgmx_sina()
