@@ -112,6 +112,7 @@ def fetch_stock_selection():
         if data is None or len(data.index) == 0:
             return None
         data.columns = list(tbs.TABLE_CN_STOCK_SELECTION['columns'])
+        data.drop_duplicates('code', keep='last', inplace=True)
         return data
     except Exception as e:
         logging.error(f"stockfetch.fetch_stocks_selection处理异常：{e}")
