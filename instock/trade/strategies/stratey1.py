@@ -30,6 +30,34 @@ class Strategy(StrategyTemplate):
         if not positions:
             self.log.info("没有持仓信息")
             return
+        # Convert positions data to English and map columns
+        positions_en = [
+            {
+                'market': 'Shanghai A-share' if p['交易市场'] == '上海Ａ股' else '深圳 A股',
+                'frozen_quantity': p['冻结数量'],
+                'unit_quantity': p['单位数量'],
+                'available_balance': p['可用余额'],
+                'actual_quantity': p['实际数量'],
+                'market_price': p['市价'],
+                'market_value': p['市值'],
+                'market_code': p['市场代码'],
+                'opening_date': p['开仓日期'],
+                'cost_price': p['成本价'],
+                'cost_amount': p['成本金额'],
+                'break_even_price': p['摊薄保本价'],
+                'circulation_type': 'Circulating' if p['流通类型'] == '流通' else p['流通类型'],
+                'profit_loss': p['盈亏'],
+                'profit_loss_ratio': p['盈亏比例(%)'],
+                'account': p['股东帐户'].strip('="'),
+                'stock_balance': p['股票余额'],
+                'stock_category': p['股票类别'],
+                'code': p['证券代码'].strip('="'),
+                'name': p['证券名称']
+            } for p in positions
+        ]
+
+        # Convert to DataFrame
+        df = pd.DataFrame(positions_en)
 
         df = pd.DataFrame(positions)
         data = df.rename(columns={

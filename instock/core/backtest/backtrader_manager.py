@@ -144,5 +144,5 @@ class back_test(metaclass=singleton_type):
 
 if __name__ == '__main__':
     test = back_test()
-    test.bt_strategy_multiple(strategy=VolumeBreakStrategy,  iterations=200)
+    test.bt_strategy_multiple(strategy=VolumeBreakStrategy,  iterations=500)
     # test.bt_strategy(strategy=VolumeBreakStrategy, rand_num=10)

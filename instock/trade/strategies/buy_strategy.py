@@ -54,13 +54,12 @@ class Strategy(StrategyTemplate):
             amount = int((cash / 2 / price) // 100) * 100
             prepare_buy = [(random_row['code'].values[0], float(price), amount)]
 
-        if not prepare_buy or  len(prepare_buy) < 1:
+        if not prepare_buy or len(prepare_buy) < 1:
             return
-        # --------写交易策略---------
 
         # --------写交易策略---------
         for buy in prepare_buy:
-            self.user.buy(buy[0], price=buy[1], amount=buy[3])
+            self.user.buy(buy[0], price=buy[1], amount=buy[2])
 
         self.log.info('检查持仓')
         self.log.info(self.user.balance)
