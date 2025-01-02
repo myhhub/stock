@@ -3,15 +3,20 @@
 
 
 import numpy as np
+import json
 import logging
+import os.path
 # 首映 bokeh 画图。
+from bokeh import events
+from bokeh.io import curdoc
+from bokeh.transform import factor_cmap
 from bokeh.plotting import figure
 from bokeh.embed import components
 from bokeh.palettes import Spectral11
 from bokeh.layouts import column, row, layout
 from bokeh.models import ColumnDataSource, HoverTool, CheckboxGroup, LabelSet, Button, CustomJS, \
     CDSView, BooleanFilter, TabPanel, Tabs, Div, Styles, CrosshairTool, Span, BoxSelectTool, WheelZoomTool, PanTool, \
-    BoxZoomTool, ZoomInTool, ZoomOutTool, RedoTool, ResetTool, SaveTool, UndoTool
+    BoxZoomTool, ZoomInTool, ZoomOutTool, RedoTool, ResetTool, SaveTool, UndoTool, Text
 import instock.core.tablestructure as tbs
 import instock.core.indicator.calculate_indicator as idr
 import instock.core.pattern.pattern_recognitions as kpr
@@ -23,47 +28,40 @@ __date__ = '2023/4/6 '
 
 def get_plot_kline(code, stock, date, stock_name):
     plot_list = []
-    threshold = 360
     try:
-        data = idr.get_indicators(stock, date, threshold=threshold)
+
+        data = idr.get_indicators(stock, date, threshold=360)
         if data is None:
             return None
 
+        threshold = 120
         stock_column = tbs.STOCK_KLINE_PATTERN_DATA['columns']
-        data = kpr.get_pattern_recognitions(data, stock_column)
+        data = kpr.get_pattern_recognitions(data, stock_column, threshold=threshold)
         if data is None:
             return None
 
-        length = len(data.index)
-        data['index'] = list(np.arange(length))
+        cyq_days = 210
+        cyq_stock = stock.tail(n=threshold + cyq_days).copy()
 
+        min_price = data['low'].min()*0.98
+        max_price = data['high'].max()*1.02
+        k_length = len(data.index)
+        data['index'] = list(np.arange(k_length))
+        data['is_red'] = data.apply(lambda row: "1" if row['close'] > row['open'] else "0", axis=1)
+
+        # 颜色，红盘或绿盘
+        c_cmap = factor_cmap("is_red", ["red", "green"], ["1", "0"])
+        # K线图数据源
         source = ColumnDataSource(data)
-
-        inc = data['close'] >= data['open']
-        dec = data['open'] > data['close']
-        inc_source = ColumnDataSource(data.loc[inc])
-        dec_source = ColumnDataSource(data.loc[dec])
-
         # 工具条
         tools = pan, box_select, box_zoom, wheel_zoom, zoom_in, zoom_out, undo, redo, reset, save = \
             PanTool(description="平移"), BoxSelectTool(description="方框选取"), BoxZoomTool(description="方框缩放"), \
                 WheelZoomTool(description="滚轮缩放"), ZoomInTool(description="放大"), ZoomOutTool(description="缩小"), \
                 UndoTool(description="撤销"), RedoTool(description="重做"), ResetTool(description="重置"), \
                 SaveTool(description="保存", filename=f"InStock_{code}({date})")
-        # 悬停
-        tooltips = [('日期', '@date'), ('开盘', '@open'),
-                    ('最高', '@high'), ('最低', '@low'),
-                    ('收盘', '@close'), ('涨跌', '@quote_change%'),
-                    ('金额', '@amount{¥0}'), ('换手', '@turnover%')]
 
-        hover = HoverTool(tooltips=tooltips, description="悬停")
-
-        # 十字瞄准线
-        crosshair = CrosshairTool(overlay=[Span(dimension="width", line_dash="dashed", line_width=2),
-                                           Span(dimension="height", line_dash="dotted", line_width=2)],
-                                  description="十字瞄准线")
         # K线图
-        p_kline = figure(width=1000, height=300, x_range=(0, length + 1), min_border_left=80,
+        p_kline = figure(width=1000, height=300, x_range=(0, k_length + 1), y_range=(min_price, max_price), min_border_left=80,
                          tools=tools, toolbar_location='above')
         # 均线
         sam_labels = ("close", "ma10", "ma20", "ma50", "ma200")
@@ -74,13 +72,41 @@ def get_plot_kline(code, stock, date, stock_name):
         p_kline.legend.click_policy = "hide"
 
         # 股价柱
-        p_kline.segment(x0='index', y0='high', x1='index', y1='low', color='red', source=inc_source)
-        p_kline.segment(x0='index', y0='high', x1='index', y1='low', color='green', source=dec_source)
-        p_kline.vbar('index', 0.5, 'open', 'close', fill_color='red', line_color='red', source=inc_source,
+        c_segment =p_kline.segment(x0='index', y0='high', x1='index', y1='low', color=c_cmap, source=source)
+        p_kline.vbar('index', 0.5, 'open', 'close', fill_color=c_cmap, line_color=c_cmap, source=source,
                      hover_fill_alpha=0.5)
-        p_kline.vbar('index', 0.5, 'open', 'close', fill_color='green', line_color='green', source=dec_source,
-                     hover_fill_alpha=0.5)
-        p_kline.add_tools(hover, crosshair)
+
+        # 悬停
+        tooltips = [('日期', '@date'), ('开盘', '@open'),
+                    ('最高', '@high'), ('最低', '@low'),
+                    ('收盘', '@close'), ('涨跌', '@quote_change%'),
+                    ('金额', '@amount{¥0}'), ('换手', '@turnover%')]
+
+        hover = HoverTool(tooltips=tooltips, description="悬停", renderers=[c_segment])
+
+        # 十字瞄准线
+        crosshair = CrosshairTool(overlay=[Span(dimension="width", line_dash="dashed", line_width=2),
+                                           Span(dimension="height", line_dash="dotted", line_width=2)],
+                                  description="十字瞄准线")
+        # 筹码分布
+        div_cyq = Div()
+        p_cyq = figure(width=160, height=p_kline.height, y_range=p_kline.y_range, min_border_left=0,
+                       toolbar_location=None, y_axis_location="right")
+        p_cyq.xgrid.grid_line_color = None
+        p_cyq.xaxis.visible = False
+        cyq_avgcost_line = p_cyq.line(x="x", y="y", color="red", line_width=2, line_dash="dotted")
+        cyq_avgcost_text = p_cyq.add_glyph(ColumnDataSource(dict(x=[], y=[], text=[])),glyph = Text(x="x", y="y", text="text",text_align="center"))
+        cyq_down_varea = p_cyq.varea(x="x", y1="y1", y2=0, fill_alpha=0.3, fill_color="red")
+        cyq_up_varea = p_cyq.varea(x="x", y1="y1", y2=0, fill_alpha=0.3, fill_color="blue")
+        json_str_stock = cyq_stock.to_json(orient="records")
+        js_array_str_stock = json.dumps(json.loads(json_str_stock), indent=2)
+        cqy_callback =  CustomJS.from_file(os.path.join(os.path.dirname(__file__), "cyq.js"), isinit=False, div_cyq=div_cyq, cyq_avgcost_line=cyq_avgcost_line.data_source, cyq_avgcost_text=cyq_avgcost_text.data_source, cyq_down_varea=cyq_down_varea.data_source, cyq_up_varea=cyq_up_varea.data_source, kline_data=js_array_str_stock, k_range=k_length, cyq_days=cyq_days)
+        cqy_hover = HoverTool(tooltips=None, callback=cqy_callback, renderers=[c_segment])
+        cqy_callback_isinit =  CustomJS.from_file(os.path.join(os.path.dirname(__file__), "cyq.js"), isinit=True, div_cyq=div_cyq, cyq_avgcost_line=cyq_avgcost_line.data_source, cyq_avgcost_text=cyq_avgcost_text.data_source, cyq_down_varea=cyq_down_varea.data_source, cyq_up_varea=cyq_up_varea.data_source, kline_data=js_array_str_stock, k_range=k_length, cyq_days=cyq_days)
+        curdoc().on_event(events.DocumentReady, cqy_callback_isinit)
+
+        # K线图添加工具
+        p_kline.add_tools(hover, cqy_hover, crosshair)
 
         # 形态信息
         pattern_is_show = True  # 形态缺省是否显示
@@ -137,8 +163,7 @@ def get_plot_kline(code, stock, date, stock_name):
             p_volume.line(x=data['index'], y=data[name], legend_label=name, color=color, line_width=1.5, alpha=0.8)
         p_volume.legend.location = "top_left"
         p_volume.legend.click_policy = "hide"
-        p_volume.vbar('index', 0.5, 0, 'volume', color='red', source=inc_source)
-        p_volume.vbar('index', 0.5, 0, 'volume', color='green', source=dec_source)
+        p_volume.vbar('index', 0.5, 0, 'volume', color=c_cmap, source=source)
         p_volume.add_tools(crosshair)
         p_volume.xaxis.major_label_overrides = {i: date for i, date in enumerate(data['date'])}
         # p_volume.xaxis.major_label_orientation = pi / 4
@@ -231,10 +256,10 @@ def get_plot_kline(code, stock, date, stock_name):
         # 组合图
         layouts = layout(row(
             column(
-                row(children=[div_attention, div_dfcf_hq, div_dfcf_zl, div_dfcf_pr, select_all, select_none],
-                    align='end'),
-                p_kline,
-                p_volume, tabs_indicators), ck))
+                row(children=[div_attention, div_dfcf_hq, div_dfcf_zl, div_dfcf_pr, select_all, select_none],align='end'),
+                row(children=[p_kline, p_cyq]),
+                row(children=[column(p_volume, tabs_indicators),div_cyq])),
+                ck))
         script, div = components(layouts)
 
         return {"script": script, "div": div}
