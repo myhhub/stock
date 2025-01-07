@@ -57,10 +57,9 @@ class CYQCalculator:
         # *横轴数据
         xdata = [0] * factor
 
-        for _open, _close, _high, _low, _turnover in zip(kdata['open'].values, kdata['close'].values, kdata['high'].values, kdata['low'].values, kdata['turnover'].values):
-            open_price, close, high, low = _open, _close, _high, _low
+        for open_price, close, high, low, turnover in zip(kdata['open'].values, kdata['close'].values, kdata['high'].values, kdata['low'].values, kdata['turnover'].values):
             avg = (open_price + close + high + low) / 4
-            turnover_rate = min(1, _turnover / 100)
+            turnover_rate = min(1, turnover / 100)
 
             H = int((high - minprice) / accuracy)
             L = int((low - minprice) / accuracy + 0.99)
