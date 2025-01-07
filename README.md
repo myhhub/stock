@@ -2,7 +2,7 @@
 
 InStock股票系统，抓取每日股票、ETF关键数据，计算股票技术指标、筹码分布，识别K线各种形态，综合选股，内置多种选股策略，支持选股验证回测，支持自动交易，支持批量时间，运行高效，支持PC、平板、手机移动设备显示，同时提供Docker镜像方便安装，是量化投资的好帮手。
 
-本项目地址：https://github.com/myhhub/stock
+captures key daily data of stocks, calculates various stock indicators, Position Cost Distribution(CYQ), K-line pattern recognition, Comprehensive stock selection, has a variety of built-in stock selection strategies, stock selection verification back test, Automated Trading. quantitative investment tool.
 
 Docker镜像：https://hub.docker.com/r/mayanghua/instock **镜像优化构建仅170M**。
 
