@@ -1,4 +1,4 @@
-numpy==2.2.0
+numpy==2.2.1
 pandas==2.2.3
 py_mini_racer==0.6.0
 mini-racer==0.12.4
