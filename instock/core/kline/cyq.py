@@ -126,7 +126,8 @@ class CYQCalculator:
 
             # *计算指定百分比的筹码
             # * @ param {number} percent 百分比大于0，小于1
-            def compute_percent_chips(self, percent):
+            @staticmethod
+            def compute_percent_chips(percent):
                 if percent > 1 or percent < 0:
                     raise ValueError('argument "percent" out of range')
                 ps = [(1 - percent) / 2, (1 + percent) / 2]
@@ -139,7 +140,8 @@ class CYQCalculator:
 
             # *获取指定价格的获利比例
             # * @ param {number} price 价格
-            def get_benefit_part(self, price):
+            @staticmethod
+            def get_benefit_part(price):
                 below = 0
                 for i in range(factor):
                     x = float(f"{xdata[i]:.12g}")
