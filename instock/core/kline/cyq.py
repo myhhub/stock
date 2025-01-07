@@ -117,7 +117,7 @@ class CYQCalculator:
                 self.avg_cost = None
                 # 百分比筹码
                 self.percent_chips = None
-                # 最新价
+                # 筹码堆叠亏盈分界下标
                 self.b = None
                 # 交易日期
                 self.d = None

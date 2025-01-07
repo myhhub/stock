@@ -177,7 +177,7 @@ CYQCalculator.prototype.calc = function (index) {
          */
         this.percentChips = arguments[4];
         /**
-         * 最新价
+         * 筹码堆叠亏盈分界下标
          * @type {number}
          */
         this.b = arguments[5];
