@@ -18,7 +18,7 @@ def stock_selection() -> pd.DataFrame:
     :rtype: pandas.DataFrame
     """
     cols = tbs.TABLE_CN_STOCK_SELECTION['columns']
-    page_size = 1000
+    page_size = 50
     page_current = 1
     sty = ""  # 初始值 "SECUCODE,SECURITY_CODE,SECURITY_NAME_ABBR,CHANGE_RATE"
     for k in cols:
