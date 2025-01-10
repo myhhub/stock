@@ -159,3 +159,4 @@ cython_debug/
 
 cache/
 log/
+proxy/

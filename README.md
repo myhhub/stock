@@ -51,9 +51,7 @@ MACD金叉、KDJ金叉、放量突破、低位资金净流入、高位资金净�
 
 ![](img/01.jpg)
 ![](img/06.jpg)
-![](img/13.jpg)
-![](img/10.jpg)
-![](img/02.jpg)
+<img src="img/13.jpg" style="zoom:38%;" />
 
 ## 四：判断买入卖出的股票
 
