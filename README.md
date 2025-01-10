@@ -102,8 +102,7 @@ VR:
 正：出现买入信号
 ```
 ![](img/09.jpg)
-
-<img src="img/13.jpg" style="zoom:38%;" />
+![](img/13.jpg)
 
 ## 六：筹码分布
 
