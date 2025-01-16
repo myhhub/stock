@@ -262,8 +262,8 @@ python pip config --global set  global.index-url https://mirrors.aliyun.com/pypi
 安装 TA-Lib C/C++ 共享静态库和头文件
 
 ```
-https://ta-lib.org/install/ 下载最新的ta-lib，按安装说明进行安装。
-安装方式按官方建议，更省时省事：
+https://ta-lib.org/install/ 下载最新 ta-lib 共享静态库和头文件，按照说明进行安装。
+安装方式按官方建议，会更简单：
 Windows Executable Installer
 macOS Homebrew
 Linux Debian packages
