@@ -257,7 +257,19 @@ python pip config --global set  global.index-url https://mirrors.aliyun.com/pypi
 ```
 在官网 https://dev.mysql.com/downloads/mysql/ 下载安装包，一键安装即可。
 ```
-### 3.安装依赖库
+### 3.安装 TA-Lib 共享静态库和头文件
+
+安装 TA-Lib C/C++ 共享静态库和头文件
+
+```
+https://ta-lib.org/install/ 下载最新的ta-lib，按安装说明进行安装。
+安装方式按官方建议，更省时省事：
+Windows Executable Installer
+macOS Homebrew
+Linux Debian packages
+```
+
+### 4.安装依赖库
 
 依赖库都是目前最新版本。
 
@@ -287,15 +299,7 @@ python  pipreqs --encoding utf-8 --force ./
 # 本项目是utf-8编码
 ```
 
-### 4.安装 talib
 
-```
-https://ta-lib.org/install/ 下载最新的ta-lib，按安装说明进行安装。
-安装方式按官方建议，更省时省事：
-Windows Executable Installer
-macOS Homebrew
-Linux Debian packages
-```
 ### 5.安装 Navicat（可选）
 
 Navicat可以方便管理数据库，以及可以手工对数据进行查看、处理、分析、挖掘。
