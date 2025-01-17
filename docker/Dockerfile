@@ -42,9 +42,10 @@ trusted-host = mirrors.aliyun.com" > /etc/pip.conf && \
     pip install tornado && \
     pip install mini-racer && \
     pip install easytrader && \
-    curl -SL https://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz | tar -xzC . && \
-    cd ta-lib/  && \
-    ./configure --prefix=/usr && \
+    mkdir ta-lib && \
+    curl -SL $(curl -s https://api.github.com/repos/ta-lib/ta-lib/releases/latest | grep browser_download_url | cut -d'"' -f4 |grep -E 'tar.gz$') | tar -xz --strip-components=1 -C ./ta-lib && \
+    cd ta-lib/ && \
+    ./configure && \
     make && \
     make install && \
     cd .. && \
