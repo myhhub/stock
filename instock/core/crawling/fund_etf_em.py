@@ -6,7 +6,7 @@ Desc: 东方财富-ETF 行情
 https://quote.eastmoney.com/sh513500.html
 """
 from functools import lru_cache
-
+import math
 import pandas as pd
 import requests
 
@@ -19,9 +19,11 @@ def fund_etf_spot_em() -> pd.DataFrame:
     :rtype: pandas.DataFrame
     """
     url = "http://88.push2.eastmoney.com/api/qt/clist/get"
+    page_size = 100
+    page_current = 1
     params = {
-        "pn": "1",
-        "pz": "2000",
+        "pn": page_current,
+        "pz": page_size,
         "po": "1",
         "np": "1",
         "ut": "bd1d9ddb04089700cf9c27f6f7426281",
@@ -35,7 +37,23 @@ def fund_etf_spot_em() -> pd.DataFrame:
     }
     r = requests.get(url, params=params)
     data_json = r.json()
-    temp_df = pd.DataFrame(data_json["data"]["diff"])
+
+    data = data_json["data"]["diff"]
+    if not data:
+        return pd.DataFrame()
+
+    data_count = data_json["data"]["total"]
+    page_count = math.ceil(data_count/page_size)
+    while page_count > 1:
+        page_current = page_current + 1
+        params["pn"] = page_current
+        r = requests.get(url, params=params)
+        data_json = r.json()
+        _data = data_json["data"]["diff"]
+        data.extend(_data)
+        page_count =page_count - 1
+
+    temp_df = pd.DataFrame(data)
     temp_df.rename(
         columns={
             "f12": "代码",
