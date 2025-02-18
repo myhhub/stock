@@ -6,7 +6,7 @@ Desc: 东方财富网-行情首页-沪深京 A 股
 """
 import requests
 import pandas as pd
-
+import math
 from functools import lru_cache
 
 
@@ -18,9 +18,11 @@ def stock_zh_a_spot_em() -> pd.DataFrame:
     :rtype: pandas.DataFrame
     """
     url = "http://82.push2.eastmoney.com/api/qt/clist/get"
+    page_size = 100
+    page_current = 1
     params = {
-        "pn": "1",
-        "pz": "50000",
+        "pn": page_current,
+        "pz": page_size,
         "po": "1",
         "np": "1",
         "ut": "bd1d9ddb04089700cf9c27f6f7426281",
@@ -33,9 +35,22 @@ def stock_zh_a_spot_em() -> pd.DataFrame:
     }
     r = requests.get(url, params=params)
     data_json = r.json()
-    if not data_json["data"]["diff"]:
+    data = data_json["data"]["diff"]
+    if not data:
         return pd.DataFrame()
-    temp_df = pd.DataFrame(data_json["data"]["diff"])
+
+    data_count = data_json["data"]["total"]
+    page_count = math.ceil(data_count/page_size)
+    while page_count > 1:
+        page_current = page_current + 1
+        params["pn"] = page_current
+        r = requests.get(url, params=params)
+        data_json = r.json()
+        _data = data_json["data"]["diff"]
+        data.extend(_data)
+        page_count =page_count - 1
+
+    temp_df = pd.DataFrame(data)
     temp_df.columns = [
         "最新价",
         "涨跌幅",
