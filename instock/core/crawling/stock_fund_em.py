@@ -8,6 +8,7 @@ https://data.eastmoney.com/zjlx/detail.html
 import json
 import time
 from functools import lru_cache
+import math
 
 import pandas as pd
 import requests
@@ -44,11 +45,13 @@ def stock_individual_fund_flow_rank(indicator: str = "5日") -> pd.DataFrame:
         ],
     }
     url = "http://push2.eastmoney.com/api/qt/clist/get"
+    page_size = 100
+    page_current = 1
     params = {
         "fid": indicator_map[indicator][0],
         "po": "1",
-        "pz": "10000",
-        "pn": "1",
+        "pz": page_size,
+        "pn": page_current,
         "np": "1",
         "fltt": "2",
         "invt": "2",
@@ -58,7 +61,19 @@ def stock_individual_fund_flow_rank(indicator: str = "5日") -> pd.DataFrame:
     }
     r = requests.get(url, params=params)
     data_json = r.json()
-    temp_df = pd.DataFrame(data_json["data"]["diff"])
+    data = data_json["data"]["diff"]
+    data_count = data_json["data"]["total"]
+    page_count = math.ceil(data_count/page_size)
+    while page_count > 1:
+        page_current = page_current + 1
+        params["pn"] = page_current
+        r = requests.get(url, params=params)
+        data_json = r.json()
+        _data = data_json["data"]["diff"]
+        data.extend(_data)
+        page_count =page_count - 1
+
+    temp_df = pd.DataFrame(data)
     temp_df = temp_df[~temp_df["f2"].isin(["-"])]
     if indicator == "今日":
         temp_df.columns = [
@@ -255,6 +270,8 @@ def stock_sector_fund_flow_rank(
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36",
     }
+    page_size = 100
+    page_current = 1
     params = {
         "pn": "1",
         "pz": "5000",
