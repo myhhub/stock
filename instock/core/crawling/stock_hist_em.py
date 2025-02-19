@@ -18,7 +18,7 @@ def stock_zh_a_spot_em() -> pd.DataFrame:
     :rtype: pandas.DataFrame
     """
     url = "http://82.push2.eastmoney.com/api/qt/clist/get"
-    page_size = 100
+    page_size =200
     page_current = 1
     params = {
         "pn": page_current,
@@ -28,7 +28,7 @@ def stock_zh_a_spot_em() -> pd.DataFrame:
         "ut": "bd1d9ddb04089700cf9c27f6f7426281",
         "fltt": "2",
         "invt": "2",
-        "fid": "f3",
+        "fid": "f12",
         "fs": "m:0 t:6,m:0 t:80,m:1 t:2,m:1 t:23,m:0 t:81 s:2048",
         "fields": "f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f14,f15,f16,f17,f18,f20,f21,f22,f23,f24,f25,f26,f37,f38,f39,f40,f41,f45,f46,f48,f49,f57,f61,f100,f112,f113,f114,f115,f221",
         "_": "1623833739532",
@@ -187,7 +187,7 @@ def code_id_map_em() -> dict:
     :rtype: dict
     """
     url = "http://80.push2.eastmoney.com/api/qt/clist/get"
-    page_size = 100
+    page_size = 200
     page_current = 1
     params = {
         "pn": page_current,
@@ -197,7 +197,7 @@ def code_id_map_em() -> dict:
         "ut": "bd1d9ddb04089700cf9c27f6f7426281",
         "fltt": "2",
         "invt": "2",
-        "fid": "f3",
+        "fid": "f12",
         "fs": "m:1 t:2,m:1 t:23",
         "fields": "f12",
         "_": "1623833739532",
@@ -223,44 +223,72 @@ def code_id_map_em() -> dict:
     temp_df["market_id"] = 1
     temp_df.columns = ["sh_code", "sh_id"]
     code_id_dict = dict(zip(temp_df["sh_code"], temp_df["sh_id"]))
+    page_current = 1
     params = {
-        "pn": "1",
-        "pz": "50000",
+        "pn": page_current,
+        "pz": page_size,
         "po": "1",
         "np": "1",
         "ut": "bd1d9ddb04089700cf9c27f6f7426281",
         "fltt": "2",
         "invt": "2",
-        "fid": "f3",
+        "fid": "f12",
         "fs": "m:0 t:6,m:0 t:80",
         "fields": "f12",
         "_": "1623833739532",
     }
     r = requests.get(url, params=params)
     data_json = r.json()
-    if not data_json["data"]["diff"]:
+    data = data_json["data"]["diff"]
+    if not data:
         return dict()
-    temp_df_sz = pd.DataFrame(data_json["data"]["diff"])
+
+    data_count = data_json["data"]["total"]
+    page_count = math.ceil(data_count/page_size)
+    while page_count > 1:
+        page_current = page_current + 1
+        params["pn"] = page_current
+        r = requests.get(url, params=params)
+        data_json = r.json()
+        _data = data_json["data"]["diff"]
+        data.extend(_data)
+        page_count =page_count - 1
+
+    temp_df_sz = pd.DataFrame(data)
     temp_df_sz["sz_id"] = 0
     code_id_dict.update(dict(zip(temp_df_sz["f12"], temp_df_sz["sz_id"])))
+    page_current = 1
     params = {
-        "pn": "1",
-        "pz": "50000",
+        "pn": page_current,
+        "pz": page_size,
         "po": "1",
         "np": "1",
         "ut": "bd1d9ddb04089700cf9c27f6f7426281",
         "fltt": "2",
         "invt": "2",
-        "fid": "f3",
+        "fid": "f12",
         "fs": "m:0 t:81 s:2048",
         "fields": "f12",
         "_": "1623833739532",
     }
     r = requests.get(url, params=params)
     data_json = r.json()
-    if not data_json["data"]["diff"]:
+    data = data_json["data"]["diff"]
+    if not data:
         return dict()
-    temp_df_sz = pd.DataFrame(data_json["data"]["diff"])
+
+    data_count = data_json["data"]["total"]
+    page_count = math.ceil(data_count/page_size)
+    while page_count > 1:
+        page_current = page_current + 1
+        params["pn"] = page_current
+        r = requests.get(url, params=params)
+        data_json = r.json()
+        _data = data_json["data"]["diff"]
+        data.extend(_data)
+        page_count =page_count - 1
+
+    temp_df_sz = pd.DataFrame(data)
     temp_df_sz["bj_id"] = 0
     code_id_dict.update(dict(zip(temp_df_sz["f12"], temp_df_sz["bj_id"])))
     return code_id_dict

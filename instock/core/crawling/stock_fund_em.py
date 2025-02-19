@@ -45,7 +45,7 @@ def stock_individual_fund_flow_rank(indicator: str = "5日") -> pd.DataFrame:
         ],
     }
     url = "http://push2.eastmoney.com/api/qt/clist/get"
-    page_size = 100
+    page_size = 200
     page_current = 1
     params = {
         "fid": indicator_map[indicator][0],
@@ -270,11 +270,11 @@ def stock_sector_fund_flow_rank(
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36",
     }
-    page_size = 100
+    page_size = 200
     page_current = 1
     params = {
-        "pn": "1",
-        "pz": "5000",
+        "pn": page_current,
+        "pz": page_size,
         "po": "1",
         "np": "1",
         "ut": "b2884a393a59ad64002292a3e90d46a5",
@@ -290,8 +290,24 @@ def stock_sector_fund_flow_rank(
     }
     r = requests.get(url, params=params, headers=headers)
     text_data = r.text
-    json_data = json.loads(text_data[text_data.find("{") : -2])
-    temp_df = pd.DataFrame(json_data["data"]["diff"])
+    data_json = json.loads(text_data[text_data.find("{") : -2])
+    data = data_json["data"]["diff"]
+
+    data_count = data_json["data"]["total"]
+    page_count = math.ceil(data_count/page_size)
+    while page_count > 1:
+        page_current = page_current + 1
+        params["pn"] = page_current
+        r = requests.get(url, params=params, headers=headers)
+        text_data = r.text
+        json_data = json.loads(text_data[text_data.find("{"): -2])
+        _data = json_data["data"]["diff"]
+        data.extend(_data)
+        page_count =page_count - 1
+
+    temp_df = pd.DataFrame(data)
+
+
     temp_df = temp_df[~temp_df["f2"].isin(["-"])]
     if indicator == "今日":
         temp_df.columns = [

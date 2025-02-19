@@ -19,7 +19,7 @@ def fund_etf_spot_em() -> pd.DataFrame:
     :rtype: pandas.DataFrame
     """
     url = "http://88.push2.eastmoney.com/api/qt/clist/get"
-    page_size = 100
+    page_size = 200
     page_current = 1
     params = {
         "pn": page_current,
@@ -30,7 +30,7 @@ def fund_etf_spot_em() -> pd.DataFrame:
         "fltt": "2",
         "invt": "2",
         "wbp2u": "|0|0|0|web",
-        "fid": "f3",
+        "fid": "f12",
         "fs": "b:MK0021,b:MK0022,b:MK0023,b:MK0024",
         "fields": "f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f12,f13,f14,f15,f16,f17,f18,f20,f21,f23,f24,f25,f22,f11,f62,f128,f136,f115,f152",
         "_": "1672806290972",
