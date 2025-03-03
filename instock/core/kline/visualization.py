@@ -249,6 +249,12 @@ def get_plot_kline(code, stock, date, stock_name):
             div_dfcf_zl = Div(
                 text=f"""<a href="https://emweb.eastmoney.com/PC_HSF10/OperationsRequired/Index?code={code_name}" target="_blank">资料</a>""",
                 width=40)
+        if code.startswith(('1', '5')):
+            div_dfcf_pj = Div()
+        else:
+            div_dfcf_pj = Div(
+                text=f"""<a href="http://page1.tdx.com.cn:7615/site/pcwebcall_static/bxb/bxb.html?code={code}&color=0" target="_blank">扫雷评级</a>""",
+                width=80)
         div_dfcf_pr = Div(
             text=f"""<a href="https://www.ljjyy.com/archives/2023/04/100718.html" target="_blank">形态</a>""",
             width=40)
@@ -256,7 +262,7 @@ def get_plot_kline(code, stock, date, stock_name):
         # 组合图
         layouts = layout(row(
             column(
-                row(children=[div_attention, div_dfcf_hq, div_dfcf_zl, div_dfcf_pr, select_all, select_none],align='end'),
+                row(children=[div_attention, div_dfcf_hq, div_dfcf_zl, div_dfcf_pj, div_dfcf_pr, select_all, select_none],align='end'),
                 row(children=[p_kline, p_cyq]),
                 row(children=[column(p_volume, tabs_indicators),div_cyq])),
                 ck))
