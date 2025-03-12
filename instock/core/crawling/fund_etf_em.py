@@ -19,7 +19,7 @@ def fund_etf_spot_em() -> pd.DataFrame:
     :rtype: pandas.DataFrame
     """
     url = "http://88.push2.eastmoney.com/api/qt/clist/get"
-    page_size = 200
+    page_size = 50
     page_current = 1
     params = {
         "pn": page_current,
