@@ -45,7 +45,7 @@ def stock_individual_fund_flow_rank(indicator: str = "5日") -> pd.DataFrame:
         ],
     }
     url = "http://push2.eastmoney.com/api/qt/clist/get"
-    page_size = 200
+    page_size = 50
     page_current = 1
     params = {
         "fid": indicator_map[indicator][0],
@@ -270,7 +270,7 @@ def stock_sector_fund_flow_rank(
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36",
     }
-    page_size = 200
+    page_size = 50
     page_current = 1
     params = {
         "pn": page_current,
