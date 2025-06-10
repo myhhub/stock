@@ -35,11 +35,31 @@ def save_after_close_stock_blocktrade_data(date):
 
         mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
     except Exception as e:
-        logging.error(f"basic_data_other_daily_job.save_stock_blocktrade_data处理异常：{e}")
+        logging.error(f"basic_data_after_close_daily_job.save_stock_blocktrade_data处理异常：{e}")
 
+# 每日尾盘抢筹
+def save_after_close_stock_chip_race_end_data(date):
+    try:
+        data = stf.fetch_stock_chip_race_end(date)
+        if data is None or len(data.index) == 0:
+            return
+
+        table_name = tbs.TABLE_CN_STOCK_CHIP_RACE_END['name']
+        # 删除老数据。
+        if mdb.checkTableIsExist(table_name):
+            del_sql = f"DELETE FROM `{table_name}` where `date` = '{date}'"
+            mdb.executeSql(del_sql)
+            cols_type = None
+        else:
+            cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_CHIP_RACE_END['columns'])
+
+        mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
+    except Exception as e:
+        logging.error(f"basic_data_after_close_daily_job.save_after_close_stock_chip_race_end_data：{e}")
 
 def main():
     runt.run_with_args(save_after_close_stock_blocktrade_data)
+    runt.run_with_args(save_after_close_stock_chip_race_end_data)
 
 
 # main函数入口

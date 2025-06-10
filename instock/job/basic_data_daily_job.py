@@ -67,6 +67,7 @@ def save_nph_etf_spot_data(date, before=True):
         logging.error(f"basic_data_daily_job.save_nph_etf_spot_data处理异常：{e}")
 
 
+
 def main():
     runt.run_with_args(save_nph_stock_spot_data)
     runt.run_with_args(save_nph_etf_spot_data)

@@ -965,6 +965,49 @@ CN_STOCK_CPBD = {'name': 'cn_stock_cpbd', 'cn': '操盘必读',
                              'LOAN_BALANCE': {'type': FLOAT, 'cn': '融券余额'}}}
 
 
+TABLE_CN_STOCK_CHIP_RACE_OPEN = {'name': 'cn_stock_chip_race_open', 'cn': '早盘抢筹数据',
+                     'columns': {'date': {'type': DATE, 'cn': '日期', 'size': 0},
+                                 'code': {'type': VARCHAR(6, _COLLATE), 'cn': '代码', 'size': 60},
+                                 'name': {'type': VARCHAR(20, _COLLATE), 'cn': '名称', 'size': 120},
+                                 'new_price': {'type': FLOAT, 'cn': '最新价', 'size': 70},
+                                 'change_rate': {'type': FLOAT, 'cn': '涨跌幅', 'size': 70},
+                                 'pre_close_price': {'type': FLOAT, 'cn': '昨收', 'size': 70},
+                                 'open_price': {'type': FLOAT, 'cn': '今开', 'size': 70},
+                                 'deal_amount': {'type': BIGINT, 'cn': '开盘金额', 'size': 90},
+                                 'bid_rate': {'type': FLOAT, 'cn': '抢筹幅度', 'size': 70},
+                                 'bid_trust_amount': {'type': BIGINT, 'cn': '抢筹委托金额', 'size': 100},
+                                 'bid_deal_amount': {'type': BIGINT, 'cn': '抢筹成交金额', 'size': 100},
+                                 'bid_ratio': {'type': FLOAT, 'cn': '抢筹占比', 'size': 70}}}
+
+TABLE_CN_STOCK_CHIP_RACE_END = {'name': 'cn_stock_chip_race_end', 'cn': '尾盘抢筹数据',
+                     'columns': {'date': {'type': DATE, 'cn': '日期', 'size': 0},
+                                 'code': {'type': VARCHAR(6, _COLLATE), 'cn': '代码', 'size': 60},
+                                 'name': {'type': VARCHAR(20, _COLLATE), 'cn': '名称', 'size': 120},
+                                 'new_price': {'type': FLOAT, 'cn': '最新价', 'size': 70},
+                                 'change_rate': {'type': FLOAT, 'cn': '涨跌幅', 'size': 70},
+                                 'pre_close_price': {'type': FLOAT, 'cn': '昨收', 'size': 70},
+                                 'open_price': {'type': FLOAT, 'cn': '今开', 'size': 70},
+                                 'deal_amount': {'type': BIGINT, 'cn': '收盘金额', 'size': 90},
+                                 'bid_rate': {'type': FLOAT, 'cn': '抢筹幅度', 'size': 70},
+                                 'bid_trust_amount': {'type': BIGINT, 'cn': '抢筹委托金额', 'size': 100},
+                                 'bid_deal_amount': {'type': BIGINT, 'cn': '抢筹成交金额', 'size': 100},
+                                 'bid_ratio': {'type': FLOAT, 'cn': '抢筹占比', 'size': 70}}}
+
+TABLE_CN_STOCK_LIMITUP_REASON = {'name': 'cn_stock_limitup_reason', 'cn': '涨停原因揭密',
+                     'columns': {'date': {'type': DATE, 'cn': '日期', 'size': 0},
+                                 'code': {'type': VARCHAR(6, _COLLATE), 'cn': '代码', 'size': 60},
+                                 'name': {'type': VARCHAR(20, _COLLATE), 'cn': '名称', 'size': 120},
+                                 'TITLE': {'type': VARCHAR(255, _COLLATE), 'cn': '原因', 'size': 150},
+                                 'reason': {'type': VARCHAR(2000, _COLLATE), 'cn': '详因', 'size': 150},
+                                 'new_price': {'type': FLOAT, 'cn': '最新价', 'size': 70},
+                                 'change_rate': {'type': FLOAT, 'cn': '涨跌幅', 'size': 70},
+                                 'ups_downs': {'type': FLOAT, 'cn': '涨跌额', 'size': 70},
+                                 'turnoverrate': {'type': FLOAT, 'cn': '换手率', 'size': 70},
+                                 'volume': {'type': BIGINT, 'cn': '成交量', 'size': 90},
+                                 'deal_amount': {'type': BIGINT, 'cn': '成交额', 'size': 100},
+                                 'dde': {'type': BIGINT, 'cn': 'DDE', 'size': 90}}}
+
+
 def get_field_cn(key, table):
     f = table.get('columns').get(key)
     if f is None:

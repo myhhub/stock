@@ -18,6 +18,8 @@ import instock.core.crawling.stock_dzjy_em as sde
 import instock.core.crawling.stock_hist_em as she
 import instock.core.crawling.stock_fund_em as sff
 import instock.core.crawling.stock_fhps_em as sfe
+import instock.core.crawling.stock_chip_race as scr
+import instock.core.crawling.stock_limitup_reason as slr
 
 __author__ = 'myh '
 __date__ = '2023/3/10 '
@@ -240,6 +242,56 @@ def fetch_stock_blocktrade_data(date):
         logging.error(f"stockfetch.fetch_stock_blocktrade_data处理异常：{e}")
     return None
 
+# 读取早盘抢筹
+def fetch_stock_chip_race_open(date):
+    try:
+        date_str =""
+        if date != datetime.datetime.now().date():
+            date_str = date.strftime("%Y%m%d")
+        data = scr.stock_chip_race_open(date_str)
+        if data is None or len(data.index) == 0:
+            return None
+        if date is None:
+            data.insert(0, 'date', datetime.datetime.now().strftime("%Y-%m-%d"))
+        else:
+            data.insert(0, 'date', date.strftime("%Y-%m-%d"))
+        data.columns = list(tbs.TABLE_CN_STOCK_CHIP_RACE_OPEN['columns'])
+        return data
+    except Exception as e:
+        logging.error(f"stockfetch.fetch_stock_chip_race_open处理异常：{e}")
+    return None
+
+# 读取尾盘抢筹
+def fetch_stock_chip_race_end(date):
+    try:
+        date_str =""
+        if date != datetime.datetime.now().date():
+            date_str = date.strftime("%Y%m%d")
+        data = scr.stock_chip_race_end(date_str)
+        if data is None or len(data.index) == 0:
+            return None
+        if date is None:
+            data.insert(0, 'date', datetime.datetime.now().strftime("%Y-%m-%d"))
+        else:
+            data.insert(0, 'date', date.strftime("%Y-%m-%d"))
+        data.columns = list(tbs.TABLE_CN_STOCK_CHIP_RACE_END['columns'])
+        return data
+    except Exception as e:
+        logging.error(f"stockfetch.fetch_stock_chip_race_end处理异常：{e}")
+    return None
+
+# 读取涨停原因
+def fetch_stock_limitup_reason(date):
+
+    try:
+        data = slr.stock_limitup_reason(date.strftime("%Y-%m-%d"))
+        if data is None or len(data.index) == 0:
+            return None
+        data.columns = list(tbs.TABLE_CN_STOCK_LIMITUP_REASON['columns'])
+        return data
+    except Exception as e:
+        logging.error(f"stockfetch.fetch_stock_limitup_reason处理异常：{e}")
+    return None
 
 # 读取股票历史数据
 def fetch_etf_hist(data_base, date_start=None, date_end=None, adjust='qfq'):

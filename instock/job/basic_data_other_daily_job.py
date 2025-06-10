@@ -231,11 +231,54 @@ def stock_spot_buy(date):
         logging.error(f"basic_data_other_daily_job.stock_spot_buy处理异常：{e}")
 
 
+# 每日早盘抢筹
+def stock_chip_race_open_data(date):
+    try:
+        data = stf.fetch_stock_chip_race_open(date)
+        if data is None or len(data.index) == 0:
+            return
+
+        table_name = tbs.TABLE_CN_STOCK_CHIP_RACE_OPEN['name']
+        # 删除老数据。
+        if mdb.checkTableIsExist(table_name):
+            del_sql = f"DELETE FROM `{table_name}` where `date` = '{date}'"
+            mdb.executeSql(del_sql)
+            cols_type = None
+        else:
+            cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_CHIP_RACE_OPEN['columns'])
+
+        mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
+    except Exception as e:
+        logging.error(f"basic_data_other_daily_job.stock_chip_race_open_data：{e}")
+
+
+# 每日涨停原因
+def stock_imitup_reason_data(date):
+    try:
+        data = stf.fetch_stock_limitup_reason(date)
+        if data is None or len(data.index) == 0:
+            return
+
+        table_name = tbs.TABLE_CN_STOCK_LIMITUP_REASON['name']
+        # 删除老数据。
+        if mdb.checkTableIsExist(table_name):
+            del_sql = f"DELETE FROM `{table_name}` where `date` = '{date}'"
+            mdb.executeSql(del_sql)
+            cols_type = None
+        else:
+            cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_LIMITUP_REASON['columns'])
+
+        mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
+    except Exception as e:
+        logging.error(f"basic_data_other_daily_job.stock_imitup_reason_data：{e}")
+
 def main():
     runt.run_with_args(save_nph_stock_top_data)
     runt.run_with_args(save_nph_stock_bonus)
     runt.run_with_args(save_nph_stock_fund_flow_data)
     runt.run_with_args(save_nph_stock_sector_fund_flow_data)
+    runt.run_with_args(stock_chip_race_open_data)
+    runt.run_with_args(stock_imitup_reason_data)
 
 
 # main函数入口
