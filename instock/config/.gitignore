@@ -158,3 +158,4 @@ cython_debug/
 .idea/
 
 gf_client.json
+/proxy.txt
