@@ -424,7 +424,7 @@ docker run -d --name InStockDbService \
 a.若按上面【1.安装数据库镜像】装的数据库，运行下面命令：
 
 ```
-docker run -dit --name InStock --network=InStockDbService \
+docker run -dit --name InStock --network=InStockService \
     -p 9988:9988 \
     -e db_host=InStockDbService \
     mayanghua/instock:latest
