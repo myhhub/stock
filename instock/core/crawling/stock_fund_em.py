@@ -17,12 +17,14 @@ __author__ = 'myh '
 __date__ = '2023/6/12 '
 
 
-def stock_individual_fund_flow_rank(indicator: str = "5日") -> pd.DataFrame:
+def stock_individual_fund_flow_rank(indicator: str = "5日", proxy=None) -> pd.DataFrame:
     """
     东方财富网-数据中心-资金流向-排名
     https://data.eastmoney.com/zjlx/detail.html
     :param indicator: choice of {"今日", "3日", "5日", "10日"}
     :type indicator: str
+    :param proxy: 代理设置
+    :type proxy: dict
     :return: 指定 indicator 资金流向排行
     :rtype: pandas.DataFrame
     """
@@ -59,7 +61,7 @@ def stock_individual_fund_flow_rank(indicator: str = "5日") -> pd.DataFrame:
         "fs": "m:0+t:6+f:!2,m:0+t:13+f:!2,m:0+t:80+f:!2,m:1+t:2+f:!2,m:1+t:23+f:!2,m:0+t:7+f:!2,m:1+t:3+f:!2",
         "fields": indicator_map[indicator][1],
     }
-    r = requests.get(url, params=params)
+    r = requests.get(url, params=params, proxies=proxy)
     data_json = r.json()
     data = data_json["data"]["diff"]
     data_count = data_json["data"]["total"]
@@ -67,7 +69,7 @@ def stock_individual_fund_flow_rank(indicator: str = "5日") -> pd.DataFrame:
     while page_count > 1:
         page_current = page_current + 1
         params["pn"] = page_current
-        r = requests.get(url, params=params)
+        r = requests.get(url, params=params, proxies=proxy)
         data_json = r.json()
         _data = data_json["data"]["diff"]
         data.extend(_data)
@@ -236,7 +238,7 @@ def stock_individual_fund_flow_rank(indicator: str = "5日") -> pd.DataFrame:
 
 
 def stock_sector_fund_flow_rank(
-    indicator: str = "10日", sector_type: str = "行业资金流"
+    indicator: str = "10日", sector_type: str = "行业资金流", proxy=None
 ) -> pd.DataFrame:
     """
     东方财富网-数据中心-资金流向-板块资金流-排名
@@ -245,6 +247,8 @@ def stock_sector_fund_flow_rank(
     :type indicator: str
     :param sector_type: choice of {"行业资金流", "概念资金流", "地域资金流"}
     :type sector_type: str
+    :param proxy: 代理设置
+    :type proxy: dict
     :return: 指定参数的资金流排名数据
     :rtype: pandas.DataFrame
     """
@@ -288,7 +292,7 @@ def stock_sector_fund_flow_rank(
         "cb": "jQuery18308357908311220152_1589256588824",
         "_": int(time.time() * 1000),
     }
-    r = requests.get(url, params=params, headers=headers)
+    r = requests.get(url, params=params, headers=headers, proxies=proxy)
     text_data = r.text
     data_json = json.loads(text_data[text_data.find("{") : -2])
     data = data_json["data"]["diff"]
@@ -298,7 +302,7 @@ def stock_sector_fund_flow_rank(
     while page_count > 1:
         page_current = page_current + 1
         params["pn"] = page_current
-        r = requests.get(url, params=params, headers=headers)
+        r = requests.get(url, params=params, headers=headers, proxies=proxy)
         text_data = r.text
         json_data = json.loads(text_data[text_data.find("{"): -2])
         _data = json_data["data"]["diff"]

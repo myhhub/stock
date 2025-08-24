@@ -14,19 +14,21 @@ from bs4 import BeautifulSoup
 from tqdm import tqdm
 
 
-def stock_lhb_detail_daily_sina(date: str = "20240222") -> pd.DataFrame:
+def stock_lhb_detail_daily_sina(date: str = "20240222", proxy=None) -> pd.DataFrame:
     """
     龙虎榜-每日详情
     https://vip.stock.finance.sina.com.cn/q/go.php/vInvestConsult/kind/lhb/index.phtml
     :param date: 交易日
     :type date: str
+    :param proxy: 代理设置
+    :type proxy: dict
     :return: 龙虎榜-每日详情
     :rtype: pandas.DataFrame
     """
     date = "-".join([date[:4], date[4:6], date[6:]])
     url = "https://vip.stock.finance.sina.com.cn/q/go.php/vInvestConsult/kind/lhb/index.phtml"
     params = {"tradedate": date}
-    r = requests.get(url, params=params)
+    r = requests.get(url, params=params, proxies=proxy)
     soup = BeautifulSoup(r.text, features="lxml")
     selected_html = soup.find(name="div", attrs={"class": "list"}).find_all(
         name="table", attrs={"class": "list_table"}

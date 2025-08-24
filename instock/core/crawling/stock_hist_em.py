@@ -10,7 +10,7 @@ import math
 from functools import lru_cache
 
 
-def stock_zh_a_spot_em() -> pd.DataFrame:
+def stock_zh_a_spot_em(proxy=None) -> pd.DataFrame:
     """
     东方财富网-沪深京 A 股-实时行情
     https://quote.eastmoney.com/center/gridlist.html#hs_a_board
@@ -33,7 +33,7 @@ def stock_zh_a_spot_em() -> pd.DataFrame:
         "fields": "f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f14,f15,f16,f17,f18,f20,f21,f22,f23,f24,f25,f26,f37,f38,f39,f40,f41,f45,f46,f48,f49,f57,f61,f100,f112,f113,f114,f115,f221",
         "_": "1623833739532",
     }
-    r = requests.get(url, params=params)
+    r = requests.get(url, params=params, proxies=proxy)
     data_json = r.json()
     data = data_json["data"]["diff"]
     if not data:
@@ -44,7 +44,7 @@ def stock_zh_a_spot_em() -> pd.DataFrame:
     while page_count > 1:
         page_current = page_current + 1
         params["pn"] = page_current
-        r = requests.get(url, params=params)
+        r = requests.get(url, params=params, proxies=proxy)
         data_json = r.json()
         _data = data_json["data"]["diff"]
         data.extend(_data)
@@ -179,7 +179,7 @@ def stock_zh_a_spot_em() -> pd.DataFrame:
 
 
 @lru_cache()
-def code_id_map_em() -> dict:
+def code_id_map_em(proxy=None) -> dict:
     """
     东方财富-股票和市场代码
     http://quote.eastmoney.com/center/gridlist.html#hs_a_board
@@ -202,7 +202,7 @@ def code_id_map_em() -> dict:
         "fields": "f12",
         "_": "1623833739532",
     }
-    r = requests.get(url, params=params)
+    r = requests.get(url, params=params, proxies=proxy)
     data_json = r.json()
     data = data_json["data"]["diff"]
     if not data:
@@ -213,7 +213,7 @@ def code_id_map_em() -> dict:
     while page_count > 1:
         page_current = page_current + 1
         params["pn"] = page_current
-        r = requests.get(url, params=params)
+        r = requests.get(url, params=params, proxies=proxy)
         data_json = r.json()
         _data = data_json["data"]["diff"]
         data.extend(_data)
@@ -237,7 +237,7 @@ def code_id_map_em() -> dict:
         "fields": "f12",
         "_": "1623833739532",
     }
-    r = requests.get(url, params=params)
+    r = requests.get(url, params=params, proxies=proxy)
     data_json = r.json()
     data = data_json["data"]["diff"]
     if not data:
@@ -248,7 +248,7 @@ def code_id_map_em() -> dict:
     while page_count > 1:
         page_current = page_current + 1
         params["pn"] = page_current
-        r = requests.get(url, params=params)
+        r = requests.get(url, params=params, proxies=proxy)
         data_json = r.json()
         _data = data_json["data"]["diff"]
         data.extend(_data)
@@ -271,7 +271,7 @@ def code_id_map_em() -> dict:
         "fields": "f12",
         "_": "1623833739532",
     }
-    r = requests.get(url, params=params)
+    r = requests.get(url, params=params, proxies=proxy)
     data_json = r.json()
     data = data_json["data"]["diff"]
     if not data:
@@ -282,7 +282,7 @@ def code_id_map_em() -> dict:
     while page_count > 1:
         page_current = page_current + 1
         params["pn"] = page_current
-        r = requests.get(url, params=params)
+        r = requests.get(url, params=params, proxies=proxy)
         data_json = r.json()
         _data = data_json["data"]["diff"]
         data.extend(_data)
@@ -300,7 +300,7 @@ def stock_zh_a_hist(
     start_date: str = "19700101",
     end_date: str = "20500101",
     adjust: str = "",
-) -> pd.DataFrame:
+proxy=None) -> pd.DataFrame:
     """
     东方财富网-行情首页-沪深京 A 股-每日行情
     https://quote.eastmoney.com/concept/sh603777.html?from=classic
@@ -332,7 +332,7 @@ def stock_zh_a_hist(
         "end": end_date,
         "_": "1623766962675",
     }
-    r = requests.get(url, params=params)
+    r = requests.get(url, params=params, proxies=proxy)
     data_json = r.json()
     if not (data_json["data"] and data_json["data"]["klines"]):
         return pd.DataFrame()
@@ -375,6 +375,7 @@ def stock_zh_a_hist_min_em(
     end_date: str = "2222-01-01 09:32:00",
     period: str = "5",
     adjust: str = "",
+    proxy=None,
 ) -> pd.DataFrame:
     """
     东方财富网-行情首页-沪深京 A 股-每日分时行情
@@ -409,7 +410,7 @@ def stock_zh_a_hist_min_em(
             "secid": f"{code_id_dict[symbol]}.{symbol}",
             "_": "1623766962675",
         }
-        r = requests.get(url, params=params)
+        r = requests.get(url, params=params, proxies=proxy)
         data_json = r.json()
         temp_df = pd.DataFrame(
             [item.split(",") for item in data_json["data"]["trends"]]
@@ -449,7 +450,7 @@ def stock_zh_a_hist_min_em(
             "end": "20500000",
             "_": "1630930917857",
         }
-        r = requests.get(url, params=params)
+        r = requests.get(url, params=params, proxies=proxy)
         data_json = r.json()
         temp_df = pd.DataFrame(
             [item.split(",") for item in data_json["data"]["klines"]]
@@ -503,6 +504,7 @@ def stock_zh_a_hist_pre_min_em(
     symbol: str = "000001",
     start_time: str = "09:00:00",
     end_time: str = "15:50:00",
+    proxy=None,
 ) -> pd.DataFrame:
     """
     东方财富网-行情首页-沪深京 A 股-每日分时行情包含盘前数据
@@ -528,7 +530,7 @@ def stock_zh_a_hist_pre_min_em(
         "secid": f"{code_id_dict[symbol]}.{symbol}",
         "_": "1623766962675",
     }
-    r = requests.get(url, params=params)
+    r = requests.get(url, params=params, proxies=proxy)
     data_json = r.json()
     temp_df = pd.DataFrame(
         [item.split(",") for item in data_json["data"]["trends"]]
@@ -598,4 +600,3 @@ if __name__ == "__main__":
         adjust="hfq",
     )
     print(stock_zh_a_hist_df)
-

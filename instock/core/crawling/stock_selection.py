@@ -10,10 +10,12 @@ __author__ = 'myh '
 __date__ = '2023/5/9 '
 
 
-def stock_selection() -> pd.DataFrame:
+def stock_selection(proxy=None) -> pd.DataFrame:
     """
     东方财富网-个股-选股器
     https://data.eastmoney.com/xuangu/
+    :param proxy: 代理设置
+    :type proxy: dict
     :return: 选股器
     :rtype: pandas.DataFrame
     """
@@ -32,7 +34,7 @@ def stock_selection() -> pd.DataFrame:
         "source": "SELECT_SECURITIES",
         "client": "WEB"
     }
-    r = requests.get(url, params=params)
+    r = requests.get(url, params=params, proxies=proxy)
     data_json = r.json()
     data = data_json["result"]["data"]
     if not data:
@@ -43,7 +45,7 @@ def stock_selection() -> pd.DataFrame:
     while page_count > 1:
         page_current = page_current + 1
         params["p"] = page_current
-        r = requests.get(url, params=params)
+        r = requests.get(url, params=params, proxies=proxy)
         data_json = r.json()
         _data = data_json["result"]["data"]
         data.extend(_data)

@@ -302,15 +302,17 @@ function d(t) {
 """
 
 
-def tool_trade_date_hist_sina() -> pd.DataFrame:
+def tool_trade_date_hist_sina(proxy=None) -> pd.DataFrame:
     """
     交易日历-历史数据
     https://finance.sina.com.cn/realstock/company/klc_td_sh.txt
+    :param proxy: 代理设置
+    :type proxy: dict
     :return: 交易日历
     :rtype: pandas.DataFrame
     """
     url = "https://finance.sina.com.cn/realstock/company/klc_td_sh.txt"
-    r = requests.get(url)
+    r = requests.get(url, proxies=proxy)
     js_code = MiniRacer()
     js_code.eval(hk_js_decode)
     dict_list = js_code.call(

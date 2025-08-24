@@ -10,7 +10,7 @@ __date__ = '2023/5/7 '
 
 
 
-def stock_cpbd_em(symbol: str = "688041") -> pd.DataFrame:
+def stock_cpbd_em(symbol: str = "688041", proxy=None) -> pd.DataFrame:
     """
     东方财富网-个股-操盘必读
     https://emweb.securities.eastmoney.com/PC_HSF10/OperationsRequired/Index?type=web&code=SH688041#
@@ -26,7 +26,7 @@ def stock_cpbd_em(symbol: str = "688041") -> pd.DataFrame:
         symbol = f"SZ{symbol}"
     params = {"code": symbol}
 
-    r = requests.get(url, params=params)
+    r = requests.get(url, params=params, proxies=proxy)
     data_json = r.json()
     zxzb = data_json["zxzb"]  # 主要指标
     if len(zxzb) < 1:
@@ -101,7 +101,7 @@ def stock_cpbd_em(symbol: str = "688041") -> pd.DataFrame:
     # temp_df["已流通股份"] = pd.to_numeric(temp_df["已流通股份"], errors="coerce")
 
 
-def stock_zjlx_em(symbol: str = "688041") -> pd.DataFrame:
+def stock_zjlx_em(symbol: str = "688041", proxy=None) -> pd.DataFrame:
     """
     东方财富网-个股-资金流向
     https://data.eastmoney.com/zjlx/688041.html
@@ -124,7 +124,7 @@ def stock_zjlx_em(symbol: str = "688041") -> pd.DataFrame:
         "secid": symbol
     }
 
-    r = requests.get(url, params=params)
+    r = requests.get(url, params=params, proxies=proxy)
     data_json = r.json()
     klines = data_json["klines"]  # 主要指标
     "日期","主力净流入额","小单净流入额","中单净流入额","大单净流入额","超大单净流入额","主力净流入占比", "小单净流入占比", "中单净流入占比", "大单净流入占比", "超大单净流入占比"

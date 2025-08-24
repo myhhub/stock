@@ -9,7 +9,7 @@ http://excalc.icfqs.com:7616/TQLEX?Entry=HQServ.hq_nlp
 import pandas as pd
 import requests
 
-def stock_chip_race_open(date: str = "") -> pd.DataFrame:
+def stock_chip_race_open(date: str = "", proxy=None) -> pd.DataFrame:
     """
     通达信竞价抢筹_早盘抢筹
     http://excalc.icfqs.com:7616/TQLEX?Entry=HQServ.hq_nlp
@@ -29,7 +29,7 @@ def stock_chip_race_open(date: str = "") -> pd.DataFrame:
         "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36 TdxW",
     }
 
-    r = requests.post(url, json=params,headers=headers)
+    r = requests.post(url, json=params,headers=headers, proxies=proxy)
     data_json = r.json()
     data = data_json["datas"]
     if not data:
@@ -73,7 +73,7 @@ def stock_chip_race_open(date: str = "") -> pd.DataFrame:
 
     return temp_df
 
-def stock_chip_race_end(date: str = "") -> pd.DataFrame:
+def stock_chip_race_end(date: str = "", proxy=None) -> pd.DataFrame:
     """
     通达信竞价抢筹_尾盘抢筹
     http://excalc.icfqs.com:7616/TQLEX?Entry=HQServ.hq_nlp
@@ -93,7 +93,7 @@ def stock_chip_race_end(date: str = "") -> pd.DataFrame:
         "User-Agent": "TdxW",
     }
 
-    r = requests.post(url, json=params,headers=headers)
+    r = requests.post(url, json=params,headers=headers, proxies=proxy)
     data_json = r.json()
     data = data_json["datas"]
     if not data:
