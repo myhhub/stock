@@ -20,6 +20,7 @@ import instock.core.crawling.stock_fund_em as sff
 import instock.core.crawling.stock_fhps_em as sfe
 import instock.core.crawling.stock_chip_race as scr
 import instock.core.crawling.stock_limitup_reason as slr
+from instock.core.proxy_pool import get_proxy
 
 __author__ = 'myh '
 __date__ = '2023/3/10 '
@@ -62,7 +63,7 @@ def is_open_with_line(price):
 # 读取股票交易日历数据
 def fetch_stocks_trade_date():
     try:
-        data = tdh.tool_trade_date_hist_sina()
+        data = tdh.tool_trade_date_hist_sina(proxy=get_proxy())
         if data is None or len(data.index) == 0:
             return None
         data_date = set(data['trade_date'].values.tolist())
@@ -75,7 +76,7 @@ def fetch_stocks_trade_date():
 # 读取当天股票数据
 def fetch_etfs(date):
     try:
-        data = fee.fund_etf_spot_em()
+        data = fee.fund_etf_spot_em(proxy=get_proxy())
         if data is None or len(data.index) == 0:
             return None
         if date is None:
@@ -93,7 +94,7 @@ def fetch_etfs(date):
 # 读取当天股票数据
 def fetch_stocks(date):
     try:
-        data = she.stock_zh_a_spot_em()
+        data = she.stock_zh_a_spot_em(proxy=get_proxy())
         if data is None or len(data.index) == 0:
             return None
         if date is None:
@@ -110,7 +111,7 @@ def fetch_stocks(date):
 
 def fetch_stock_selection():
     try:
-        data = sst.stock_selection()
+        data = sst.stock_selection(get_proxy())
         if data is None or len(data.index) == 0:
             return None
         data.columns = list(tbs.TABLE_CN_STOCK_SELECTION['columns'])
@@ -125,7 +126,7 @@ def fetch_stock_selection():
 def fetch_stocks_fund_flow(index):
     try:
         cn_flow = tbs.CN_STOCK_FUND_FLOW[index]
-        data = sff.stock_individual_fund_flow_rank(indicator=cn_flow['cn'])
+        data = sff.stock_individual_fund_flow_rank(indicator=cn_flow['cn'], proxy=get_proxy())
         if data is None or len(data.index) == 0:
             return None
         data.columns = list(cn_flow['columns'])
@@ -140,7 +141,7 @@ def fetch_stocks_fund_flow(index):
 def fetch_stocks_sector_fund_flow(index_sector, index_indicator):
     try:
         cn_flow = tbs.CN_STOCK_SECTOR_FUND_FLOW[1][index_indicator]
-        data = sff.stock_sector_fund_flow_rank(indicator=cn_flow['cn'], sector_type=tbs.CN_STOCK_SECTOR_FUND_FLOW[0][index_sector])
+        data = sff.stock_sector_fund_flow_rank(indicator=cn_flow['cn'], sector_type=tbs.CN_STOCK_SECTOR_FUND_FLOW[0][index_sector], proxy=get_proxy())
         if data is None or len(data.index) == 0:
             return None
         data.columns = list(cn_flow['columns'])
@@ -153,7 +154,7 @@ def fetch_stocks_sector_fund_flow(index_sector, index_indicator):
 # 读取股票分红配送
 def fetch_stocks_bonus(date):
     try:
-        data = sfe.stock_fhps_em(date=trd.get_bonus_report_date())
+        data = sfe.stock_fhps_em(date=trd.get_bonus_report_date(), proxy=get_proxy())
         if data is None or len(data.index) == 0:
             return None
         if date is None:
@@ -176,7 +177,7 @@ def fetch_stock_top_entity_data(date):
     code_name = '代码'
     entity_amount_name = '买方机构数'
     try:
-        data = sle.stock_lhb_jgmmtj_em(start_date, end_date)
+        data = sle.stock_lhb_jgmmtj_em(start_date, end_date, proxy=get_proxy())
         if data is None or len(data.index) == 0:
             return None
 
@@ -203,7 +204,7 @@ def fetch_stock_top_entity_data(date):
 # 描述: 获取新浪财经-龙虎榜-个股上榜统计
 def fetch_stock_top_data(date):
     try:
-        data = sls.stock_lhb_ggtj_sina()
+        data = sls.stock_lhb_ggtj_sina(proxy=get_proxy())
         if data is None or len(data.index) == 0:
             return None
         _columns = list(tbs.TABLE_CN_STOCK_TOP['columns'])
@@ -225,7 +226,7 @@ def fetch_stock_top_data(date):
 def fetch_stock_blocktrade_data(date):
     date_str = date.strftime("%Y%m%d")
     try:
-        data = sde.stock_dzjy_mrtj(start_date=date_str, end_date=date_str)
+        data = sde.stock_dzjy_mrtj(start_date=date_str, end_date=date_str, proxy=get_proxy())
         if data is None or len(data.index) == 0:
             return None
 
@@ -248,7 +249,7 @@ def fetch_stock_chip_race_open(date):
         date_str =""
         if date != datetime.datetime.now().date():
             date_str = date.strftime("%Y%m%d")
-        data = scr.stock_chip_race_open(date_str)
+        data = scr.stock_chip_race_open(date_str, proxy=get_proxy())
         if data is None or len(data.index) == 0:
             return None
         if date is None:
@@ -267,7 +268,7 @@ def fetch_stock_chip_race_end(date):
         date_str =""
         if date != datetime.datetime.now().date():
             date_str = date.strftime("%Y%m%d")
-        data = scr.stock_chip_race_end(date_str)
+        data = scr.stock_chip_race_end(date_str, proxy=get_proxy())
         if data is None or len(data.index) == 0:
             return None
         if date is None:
@@ -284,7 +285,7 @@ def fetch_stock_chip_race_end(date):
 def fetch_stock_limitup_reason(date):
 
     try:
-        data = slr.stock_limitup_reason(date.strftime("%Y-%m-%d"))
+        data = slr.stock_limitup_reason(date.strftime("%Y-%m-%d"), proxy=get_proxy())
         if data is None or len(data.index) == 0:
             return None
         data.columns = list(tbs.TABLE_CN_STOCK_LIMITUP_REASON['columns'])
@@ -303,9 +304,9 @@ def fetch_etf_hist(data_base, date_start=None, date_end=None, adjust='qfq'):
     try:
         if date_end is not None:
             data = fee.fund_etf_hist_em(symbol=code, period="daily", start_date=date_start, end_date=date_end,
-                                        adjust=adjust)
+                                        adjust=adjust, proxy=get_proxy())
         else:
-            data = fee.fund_etf_hist_em(symbol=code, period="daily", start_date=date_start, adjust=adjust)
+            data = fee.fund_etf_hist_em(symbol=code, period="daily", start_date=date_start, adjust=adjust, proxy=get_proxy())
 
         if data is None or len(data.index) == 0:
             return None
@@ -358,9 +359,9 @@ def stock_hist_cache(code, date_start, date_end=None, is_cache=True, adjust=''):
         else:
             if date_end is not None:
                 stock = she.stock_zh_a_hist(symbol=code, period="daily", start_date=date_start, end_date=date_end,
-                                            adjust=adjust)
+                                            adjust=adjust, proxy=get_proxy())
             else:
-                stock = she.stock_zh_a_hist(symbol=code, period="daily", start_date=date_start, adjust=adjust)
+                stock = she.stock_zh_a_hist(symbol=code, period="daily", start_date=date_start, adjust=adjust, proxy=get_proxy())
 
             if stock is None or len(stock.index) == 0:
                 return None

@@ -515,8 +515,8 @@ TABLE_CN_STOCK_KLINE_PATTERN['columns'].update(STOCK_KLINE_PATTERN_DATA['columns
 
 TABLE_CN_STOCK_SELECTION = {'name': 'cn_stock_selection', 'cn': '综合选股',
                             'columns': {'date': {'type': DATE, 'cn': '日期', 'size': 0, 'map': 'MAX_TRADE_DATE'},
-                                        'code': {'type': VARCHAR(6, _COLLATE), 'cn': '代码', 'size': 60,
-                                                 'map': 'SECURITY_CODE'},
+                                        'secucode': {'type': VARCHAR(10, _COLLATE), 'cn': '全代码', 'size': 0,
+                                                     'map': 'SECUCODE'},
                                         'name': {'type': VARCHAR(20, _COLLATE), 'cn': '名称', 'size': 70,
                                                  'map': 'SECURITY_NAME_ABBR'},
                                         'new_price': {'type': FLOAT, 'cn': '最新价', 'size': 70, 'map': 'NEW_PRICE'},
@@ -902,9 +902,9 @@ TABLE_CN_STOCK_SELECTION = {'name': 'cn_stock_selection', 'cn': '综合选股',
                                         'mutual_netbuy_amt': {'type': BIGINT, 'cn': '沪深股通净买入金额', 'size': 90,
                                                               'map': 'MUTUAL_NETBUY_AMT'},
                                         'hold_ratio': {'type': FLOAT, 'cn': '沪深股通持股比例', 'size': 70,
-                                                       'map': 'HOLD_RATIO'},
-                                        'secucode': {'type': VARCHAR(10, _COLLATE), 'cn': '全代码', 'size': 0,
-                                                     'map': 'SECUCODE'}}}
+                                                       'map': 'HOLD_RATIO'}
+                                        }
+                            }
 
 CN_STOCK_CPBD = {'name': 'cn_stock_cpbd', 'cn': '操盘必读',
                  'columns': {'SECURITY_CODE': {'type': VARCHAR(6, _COLLATE), 'cn': '代码'},

@@ -315,7 +315,7 @@
             });
             
             // 添加数据行（限制显示前1000行以提高性能）
-            const displayData = data.slice(0, 1000);
+            const displayData = data
             displayData.forEach((row, rowIndex) => {
                 if (!row || typeof row !== 'object') {
                     console.warn('无效的行数据:', rowIndex, row);
@@ -359,7 +359,22 @@
                             m: strValue
                         };
                     }
-                    
+                    // 新增涨跌幅颜色处理
+                    let bgColor = null;
+                    let fontColor = null;
+                    if (col.field && (col.field.includes('change') || col.field.includes('涨跌幅'))) {
+                        if (value > 0) {
+                            bgColor = "#ffebee"; // 红色背景
+                            fontColor = "#d32f2f"; // 红色文字
+                        } else if (value < 0) {
+                            bgColor = "#e8f5e8"; // 绿色背景
+                            fontColor = "#388e3c"; // 绿色文字
+                        }
+                    }
+                    if (bgColor || fontColor) {
+                        cellValue.bg = bgColor;
+                        cellValue.fc = fontColor;
+                    }
                     celldata.push({
                         r: rowIndex + 1,
                         c: colIndex,

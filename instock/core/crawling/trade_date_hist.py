@@ -6,6 +6,7 @@ Desc: 新浪财经-交易日历
 https://finance.sina.com.cn/realstock/company/klc_td_sh.txt
 此处可以用来更新 calendar.json 文件，注意末尾没有 "," 号
 """
+import os
 import datetime
 import pandas as pd
 import requests
@@ -311,6 +312,29 @@ def tool_trade_date_hist_sina(proxy=None) -> pd.DataFrame:
     :return: 交易日历
     :rtype: pandas.DataFrame
     """
+    # 检查本地trade_date.csv文件是否存在
+    local_csv_path = "/tmp/trade_date.csv"
+    if os.path.exists(local_csv_path):
+        try:
+            # 读取本地文件获取最后日期
+            local_df = pd.read_csv(local_csv_path)
+            if not local_df.empty:
+                local_df["trade_date"] = pd.to_datetime(local_df["trade_date"]).dt.date
+                last_local_date = local_df["trade_date"].max()
+                
+                # 获取当前日期
+                current_date = datetime.date.today()
+                
+                # 如果当前日期小于本地文件的最后日期，直接返回本地数据
+                if current_date <= last_local_date:
+                    print(f"当前日期 {current_date} 小于等于本地文件最后日期 {last_local_date}，使用本地数据")
+                    return local_df
+                
+                print(f"当前日期 {current_date} 大于本地文件最后日期 {last_local_date}，需要更新数据")
+        except Exception as e:
+            print(f"读取本地文件失败: {e}，将重新获取数据")
+    
+    # 从接口获取最新数据
     url = "https://finance.sina.com.cn/realstock/company/klc_td_sh.txt"
     r = requests.get(url, proxies=proxy)
     js_code = MiniRacer()
@@ -325,6 +349,14 @@ def tool_trade_date_hist_sina(proxy=None) -> pd.DataFrame:
     temp_list.append(datetime.date(1992, 5, 4))  # 是交易日但是交易日历缺失该日期
     temp_list.sort()
     temp_df = pd.DataFrame(temp_list, columns=["trade_date"])
+    
+    # 更新本地文件
+    try:
+        temp_df.to_csv(local_csv_path, index=False)
+        print(f"已更新本地文件: {local_csv_path}")
+    except Exception as e:
+        print(f"更新本地文件失败: {e}")
+    
     return temp_df
 
 

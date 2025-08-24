@@ -89,12 +89,13 @@ def _find_last_page(
     return previous_page
 
 
-def stock_lhb_ggtj_sina(symbol: str = "5") -> pd.DataFrame:
+def stock_lhb_ggtj_sina(symbol: str = "5", proxy=None) -> pd.DataFrame:
     """
     龙虎榜-个股上榜统计
     https://vip.stock.finance.sina.com.cn/q/go.php/vLHBData/kind/ggtj/index.phtml
     :param symbol: choice of {"5": 最近 5 天; "10": 最近 10 天; "30": 最近 30 天; "60": 最近 60 天;}
     :type symbol: str
+    :param proxy: 代理设置
     :return: 龙虎榜-个股上榜统计
     :rtype: pandas.DataFrame
     """
@@ -108,7 +109,7 @@ def stock_lhb_ggtj_sina(symbol: str = "5") -> pd.DataFrame:
             "last": symbol,
             "p": page,
         }
-        r = requests.get(url, params=params)
+        r = requests.get(url, params=params, proxies=proxy)
         temp_df = pd.read_html(StringIO(r.text))[0].iloc[0:, :]
         big_df = pd.concat(objs=[big_df, temp_df], ignore_index=True)
     big_df["股票代码"] = big_df["股票代码"].astype(str).str.zfill(6)
