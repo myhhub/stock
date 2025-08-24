@@ -340,39 +340,42 @@ def fund_etf_hist_min_em(
 if __name__ == "__main__":
     fund_etf_spot_em_df = fund_etf_spot_em()
     print(fund_etf_spot_em_df)
+    # import akshare as ak
+    # fund_etf_spot_em_df = ak.fund_etf_spot_em()
+    # print(fund_etf_spot_em_df)
 
-    fund_etf_hist_hfq_em_df = fund_etf_hist_em(
-        symbol="513500",
-        period="daily",
-        start_date="20000101",
-        end_date="20230201",
-        adjust="hfq",
-    )
-    print(fund_etf_hist_hfq_em_df)
+    # fund_etf_hist_hfq_em_df = fund_etf_hist_em(
+    #     symbol="513500",
+    #     period="daily",
+    #     start_date="20000101",
+    #     end_date="20230201",
+    #     adjust="hfq",
+    # )
+    # print(fund_etf_hist_hfq_em_df)
 
-    fund_etf_hist_qfq_em_df = fund_etf_hist_em(
-        symbol="513500",
-        period="daily",
-        start_date="20000101",
-        end_date="20230201",
-        adjust="qfq",
-    )
-    print(fund_etf_hist_qfq_em_df)
+    # fund_etf_hist_qfq_em_df = fund_etf_hist_em(
+    #     symbol="513500",
+    #     period="daily",
+    #     start_date="20000101",
+    #     end_date="20230201",
+    #     adjust="qfq",
+    # )
+    # print(fund_etf_hist_qfq_em_df)
 
-    fund_etf_hist_em_df = fund_etf_hist_em(
-        symbol="513500",
-        period="daily",
-        start_date="20000101",
-        end_date="20230201",
-        adjust="",
-    )
-    print(fund_etf_hist_em_df)
+    # fund_etf_hist_em_df = fund_etf_hist_em(
+    #     symbol="513500",
+    #     period="daily",
+    #     start_date="20000101",
+    #     end_date="20230201",
+    #     adjust="",
+    # )
+    # print(fund_etf_hist_em_df)
 
-    fund_etf_hist_min_em_df = fund_etf_hist_min_em(
-        symbol="513500",
-        period="5",
-        adjust="hfq",
-        start_date="2023-01-01 09:32:00",
-        end_date="2023-01-04 14:40:00",
-    )
-    print(fund_etf_hist_min_em_df)
+    # fund_etf_hist_min_em_df = fund_etf_hist_min_em(
+    #     symbol="513500",
+    #     period="5",
+    #     adjust="hfq",
+    #     start_date="2023-01-01 09:32:00",
+    #     end_date="2023-01-04 14:40:00",
+    # )
+    # print(fund_etf_hist_min_em_df)

@@ -39,8 +39,14 @@ class GetStockHtmlHandler(webBase.BaseHandler, ABC):
             date_now_str = run_date_nph.strftime("%Y-%m-%d")
         else:
             date_now_str = run_date.strftime("%Y-%m-%d")
-        self.render("stock_web.html", web_module_data=web_module_data, date_now=date_now_str,
-                    leftMenu=webBase.GetLeftMenu(self.request.uri))
+        
+        # 将 column_names 序列化为 JSON 字符串，以便在模板中安全使用
+        column_names_json = json.dumps(web_module_data.column_names, cls=MyEncoder, ensure_ascii=False)
+        
+        self.render("stock_web.html", web_module_data=web_module_data, 
+                   column_names_json=column_names_json,
+                   date_now=date_now_str,
+                   leftMenu=webBase.GetLeftMenu(self.request.uri))
 
 
 # 获得股票数据内容。

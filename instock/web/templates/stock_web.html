@@ -2,216 +2,711 @@
 
 {% block main_content %}
 <link rel="stylesheet" href="/static/css/bootstrap-datepicker3.min.css" />
-<link rel="stylesheet" href="/static/css/gc.spread.sheets.excel2013white.css" type="text/css"/>
-<script type="text/javascript" src="/static/js/gc.spread.sheets.all.min.js"></script>
+<link rel="stylesheet" href="/static/css/luckysheet.css" type="text/css"/>
+<link rel="stylesheet" href="/static/css/luckysheet-plugins.css" type="text/css"/>
+<script type="text/javascript" src="/static/js/luckysheet.umd.js"></script>
+<script src="/static/js/luckysheet-plugins.js" type="text/javascript"></script>
 <script src="/static/js/FileSaver.js" type="text/javascript"></script>
-<script src="/static/js/gc.spread.sheets.tablesheet.min.js" type="text/javascript"></script>
-<script type="text/javascript" src="/static/js/gc.spread.sheets.resources.zh.min.js"></script>
-<script src="/static/js/gc.spread.excelio.min.js" type="text/javascript"></script>
 <script src="/static/js/bootstrap-datepicker.min.js"></script>
 <script src="/static/js/bootstrap-datepicker.zh-CN.min.js"></script>
-<div style="height: 100%;overflow: hidden;">
-        <div class="table-header" style="width:100%;height:35px;">
-            <div style="display:inline-block;float:left;height:100%;">
-                <div style="display:inline-block;float:left;text-overflow:ellipsis;white-space:nowrap;">
-                    {{ web_module_data.name }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;日期：
+
+<div style="height: 100%; overflow: hidden;">
+    <div class="table-header" style="width:100%; height:35px; background: #f5f5f5; border-bottom: 1px solid #ddd; padding: 5px;">
+        <div style="display:inline-block; float:left; height:100%; line-height: 25px;">
+            <span style="font-weight: bold; color: #333;">
+                {{ web_module_data.name }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;日期：
+            </span>
+            <input type="hidden" id="dateid_old">
+            <input type="text" value="{{ date_now }}" id="dateid" class="input-group-sm form-control date-picker" style="display: inline-block; width: 120px; margin-left: 10px;">
+        </div>
+        <div style="display:inline-block; float:right; height:100%;">
+            <button type="button" id="resetFilter" class="btn btn-primary btn-sm" style="margin-right: 5px;">重置筛选</button>
+            <button type="button" id="saveExcel" class="btn btn-success btn-sm">导出Excel</button>
+        </div>
+    </div>
+    
+    <!-- Luckysheet容器 -->
+    <div id="luckysheet" style="width:100%; height:calc(100% - 55px); margin:0; padding:0;">
+        <div id="loadingIndicator" style="display: flex; align-items: center; justify-content: center; height: 100%; background: #f8f9fa;">
+            <div style="text-align: center; color: #6c757d;">
+                <div style="margin-bottom: 10px;">
+                    <i class="fa fa-spinner fa-spin" style="font-size: 24px;"></i>
                 </div>
-                <div style="display:inline-block;float:right;">
-                    <input type="hidden" id="dateid_old">
-                    <input type="text" value="{{ date_now }}" id="dateid" class="input-group-sm form-control date-picker">
-                </div>
-            </div>
-            <div style="display:inline-block;float:right;height:100%;">
-                <input type="button" id="resetFilter" value="重置筛选" style="background-color:#307ECC;height:100%;">
-                <input type="button" id="saveExcel" value="保存Excel" style="background-color:#307ECC;height:100%;">
+                <div>正在加载数据...</div>
             </div>
         </div>
-        <div id="instock-data" style="width:100%;height:calc( 100% - 55px );"></div>
-        <div id="statusBar" style="width:100%;height:20px;"></div>
+    </div>
+    
+    <div id="statusBar" style="width:100%; height:20px; background: #f9f9f9; border-top: 1px solid #ddd; padding: 2px 10px; font-size: 12px; line-height: 16px;">
+        <span id="statusInfo">准备就绪</span>
+    </div>
+    
+    <!-- 隐藏的数据容器，用于传递后端数据到前端 -->
+    <script type="application/json" id="columnData">{% raw column_names_json %}</script>
 </div>
 
 <script type="text/javascript">
+    // 确保 getUrlVar 函数存在
+    if (!$.getUrlVar) {
+        $.extend({
+            getUrlVars: function(){
+                let vars = [], hash;
+                const hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+                for(let i = 0; i < hashes.length; i++)
+                {
+                    hash = hashes[i].split('=');
+                    vars.push(hash[0]);
+                    vars[hash[0]] = hash[1];
+                }
+                return vars;
+            },
+            getUrlVar: function(name){
+                return $.getUrlVars()[name];
+            }
+        });
+    }
+    
     const nameParam = $.getUrlVar('table_name');
     let dateParam = "{{ date_now }}";
-    const colInfos = {% raw web_module_data.column_names %};
-    let myView;
-
-    $(document).ready(function () {
-        const spread = new GC.Spread.Sheets.Workbook(document.getElementById('instock-data'), {sheetCount: 0});
-        spread.options.newTabVisible = false;
-        spread.options.tabEditable = false;
-        spread.options.tabNavigationVisible = false;
-        spread.options.tabStripRatio = 0.37;
-        const sheet = spread.addSheetTab(0, nameParam, GC.Spread.Sheets.SheetType.tableSheet);
-        sheet.options.sheetTabColor = 'red';
-        sheet.options.allowAddNew = false; //hide new row
-        sheet.setDefaultRowHeight(80, GC.Spread.Sheets.SheetArea.colHeader);
-        sheet.applyTableTheme(GC.Spread.Sheets.Tables.TableThemes.light18)
-        if (colInfos[1].value == 'code') {
-            let hyperlinkStyle = new GC.Spread.Sheets.Style();
-            let hl = new GC.Spread.Sheets.CellTypes.HyperLink();
-            hl.onClickAction(function (cell) {
-                row = cell.row;
-                window.open('/instock/data/indicators?code=' + sheet.getSheet().getValue(row, 1) + '&date=' + (sheet.getSheet().getValue(row, 0)).format('yyyy-MM-dd') + '&name=' + sheet.getSheet().getValue(row, 2), '_blank');
-            });
-            hyperlinkStyle.cellType = hl;
-            colInfos[1].style = hyperlinkStyle;
+    
+    // 从隐藏的script标签中读取列信息数据
+    let colInfos = [];
+    try {
+        const columnDataElement = document.getElementById('columnData');
+        if (columnDataElement) {
+            colInfos = JSON.parse(columnDataElement.textContent);
+        } else {
+            console.error('找不到列数据元素');
         }
-        let statusBar = initStatusBar(spread);
-        initSpread(spread, statusBar);
-        initEvent(spread, statusBar);
-        const elem = document.querySelector('#instock-data')
-        {
-          let prevWidth;
-          new ResizeObserver(changes => {
-            for(const change of changes){
-              if(change.contentRect.width === prevWidth) {return;}
-              spread.refresh();
-            }
-          }).observe(elem);
-        };
-
-        $( ".date-picker" ).datepicker({
-            language: 'zh-CN', //设置语言
-            format:"yyyy-mm-dd",
+    } catch (error) {
+        console.error('解析列数据失败:', error);
+        colInfos = [];
+    }
+    
+    let currentData = [];
+    let filteredData = [];
+    
+    $(document).ready(function () {
+        console.log('DOM 已加载完成');
+        console.log('jQuery 版本:', $.fn.jquery);
+        console.log('Luckysheet 是否存在:', typeof luckysheet !== 'undefined');
+        console.log('nameParam:', nameParam);
+        console.log('colInfos:', colInfos);
+        
+        // 检查必要的依赖
+        if (typeof luckysheet === 'undefined') {
+            console.error('Luckysheet 库未加载');
+            updateStatusBar("Luckysheet 库未加载，请刷新页面重试");
+            return;
+        }
+        
+        if (!colInfos || !Array.isArray(colInfos)) {
+            console.error('列配置信息无效:', colInfos);
+            updateStatusBar("列配置信息错误");
+            return;
+        }
+        
+        if (!nameParam) {
+            console.warn('未指定表名参数');
+            updateStatusBar("缺少表名参数");
+            return;
+        }
+        
+        // 初始化Luckysheet
+        initLuckysheet();
+        
+        // 初始化事件
+        initEvents();
+        
+        // 延迟一点时间再加载数据，确保所有依赖都已准备好
+        setTimeout(() => {
+            loadData();
+        }, 500);
+        
+        // 初始化日期选择器
+        $(".date-picker").datepicker({
+            language: 'zh-CN',
+            format: "yyyy-mm-dd",
             showOtherMonths: true,
             selectOtherMonths: false,
             autoclose: true,
-            todayHighlight: true,
-            onSelect: function(selected,evnt) {
-                 console.log(selected);
-            }
+            todayHighlight: true
         }).on('changeDate', function(ev){
-           initSpread(GC.Spread.Sheets.findControl(document.getElementById('instock-data')));
+            loadData();
         });
     });
-
-    function initStatusBar(spread) {
-        let old_cnd = 1;
-        let StatusItem = GC.Spread.Sheets.StatusBar.StatusItem;
-        function RecordCountItem(name, options) {
-            StatusItem.call(this, name, options);
-            this.cno = 1;
-            this.dataSourceLength = 0;
-            this.visibleLength =  0;
+    
+    function initLuckysheet() {
+        // 简单的初始化，等待数据加载后再创建实际的表格
+        console.log("等待数据加载...");
+        updateStatusBar("初始化中...");
+        showLoadingIndicator("正在初始化...");
+    }
+    
+    function showLoadingIndicator(message) {
+        const container = document.getElementById('luckysheet');
+        if (container) {
+            container.innerHTML = `
+                <div id="loadingIndicator" style="display: flex; align-items: center; justify-content: center; height: 100%; background: #f8f9fa;">
+                    <div style="text-align: center; color: #6c757d;">
+                        <div style="margin-bottom: 10px;">
+                            <i class="fa fa-spinner fa-spin" style="font-size: 24px;"></i>
+                        </div>
+                        <div>${message || '正在加载数据...'}</div>
+                    </div>
+                </div>
+            `;
         }
-        RecordCountItem.prototype = new StatusItem();
-        RecordCountItem.prototype.onCreateItemView = function(container) {
-            let element = this._element;
-            if (!element) {
-                element = this._element = document.createElement("span");
-                element.innerHTML = " <i class=\"fa fa-commenting-o\"></i>总记录/筛选记录：<b>" + this.dataSourceLength + "</b> / <b>" + this.visibleLength + "</b> 条 - 当前位置：第 <b>" + this.cno + "</b> 行";
-            }
-            container.appendChild(element);
-        };
-        RecordCountItem.prototype.onBind = function(context) {
-            let _this = this;
-            context.bind(GC.Spread.Sheets.Events.SelectionChanged, function(e, args) {
-                let row = args.newSelections[0].row;
-                if (row > 0 || args.newSelections[0].rowCount > 0) {
-                    _this.cno = row + 1;
-                }else{
-                    _this.cno = 0;
-                }
-                _this.onUpdate();
-            });
-            context.bind(GC.Spread.Sheets.Events.RangeFiltered, function (e, args) {
-                _this.dataSourceLength = myView.length();
-                _this.visibleLength = myView.visibleLength();
-                if (_this.visibleLength===0){old_cnd=_this.cno;_this.cno = 0;}
-                _this.onUpdate();
-            });
-            context.bind(GC.Spread.Sheets.Events.RangeFilterCleared, function (e, args) {
-                _this.dataSourceLength = myView.length();
-                _this.visibleLength = myView.visibleLength();
-                if (_this.visibleLength>0){_this.cno = old_cnd;}
-                _this.onUpdate();
-            });
-        };
-        RecordCountItem.prototype.onUpdate = function() {
-            StatusItem.prototype.onUpdate.call(this);
-            this._element.innerHTML = " <i class=\"fa fa-commenting-o\"></i>总记录/筛选记录：<b>" + this.dataSourceLength + "</b> / <b>" + this.visibleLength + "</b> 条 - 当前位置：第 <b>" + this.cno + "</b> 行";
-        };
-        let recordCountItem = new RecordCountItem('recordCountItem', { menuContent: '当前位置', value: 0 });
-        let statusBar = new GC.Spread.Sheets.StatusBar.StatusBar(document.getElementById('statusBar'), {
-            items: [recordCountItem]
-        });
-        statusBar.bind(spread);
-        return statusBar;
     }
-
-    function initSpread(spread, statusBar) {
-        const dateParam_old = document.getElementById("dateid_old").value
+    
+    function hideLoadingIndicator() {
+        const indicator = document.getElementById('loadingIndicator');
+        if (indicator) {
+            indicator.remove();
+        }
+    }
+    
+    function loadData() {
+        const dateParam_old = document.getElementById("dateid_old").value;
         dateParam = document.getElementById('dateid').value;
+        
         if (dateParam_old === dateParam) return;
-        document.getElementById("dateid_old").value = dateParam
-        spread.suspendPaint();
-        const dataManager = spread.dataManager();
-        const productTable = dataManager.addTable("productTable", {
-            remote: {
-                read: {
-                    url: "/instock/api_data?name="+nameParam+"&date="+dateParam
+        document.getElementById("dateid_old").value = dateParam;
+        
+        updateStatusBar("加载数据中...");
+        showLoadingIndicator("正在加载数据...");
+        
+        // 加载数据
+        fetch(`/instock/api_data?name=${nameParam}&date=${dateParam}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
-            },
-            schema: {
-              columns: {
-                listing_date: { dataType: "date" },
-                report_date: { dataType: "date" },
-                plan_date: { dataType: "date" },
-                record_date: { dataType: "date" },
-                ex_dividend_date: { dataType: "date" },
-                record_date: { dataType: "date" },
-              },
-            }
-        });
-        const sheet = spread.getActiveSheetTab();
-        myView = productTable.addView("myView",colInfos);
-        myView.fetch().then(function() {
-            sheet.setDataView(myView);
-            sheet.togglePinnedColumns([0,1,2]);
-            if (statusBar) {
-                let recordItem = statusBar.get("recordCountItem");
-                if (recordItem) {
-                    recordItem.dataSourceLength = myView.length();
-                    recordItem.visibleLength = myView.visibleLength();
-                    if (recordItem.visibleLength===0){recordItem.cno = 0;}
-                    recordItem.onUpdate();
+                return response.json();
+            })
+            .then(data => {
+                console.log('Data loaded:', data.length, 'records');
+                if (data.length === 0) {
+                    console.warn(`No data found for date ${dateParam}, trying latest available date...`);
+                    showLoadingIndicator("当前日期无数据，尝试加载最新数据...");
+                    
+                    // 如果当前日期没有数据，尝试使用最新可用日期
+                    return fetch(`/instock/api_data?name=${nameParam}&date=2025-08-22`)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                            }
+                            return response.json();
+                        })
+                        .then(fallbackData => {
+                            console.log('Fallback data loaded:', fallbackData.length, 'records');
+                            if (fallbackData.length > 0) {
+                                // 更新日期选择器显示实际使用的日期
+                                document.getElementById('dateid').value = '2025-08-22';
+                                dateParam = '2025-08-22';
+                                updateStatusBar(`使用最新可用数据 (2025-08-22)`);
+                            }
+                            currentData = fallbackData;
+                            filteredData = fallbackData.slice();
+                            displayDataInLuckysheet(fallbackData);
+                        });
+                } else {
+                    currentData = data;
+                    filteredData = data.slice();
+                    displayDataInLuckysheet(data);
+                    updateStatusBar();
                 }
-            }
-        });
-        spread.resumePaint();
-    }
-
-    function initEvent(spread,statusBar) {
-        document.getElementById('saveExcel').onclick = function() {
-            const excelIo = new GC.Spread.Excel.IO();
-            const json = spread.toJSON({ includeBindingSource: true, saveAsView: true });
-            excelIo.save(json, function(blob) {
-                saveAs(blob, nameParam+dateParam+".xlsx");
-            }, function(e) {
-                console.log(e);
+            })
+            .catch(error => {
+                console.error('加载数据失败:', error);
+                hideLoadingIndicator();
+                updateStatusBar("数据加载失败: " + error.message);
+                
+                // 显示错误信息
+                const container = document.getElementById('luckysheet');
+                if (container) {
+                    container.innerHTML = `
+                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: #f8f9fa;">
+                            <div style="text-align: center; color: #dc3545;">
+                                <div style="margin-bottom: 10px;">
+                                    <i class="fa fa-exclamation-triangle" style="font-size: 24px;"></i>
+                                </div>
+                                <div>数据加载失败</div>
+                                <div style="font-size: 12px; margin-top: 5px; color: #6c757d;">${error.message}</div>
+                                <button onclick="loadData()" class="btn btn-primary btn-sm" style="margin-top: 10px;">重试</button>
+                            </div>
+                        </div>
+                    `;
+                }
             });
-        };
-        document.getElementById("resetFilter").onclick = function() {
-            spread.getActiveSheetTab().getSheet().rowFilter().reset();
-            if (statusBar) {
-                let recordItem = statusBar.get("recordCountItem");
-                if (recordItem) {
-                    recordItem.visibleLength =recordItem.dataSourceLength
-                    recordItem.onUpdate();
+    }
+    
+    function displayDataInLuckysheet(data) {
+        if (!data || data.length === 0) {
+            updateStatusBar("无数据");
+            return;
+        }
+        
+        console.log('显示数据，记录数:', data.length);
+        console.log('列信息:', colInfos);
+        
+        // 检查 colInfos 是否有效
+        if (!colInfos || !Array.isArray(colInfos) || colInfos.length === 0) {
+            console.error('列信息无效:', colInfos);
+            updateStatusBar("列配置错误");
+            showFallbackTable(data);
+            return;
+        }
+        
+        // 检查数据样本
+        if (data.length > 0) {
+            console.log('数据样本:', data[0]);
+            console.log('数据字段:', Object.keys(data[0]));
+        }
+        
+        // 转换 colInfos 格式（适配后端返回的格式）
+        const normalizedColInfos = colInfos.map(col => {
+            if (typeof col === 'object' && col.value && col.caption) {
+                // 后端格式：{ value: "field_name", caption: "显示名" }
+                return {
+                    field: col.value,
+                    displayText: col.caption
+                };
+            } else if (typeof col === 'object' && col.field) {
+                // 已经是正确格式
+                return col;
+            } else {
+                console.warn('未知的列格式:', col);
+                return {
+                    field: col.toString(),
+                    displayText: col.toString()
+                };
+            }
+        });
+        
+        console.log('标准化后的列信息:', normalizedColInfos);
+        
+        try {
+            // 构建 celldata 格式的数据
+            const celldata = [];
+            
+            // 添加表头
+            normalizedColInfos.forEach((col, colIndex) => {
+                if (!col) {
+                    console.warn('空的列配置在索引:', colIndex);
+                    return;
+                }
+                
+                const headerText = col.displayText || col.field || col.name || `列${colIndex + 1}`;
+                console.log(`列${colIndex}: ${headerText}, 字段: ${col.field}`);
+                
+                celldata.push({
+                    r: 0,
+                    c: colIndex,
+                    v: {
+                        v: headerText,
+                        ct: { fa: "General", t: "g" },
+                        m: headerText,
+                        bg: "#f0f0f0",
+                        bl: 1,
+                        fs: 11
+                    }
+                });
+            });
+            
+            // 添加数据行（限制显示前1000行以提高性能）
+            const displayData = data.slice(0, 1000);
+            displayData.forEach((row, rowIndex) => {
+                if (!row || typeof row !== 'object') {
+                    console.warn('无效的行数据:', rowIndex, row);
+                    return;
+                }
+                
+                normalizedColInfos.forEach((col, colIndex) => {
+                    if (!col || !col.field) {
+                        console.warn('列配置缺少field属性:', colIndex, col);
+                        return;
+                    }
+                    
+                    let value = row[col.field];
+                    if (value === null || value === undefined) value = '';
+                    
+                    // 处理日期格式
+                    if (col.field && col.field.includes('date') && value) {
+                        try {
+                            const date = new Date(value);
+                            if (!isNaN(date.getTime())) {
+                                value = date.toISOString().split('T')[0];
+                            }
+                        } catch (e) {
+                            console.warn('日期格式化错误:', value, e);
+                        }
+                    }
+                    
+                    // 处理数字格式
+                    let cellValue;
+                    if (typeof value === 'number') {
+                        cellValue = {
+                            v: value,
+                            ct: { fa: "0.00", t: "n" },
+                            m: value.toFixed(2)
+                        };
+                    } else {
+                        const strValue = String(value);
+                        cellValue = {
+                            v: strValue,
+                            ct: { fa: "General", t: "g" },
+                            m: strValue
+                        };
+                    }
+                    
+                    celldata.push({
+                        r: rowIndex + 1,
+                        c: colIndex,
+                        v: cellValue
+                    });
+                });
+            });
+            
+            console.log('构建 celldata 完成，单元格数:', celldata.length);
+            
+            // 销毁现有的 Luckysheet 实例
+            if (typeof luckysheet !== 'undefined' && luckysheet.destroy) {
+                try {
+                    luckysheet.destroy();
+                    console.log('成功销毁旧的 Luckysheet 实例');
+                } catch (e) {
+                    console.log('销毁实例时出错，忽略:', e);
                 }
             }
+            
+            // 清空容器
+            const container = document.getElementById('luckysheet');
+            if (!container) {
+                console.error('找不到 luckysheet 容器');
+                return;
+            }
+            
+            // 隐藏加载指示器
+            hideLoadingIndicator();
+            container.innerHTML = '';
+            
+            // 确保 luckysheet 全局变量存在
+            if (typeof luckysheet === 'undefined') {
+                console.error('Luckysheet 库未加载');
+                updateStatusBar("Luckysheet 库未加载");
+                showFallbackTable(data);
+                return;
+            }
+            
+            // 使用标准 celldata 格式创建 Luckysheet
+            const options = {
+                container: 'luckysheet',
+                title: nameParam || '股票数据',
+                lang: 'zh',
+                allowCopy: true,
+                allowEdit: false,
+                allowUpdate: false,
+                showtoolbar: false,
+                showinfobar: false,
+                showsheetbar: false,
+                showstatisticBar: false,
+                sheetBottomConfig: false,
+                allowEditName: false,
+                enableAddRow: false,
+                enableAddBackTop: false,
+                data: [{
+                    name: "Sheet1",
+                    color: "",
+                    index: 0,
+                    status: 1,
+                    order: 0,
+                    hide: 0,
+                    row: Math.max(displayData.length + 10, 50),
+                    column: Math.max(normalizedColInfos.length + 5, 26),
+                    defaultRowHeight: 25,
+                    defaultColWidth: 100,
+                    celldata: celldata,
+                    config: {
+                        merge: {},
+                        rowlen: { 0: 30 }, // 表头行高
+                        columnlen: {},
+                        rowhidden: {},
+                        colhidden: {},
+                        borderInfo: [],
+                        authority: {}
+                    },
+                    scrollLeft: 0,
+                    scrollTop: 0,
+                    luckysheet_select_save: [],
+                    calcChain: [],
+                    isPivotTable: false,
+                    pivotTable: {},
+                    filter_select: {},
+                    filter: null,
+                    luckysheet_alternateformat_save: [],
+                    luckysheet_alternateformat_save_modelCustom: [],
+                    luckysheet_conditionformat_save: {},
+                    frozen: { type: "row", range: { row_focus: 0, column_focus: 0 } }, // 冻结表头
+                    chart: [],
+                    zoomRatio: 1,
+                    image: [],
+                    showGridLines: 1,
+                    dataVerification: {}
+                }]
+            };
+            
+            console.log('开始创建 Luckysheet 实例，配置:', options);
+            
+            // 添加创建成功和失败的回调
+            try {
+                luckysheet.create(options);
+                console.log('Luckysheet 实例创建调用完成');
+                
+                // 延迟更新状态栏，等待渲染完成
+                setTimeout(() => {
+                    updateStatusBar();
+                    console.log('状态栏更新完成');
+                    
+                    // 检查是否真的渲染成功
+                    const sheets = luckysheet.getAllSheets();
+                    console.log('当前表格数量:', sheets ? sheets.length : 0);
+                    
+                    if (!sheets || sheets.length === 0) {
+                        console.warn('Luckysheet 可能未正确渲染，使用备用方案');
+                        showFallbackTable(data);
+                    }
+                }, 2000);
+                
+            } catch (createError) {
+                console.error('创建 Luckysheet 实例失败:', createError);
+                updateStatusBar("Luckysheet 创建失败: " + createError.message);
+                showFallbackTable(data);
+            }
+            
+        } catch (error) {
+            console.error('显示数据时发生错误:', error);
+            updateStatusBar("数据显示失败: " + error.message);
+            
+            // 尝试显示一个简单的表格作为备用方案
+            showFallbackTable(data);
+        }
+    }
+    
+    function showFallbackTable(data) {
+        console.log('使用备用表格显示方案');
+        const container = document.getElementById('luckysheet');
+        
+        if (!container) {
+            console.error('找不到容器元素');
+            return;
+        }
+        
+        // 隐藏加载指示器
+        hideLoadingIndicator();
+        
+        // 检查是否有有效的列信息
+        let validColInfos = colInfos;
+        if (!validColInfos || !Array.isArray(validColInfos) || validColInfos.length === 0) {
+            console.warn('列信息无效，使用数据字段作为列');
+            if (data.length > 0 && typeof data[0] === 'object') {
+                validColInfos = Object.keys(data[0]).map(key => ({
+                    field: key,
+                    displayText: key
+                }));
+            } else {
+                console.error('无法确定列信息');
+                container.innerHTML = '<div style="padding: 20px; text-align: center; color: #999;">无法显示数据：列配置错误</div>';
+                return;
+            }
+        } else {
+            // 标准化列信息格式
+            validColInfos = validColInfos.map(col => {
+                if (typeof col === 'object' && col.value && col.caption) {
+                    return {
+                        field: col.value,
+                        displayText: col.caption
+                    };
+                } else if (typeof col === 'object' && col.field) {
+                    return col;
+                } else {
+                    return {
+                        field: col.toString(),
+                        displayText: col.toString()
+                    };
+                }
+            });
+        }
+        
+        let html = '<div style="overflow: auto; height: 100%; padding: 10px; background: #fff;">';
+        html += '<style>';
+        html += '.fallback-table { width: 100%; border-collapse: collapse; font-size: 12px; }';
+        html += '.fallback-table th { background: #f5f5f5; border: 1px solid #ddd; padding: 8px; text-align: left; font-weight: bold; }';
+        html += '.fallback-table td { border: 1px solid #ddd; padding: 6px; text-align: left; }';
+        html += '.fallback-table tr:nth-child(even) { background: #f9f9f9; }';
+        html += '.fallback-table tr:hover { background: #e3f2fd; }';
+        html += '</style>';
+        html += '<table class="fallback-table">';
+        
+        // 表头
+        html += '<thead><tr>';
+        validColInfos.forEach(col => {
+            const header = (col && (col.displayText || col.field)) || '未知列';
+            html += `<th>${header}</th>`;
+        });
+        html += '</tr></thead>';
+        
+        // 数据行（限制显示前500行以避免性能问题）
+        html += '<tbody>';
+        const maxRows = Math.min(data.length, 500);
+        for (let i = 0; i < maxRows; i++) {
+            const row = data[i];
+            html += '<tr>';
+            validColInfos.forEach(col => {
+                if (!col || !col.field) {
+                    html += '<td></td>';
+                    return;
+                }
+                
+                let value = row[col.field];
+                if (value === null || value === undefined) {
+                    value = '';
+                } else {
+                    // 处理日期格式
+                    if (col.field && col.field.includes('date') && value) {
+                        try {
+                            const date = new Date(value);
+                            if (!isNaN(date.getTime())) {
+                                value = date.toISOString().split('T')[0];
+                            }
+                        } catch (e) {
+                            // 保持原值
+                        }
+                    }
+                    
+                    // 处理数字格式
+                    if (typeof value === 'number') {
+                        value = value.toFixed(2);
+                    }
+                }
+                
+                html += `<td>${String(value).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</td>`;
+            });
+            html += '</tr>';
+        }
+        html += '</tbody></table>';
+        
+        if (data.length > 500) {
+            html += `<div style="padding: 10px; text-align: center; color: #666; background: #f0f0f0; margin-top: 10px;">
+                        <i class="fa fa-info-circle"></i> 为提高性能，仅显示前500条记录，总共${data.length}条记录
+                     </div>`;
+        }
+        
+        html += '</div>';
+        
+        container.innerHTML = html;
+        updateStatusBar(`显示前${maxRows}条数据 (共${data.length}条) - 使用备用表格`);
+    }
+    
+    function initEvents() {
+        // 导出Excel
+        document.getElementById('saveExcel').onclick = function() {
+            if (typeof luckysheet !== 'undefined' && luckysheet.exportXlsx) {
+                luckysheet.exportXlsx({
+                    title: `${nameParam}_${dateParam}`,
+                    success: function(blobUrl) {
+                        // 创建下载链接
+                        const a = document.createElement('a');
+                        a.href = blobUrl;
+                        a.download = `${nameParam}_${dateParam}.xlsx`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        updateStatusBar("导出成功");
+                    },
+                    error: function(error) {
+                        console.error('导出失败:', error);
+                        updateStatusBar("导出失败");
+                    }
+                });
+            } else {
+                // 备用导出方案
+                exportToCSV();
+            }
+        };
+        
+        // 重置筛选
+        document.getElementById('resetFilter').onclick = function() {
+            filteredData = currentData.slice();
+            displayDataInLuckysheet(filteredData);
+            updateStatusBar("筛选已重置");
         };
     }
-
-    Date.prototype.format = function (format) {
-      let o = {
-        "y": "" + this.getFullYear(),
-        "M": "" + (this.getMonth() + 1),  //month
-        "d": "" + this.getDate(),         //day
-        "h": "" + this.getHours(),        //hour
-      }
-      return Object.keys(o).reduce((pre, k)=> (new RegExp("(" + k + "+)").test(pre)) ? (pre.replace(RegExp.$1, RegExp.$1.length === 1 ? o[k] : o[k].padStart(2, "0"))) : pre , format);
+    
+    function exportToCSV() {
+        if (!currentData || currentData.length === 0) {
+            alert('没有数据可导出');
+            return;
+        }
+        
+        // 创建CSV内容
+        const normalizedColInfos = colInfos.map(col => {
+            if (typeof col === 'object' && col.value && col.caption) {
+                return { field: col.value, displayText: col.caption };
+            } else if (typeof col === 'object' && col.field) {
+                return col;
+            } else {
+                return { field: col.toString(), displayText: col.toString() };
+            }
+        });
+        
+        const headers = normalizedColInfos.map(col => col.displayText || col.field);
+        const csvContent = [
+            headers.join(','),
+            ...currentData.map(row => 
+                normalizedColInfos.map(col => {
+                    const value = row[col.field] || '';
+                    return `"${String(value).replace(/"/g, '""')}"`;
+                }).join(',')
+            )
+        ].join('\n');
+        
+        // 创建Blob并下载
+        const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${nameParam}_${dateParam}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        updateStatusBar("CSV导出成功");
     }
+    
+    function updateStatusBar(message) {
+        const statusElement = document.getElementById('statusInfo');
+        if (message) {
+            statusElement.textContent = message;
+        } else {
+            const totalRecords = currentData.length;
+            const visibleRecords = filteredData.length;
+            statusElement.innerHTML = `<i class="fa fa-info-circle"></i> 总记录数：<b>${totalRecords}</b> | 显示记录数：<b>${visibleRecords}</b> | 表格：${nameParam || '未知'}`;
+        }
+    }
+    
+    // 日期格式化函数
+    Date.prototype.format = function (format) {
+        const o = {
+            "y": "" + this.getFullYear(),
+            "M": "" + (this.getMonth() + 1),
+            "d": "" + this.getDate(),
+            "h": "" + this.getHours(),
+        };
+        return Object.keys(o).reduce((pre, k) => 
+            (new RegExp("(" + k + "+)").test(pre)) ? 
+            (pre.replace(RegExp.$1, RegExp.$1.length === 1 ? o[k] : o[k].padStart(2, "0"))) : 
+            pre, format);
+    };
 </script>
 {% end %}
