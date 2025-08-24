@@ -28,6 +28,7 @@ def prepare(date, strategy):
         table_name = strategy['name']
         strategy_func = strategy['func']
         results = run_check(strategy_func, table_name, stocks_data, date)
+        print(f"{strategy['cn']}策略选股结果{results}")
         if results is None:
             return
 
@@ -51,7 +52,7 @@ def prepare(date, strategy):
         mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
 
     except Exception as e:
-        logging.error(f"strategy_data_daily_job.prepare处理异常：{strategy}策略{e}")
+        logging.exception(f"strategy_data_daily_job.prepare处理异常：{strategy}策略{e}")
 
 
 def run_check(strategy_fun, table_name, stocks, date, workers=40):
@@ -62,20 +63,28 @@ def run_check(strategy_fun, table_name, stocks, date, workers=40):
             is_check_high_tight = True
     data = []
     try:
-        with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
+        for k in stocks:
             if is_check_high_tight:
-                future_to_data = {executor.submit(strategy_fun, k, stocks[k], date=date, istop=(k[1] in stock_tops)): k for k in stocks}
+                if strategy_fun(k, stocks[k], date=date, istop=(k[1] in stock_tops)):
+                    data.append(k)
             else:
-                future_to_data = {executor.submit(strategy_fun, k, stocks[k], date=date): k for k in stocks}
-            for future in concurrent.futures.as_completed(future_to_data):
-                stock = future_to_data[future]
-                try:
-                    if future.result():
-                        data.append(stock)
-                except Exception as e:
-                    logging.error(f"strategy_data_daily_job.run_check处理异常：{stock[1]}代码{e}策略{table_name}")
+                if strategy_fun(k, stocks[k], date=date):
+                    data.append(k)
+        
+        # with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
+        #     if is_check_high_tight:
+        #         future_to_data = {executor.submit(strategy_fun, k, stocks[k], date=date, istop=(k[1] in stock_tops)): k for k in stocks}
+        #     else:
+        #         future_to_data = {executor.submit(strategy_fun, k, stocks[k], date=date): k for k in stocks}
+        #     for future in concurrent.futures.as_completed(future_to_data):
+        #         stock = future_to_data[future]
+        #         try:
+        #             if future.result():
+        #                 data.append(stock)
+        #         except Exception as e:
+        #             logging.error(f"strategy_data_daily_job.run_check处理异常：{stock[1]}代码{e}策略{table_name}")
     except Exception as e:
-        logging.error(f"strategy_data_daily_job.run_check处理异常：{e}策略{table_name}")
+        logging.exception(f"strategy_data_daily_job.run_check处理异常：{e}策略{table_name}")
     if not data:
         return None
     else:
@@ -84,10 +93,11 @@ def run_check(strategy_fun, table_name, stocks, date, workers=40):
 
 def main():
     # 使用方法传递。
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        for strategy in tbs.TABLE_CN_STOCK_STRATEGIES:
-            executor.submit(runt.run_with_args, prepare, strategy)
+    # with concurrent.futures.ThreadPoolExecutor() as executor:
+    #     for strategy in tbs.TABLE_CN_STOCK_STRATEGIES:
+    #         executor.submit(runt.run_with_args, prepare, strategy)
 
+    runt.run_with_args(prepare, tbs.TABLE_CN_STOCK_STRATEGIES[1])
 
 # main函数入口
 if __name__ == '__main__':

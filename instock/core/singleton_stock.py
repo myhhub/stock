@@ -26,10 +26,11 @@ class stock_data(metaclass=singleton_type):
 
 # 读取股票历史数据
 class stock_hist_data(metaclass=singleton_type):
-    def __init__(self, date=None, stocks=None, workers=16):
+    def __init__(self, date=None, stocks=None, workers=8):
         if stocks is None:
-            _subset = stock_data(date).get_data()[list(tbs.TABLE_CN_STOCK_FOREIGN_KEY['columns'])]
-            stocks = [tuple(x) for x in _subset.values]
+            stocks = stf.get_stock_code_name()  # 不再传递date参数，使用最大date
+            # _subset = stock_data(date).get_data()[list(tbs.TABLE_CN_STOCK_FOREIGN_KEY['columns'])]
+            # stocks = [tuple(x) for x in _subset.values()]
         if stocks is None:
             self.data = None
             return

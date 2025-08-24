@@ -47,14 +47,37 @@ MYSQL_CONN_TORNDB = {'host': f'{db_host}:{str(db_port)}', 'user': db_user, 'pass
 
 
 # 通过数据库链接 engine
+# 全局连接池实例
+_engine_pool = None
+_engine_pool_to_db = {}
+
+# 通过数据库链接 engine（带连接池）
 def engine():
-    return create_engine(MYSQL_CONN_URL)
+    global _engine_pool
+    if _engine_pool is None:
+        _engine_pool = create_engine(
+            MYSQL_CONN_URL,
+            pool_size=100,           # 连接池大小
+            max_overflow=50,        # 最大溢出连接数
+            pool_pre_ping=True,     # 连接健康检查
+            pool_recycle=60,      # 连接回收时间（秒）
+            echo=False              # 不输出SQL日志
+        )
+    return _engine_pool
 
 
 def engine_to_db(to_db):
-    _engine = create_engine(MYSQL_CONN_URL.replace(f'/{db_database}?', f'/{to_db}?'))
-    return _engine
-
+    global _engine_pool_to_db
+    if to_db not in _engine_pool_to_db:
+        _engine_pool_to_db[to_db] = create_engine(
+            MYSQL_CONN_URL.replace(f'/{db_database}?', f'/{to_db}?'),
+            pool_size=100,           # 连接池大小
+            max_overflow=50,        # 最大溢出连接数
+            pool_pre_ping=True,     # 连接健康检查
+            pool_recycle=60,      # 连接回收时间（秒）
+            echo=False              # 不输出SQL日志
+        )
+    return _engine_pool_to_db[to_db]
 
 # DB Api -数据库连接对象connection
 def get_connection():
@@ -204,3 +227,81 @@ def executeSqlCount(sql, params=()):
             except Exception as e:
                 logging.error(f"database.select_count计算数量处理异常：{e}")
     return 0
+
+
+# 使用pandas读取数据库并支持变量查询
+def read_sql_to_df(sql, params=None, to_db=None):
+    """
+    使用pandas读取数据库并支持变量查询
+    
+    Args:
+        sql: SQL查询语句，支持%s占位符
+        params: 查询参数元组或字典
+        to_db: 指定数据库，None使用默认数据库
+    
+    Returns:
+        pandas.DataFrame: 查询结果
+    """
+    import pandas as pd
+    
+    try:
+        if to_db is None:
+            engine_mysql = engine()
+        else:
+            engine_mysql = engine_to_db(to_db)
+        
+        # 使用pandas的read_sql方法，自动处理参数化查询
+        df = pd.read_sql(sql, engine_mysql, params=params)
+        return df
+        
+    except Exception as e:
+        logging.error(f"database.read_sql_to_df处理异常：{sql}{e}")
+        return pd.DataFrame()
+
+
+# 使用pandas批量读取数据库表
+def read_table_to_df(table_name, columns=None, where=None, params=None, to_db=None, limit=None):
+    """
+    使用pandas批量读取数据库表
+    
+    Args:
+        table_name: 表名
+        columns: 指定列名列表，None表示所有列
+        where: WHERE条件语句（不含WHERE关键字）
+        params: WHERE条件参数
+        to_db: 指定数据库
+        limit: 限制返回行数
+    
+    Returns:
+        pandas.DataFrame: 查询结果
+    """
+    import pandas as pd
+    
+    try:
+        if to_db is None:
+            engine_mysql = engine()
+        else:
+            engine_mysql = engine_to_db(to_db)
+        
+        # 构建查询
+        if columns:
+            cols_str = ', '.join([f'`{col}`' for col in columns])
+            sql = f"SELECT {cols_str} FROM `{table_name}`"
+        else:
+            sql = f"SELECT * FROM `{table_name}`"
+        
+        # 添加WHERE条件
+        if where:
+            sql += f" WHERE {where}"
+        
+        # 添加LIMIT
+        if limit:
+            sql += f" LIMIT {limit}"
+        
+        # 执行查询
+        df = pd.read_sql(sql, engine_mysql, params=params)
+        return df
+        
+    except Exception as e:
+        logging.error(f"database.read_table_to_df处理异常：{table_name}表{e}")
+        return pd.DataFrame()

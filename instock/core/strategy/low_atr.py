@@ -15,7 +15,8 @@ def check_low_increase(code_name, data, date=None, ma_short=30, ma_long=250, thr
     else:
         end_date = date.strftime("%Y-%m-%d")
     if end_date is not None:
-        mask = (data['date'] <= end_date)
+        import pandas as pd
+        mask = (pd.to_datetime(data['date']) <= pd.to_datetime(end_date))
         data = data.loc[mask]
     if len(data.index) < ma_long:
         return False

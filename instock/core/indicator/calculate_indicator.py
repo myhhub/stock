@@ -14,7 +14,8 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
     try:
         isCopy = False
         if end_date is not None:
-            mask = (data['date'] <= end_date)
+            import pandas as pd
+            mask = (pd.to_datetime(data['date']) <= pd.to_datetime(end_date))
             data = data.loc[mask]
             isCopy = True
         if calc_threshold is not None:

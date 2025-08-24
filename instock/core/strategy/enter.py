@@ -3,7 +3,7 @@
 
 import numpy as np
 import talib as tl
-
+import pandas as pd
 
 __author__ = 'myh '
 __date__ = '2023/3/10 '
@@ -19,7 +19,7 @@ def check_volume(code_name, data, date=None, threshold=60):
     else:
         end_date = date.strftime("%Y-%m-%d")
     if end_date is not None:
-        mask = (data['date'] <= end_date)
+        mask = (pd.to_datetime(data['date']) <= pd.to_datetime(end_date))
         data = data.loc[mask].copy()
     if len(data.index) < threshold:
         return False

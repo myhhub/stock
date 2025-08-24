@@ -21,7 +21,8 @@ import instock.core.crawling.stock_fhps_em as sfe
 import instock.core.crawling.stock_chip_race as scr
 import instock.core.crawling.stock_limitup_reason as slr
 from instock.core.proxy_pool import get_proxy
-
+from instock.core.tablestructure import TABLE_CN_STOCK_SPOT
+from instock.lib.database import read_sql_to_df, read_table_to_df
 __author__ = 'myh '
 __date__ = '2023/3/10 '
 
@@ -94,6 +95,7 @@ def fetch_etfs(date):
 # 读取当天股票数据
 def fetch_stocks(date):
     try:
+        # 从数据库中获取
         data = she.stock_zh_a_spot_em(proxy=get_proxy())
         if data is None or len(data.index) == 0:
             return None
@@ -177,7 +179,12 @@ def fetch_stock_top_entity_data(date):
     code_name = '代码'
     entity_amount_name = '买方机构数'
     try:
-        data = sle.stock_lhb_jgmmtj_em(start_date, end_date, proxy=get_proxy())
+        now = datetime.datetime.now()
+        if trd.is_tradetime(now):
+            data = sle.stock_lhb_jgmmtj_em(start_date, end_date, proxy=get_proxy())
+        else:
+            # TODO 读数据库
+            data = sle.stock_lhb_jgmmtj_em(start_date, end_date, proxy=get_proxy())
         if data is None or len(data.index) == 0:
             return None
 
@@ -338,7 +345,7 @@ def fetch_stock_hist(data_base, date_start=None, is_cache=True):
             data["volume"] = data['volume'].values.astype('double') * 100  # 成交量单位从手变成股。
         return data
     except Exception as e:
-        logging.error(f"stockfetch.fetch_stock_hist处理异常：{e}")
+        logging.exception(f"stockfetch.fetch_stock_hist处理异常：{e}")
     return None
 
 
@@ -357,12 +364,37 @@ def stock_hist_cache(code, date_start, date_end=None, is_cache=True, adjust=''):
         if os.path.isfile(cache_file):
             return pd.read_pickle(cache_file, compression="gzip")
         else:
-            if date_end is not None:
-                stock = she.stock_zh_a_hist(symbol=code, period="daily", start_date=date_start, end_date=date_end,
-                                            adjust=adjust, proxy=get_proxy())
+            # 获取当前时间，如果时间是交易时间段内，就不缓存。
+            now = datetime.datetime.now()
+            if trd.is_tradetime(now):
+                if date_end is not None:
+                    stock = she.stock_zh_a_hist(symbol=code, period="daily", start_date=date_start, end_date=date_end,
+                                                adjust=adjust, proxy=get_proxy())
+                else:
+                    stock = she.stock_zh_a_hist(symbol=code, period="daily", start_date=date_start, adjust=adjust, proxy=get_proxy())
             else:
-                stock = she.stock_zh_a_hist(symbol=code, period="daily", start_date=date_start, adjust=adjust, proxy=get_proxy())
-
+                from instock.lib.database import read_table_to_df
+                columns = {
+                    "日期": "date",
+                    "开盘": "open_price",
+                    "收盘": "new_price",
+                    "最高": "high_price",
+                    "最低": "low_price",
+                    "成交量": "volume",
+                    "成交额": "deal_amount",
+                    "振幅": "amplitude",
+                    "涨跌幅": "change_rate",
+                    "涨跌额": "ups_downs",
+                    "换手率": "turnoverrate"
+                }
+                stock = read_table_to_df(
+                    TABLE_CN_STOCK_SPOT['name'], 
+                    list(columns.values()), 
+                    where="code=%s and date>=%s",
+                    params=(code, date_start)
+                )
+                # 将结果列名替换成中文列名
+                stock.rename(columns={v: k for k, v in columns.items()}, inplace=True)
             if stock is None or len(stock.index) == 0:
                 return None
             stock.columns = tuple(tbs.CN_STOCK_HIST_DATA['columns'])
@@ -376,4 +408,21 @@ def stock_hist_cache(code, date_start, date_end=None, is_cache=True, adjust=''):
             return stock
     except Exception as e:
         logging.error(f"stockfetch.stock_hist_cache处理异常：{code}代码{e}")
+    return None
+
+def get_stock_code_name(date=None):
+    try:
+        TABLE_CN_STOCK_SPOT
+        # 查询最大的date作为时间，获取最新的股票代码和名称
+        sql = f"SELECT `date`,`code`,`name` FROM `{TABLE_CN_STOCK_SPOT['name']}` WHERE `date` = (SELECT MAX(`date`) FROM `{TABLE_CN_STOCK_SPOT['name']}`)"
+        data = read_sql_to_df(sql)
+        if data is not None and len(data.index) > 0:
+            # 数据已经包含date列，直接设置列名
+            data.columns = ['date', 'code', 'name']
+            # 元组需要是date, code, name的顺序并且date是字符串
+
+            data = [(x[0].strftime('%Y-%m-%d'), x[1], x[2]) for x in data.values]
+            return data
+    except Exception as e:
+        logging.error(f"stockfetch.get_stock_code_name处理异常：{e}")
     return None

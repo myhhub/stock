@@ -10,7 +10,8 @@ __date__ = '2023/3/24 '
 def get_pattern_recognitions(data, stock_column, end_date=None, threshold=120, calc_threshold=None):
     isCopy = False
     if end_date is not None:
-        mask = (data['date'] <= end_date)
+        import pandas as pd
+        mask = (pd.to_datetime(data['date']) <= pd.to_datetime(end_date))
         data = data.loc[mask]
         isCopy = True
     if calc_threshold is not None:

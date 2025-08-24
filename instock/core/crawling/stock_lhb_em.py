@@ -218,7 +218,7 @@ def stock_lhb_stock_statistic_em(symbol: str = "近一月", proxy=None) -> pd.Da
 
 
 def stock_lhb_jgmmtj_em(
-    start_date: str = "20220906", end_date: str = "20220906"
+    start_date: str = "20220906", end_date: str = "20220906", proxy=None
 ) -> pd.DataFrame:
     """
     东方财富网-数据中心-龙虎榜单-机构买卖每日统计
@@ -244,7 +244,7 @@ def stock_lhb_jgmmtj_em(
         "client": "WEB",
         "filter": f"(TRADE_DATE>='{start_date}')(TRADE_DATE<='{end_date}')",
     }
-    r = requests.get(url, params=params)
+    r = requests.get(url, params=params, proxies=proxy)
     data_json = r.json()
     temp_df = pd.DataFrame(data_json["result"]["data"])
     temp_df.reset_index(inplace=True)

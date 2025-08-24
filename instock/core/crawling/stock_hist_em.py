@@ -4,6 +4,7 @@
 Date: 2022/6/19 15:26
 Desc: 东方财富网-行情首页-沪深京 A 股
 """
+import os
 import requests
 import pandas as pd
 import math
@@ -18,7 +19,7 @@ def stock_zh_a_spot_em(proxy=None) -> pd.DataFrame:
     :rtype: pandas.DataFrame
     """
     url = "http://82.push2.eastmoney.com/api/qt/clist/get"
-    page_size = 50
+    page_size = 100
     page_current = 1
     params = {
         "pn": page_current,
@@ -179,13 +180,17 @@ def stock_zh_a_spot_em(proxy=None) -> pd.DataFrame:
 
 
 @lru_cache()
-def code_id_map_em(proxy=None) -> dict:
+def code_id_map_em(store_file='/tmp/code_id_map_em.csv',proxy=None) -> dict:
     """
     东方财富-股票和市场代码
     http://quote.eastmoney.com/center/gridlist.html#hs_a_board
     :return: 股票和市场代码
     :rtype: dict
     """
+    if os.path.exists(store_file):
+        df = pd.read_csv(store_file, dtype=str)
+        return dict(zip(df["code"], df["id"]))
+
     url = "http://80.push2.eastmoney.com/api/qt/clist/get"
     page_size = 50
     page_current = 1
@@ -291,6 +296,8 @@ def code_id_map_em(proxy=None) -> dict:
     temp_df_sz = pd.DataFrame(data)
     temp_df_sz["bj_id"] = 0
     code_id_dict.update(dict(zip(temp_df_sz["f12"], temp_df_sz["bj_id"])))
+    df = pd.DataFrame(list(code_id_dict.items()), columns=["code", "id"])
+    df.to_csv(store_file, index=False)
     return code_id_dict
 
 
