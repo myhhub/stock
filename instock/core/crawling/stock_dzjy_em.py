@@ -7,6 +7,7 @@ http://data.eastmoney.com/dzjy/dzjy_sctj.aspx
 """
 import pandas as pd
 import requests
+from instock.core.singleton_proxy import proxys
 
 
 def stock_dzjy_sctj() -> pd.DataFrame:
@@ -27,13 +28,13 @@ def stock_dzjy_sctj() -> pd.DataFrame:
         'source': 'WEB',
         'client': 'WEB',
     }
-    r = requests.get(url, params=params)
+    r = requests.get(url, proxies = proxys().get_proxies(), params=params)
     data_json = r.json()
     total_page = int(data_json['result']["pages"])
     big_df = pd.DataFrame()
     for page in range(1, total_page+1):
         params.update({'pageNumber': page})
-        r = requests.get(url, params=params)
+        r = requests.get(url, proxies = proxys().get_proxies(), params=params)
         data_json = r.json()
         temp_df = pd.DataFrame(data_json['result']["data"])
         big_df = pd.concat([big_df, temp_df], ignore_index=True)
@@ -92,7 +93,7 @@ def stock_dzjy_mrmx(symbol: str = '基金', start_date: str = '20220104', end_da
         'client': 'WEB',
         'filter': f"""(SECURITY_TYPE_WEB={symbol_map[symbol]})(TRADE_DATE>='{'-'.join([start_date[:4], start_date[4:6], start_date[6:]])}')(TRADE_DATE<='{'-'.join([end_date[:4], end_date[4:6], end_date[6:]])}')"""
     }
-    r = requests.get(url, params=params)
+    r = requests.get(url, proxies = proxys().get_proxies(), params=params)
     data_json = r.json()
     if not data_json['result']["data"]:
         return pd.DataFrame()
@@ -209,7 +210,7 @@ def stock_dzjy_mrtj(start_date: str = '20220105', end_date: str = '20220105') ->
         'client': 'WEB',
         'filter': f"(TRADE_DATE>='{'-'.join([start_date[:4], start_date[4:6], start_date[6:]])}')(TRADE_DATE<='{'-'.join([end_date[:4], end_date[4:6], end_date[6:]])}')"
     }
-    r = requests.get(url, params=params)
+    r = requests.get(url, proxies = proxys().get_proxies(), params=params)
     data_json = r.json()
     temp_df = pd.DataFrame(data_json['result']["data"])
     temp_df.reset_index(inplace=True)
@@ -286,13 +287,13 @@ def stock_dzjy_hygtj(symbol: str = '近三月') -> pd.DataFrame:
         'client': 'WEB',
         'filter': f'(DATE_TYPE_CODE={period_map[symbol]})',
     }
-    r = requests.get(url, params=params)
+    r = requests.get(url, proxies = proxys().get_proxies(), params=params)
     data_json = r.json()
     total_page = data_json['result']["pages"]
     big_df = pd.DataFrame()
     for page in range(1, int(total_page)+1):
         params.update({"pageNumber": page})
-        r = requests.get(url, params=params)
+        r = requests.get(url, proxies = proxys().get_proxies(), params=params)
         data_json = r.json()
         temp_df = pd.DataFrame(data_json['result']["data"])
         big_df = pd.concat([big_df, temp_df], ignore_index=True)
@@ -380,13 +381,13 @@ def stock_dzjy_hyyybtj(symbol: str = '近3日') -> pd.DataFrame:
         'client': 'WEB',
         'filter': f'(N_DATE=-{period_map[symbol]})',
     }
-    r = requests.get(url, params=params)
+    r = requests.get(url, proxies = proxys().get_proxies(), params=params)
     data_json = r.json()
     total_page = data_json['result']["pages"]
     big_df = pd.DataFrame()
     for page in range(1, int(total_page)+1):
         params.update({"pageNumber": page})
-        r = requests.get(url, params=params)
+        r = requests.get(url, proxies = proxys().get_proxies(), params=params)
         data_json = r.json()
         temp_df = pd.DataFrame(data_json['result']["data"])
         big_df = pd.concat([big_df, temp_df], ignore_index=True)
@@ -452,13 +453,13 @@ def stock_dzjy_yybph(symbol: str = '近三月') -> pd.DataFrame:
         'client': 'WEB',
         'filter': f'(N_DATE=-{period_map[symbol]})',
     }
-    r = requests.get(url, params=params)
+    r = requests.get(url, proxies = proxys().get_proxies(), params=params)
     data_json = r.json()
     total_page = data_json['result']["pages"]
     big_df = pd.DataFrame()
     for page in range(1, int(total_page)+1):
         params.update({"pageNumber": page})
-        r = requests.get(url, params=params)
+        r = requests.get(url, proxies = proxys().get_proxies(), params=params)
         data_json = r.json()
         temp_df = pd.DataFrame(data_json['result']["data"])
         big_df = pd.concat([big_df, temp_df], ignore_index=True)

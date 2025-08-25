@@ -7,11 +7,10 @@ https://data.eastmoney.com/zjlx/detail.html
 """
 import json
 import time
-from functools import lru_cache
 import math
-
 import pandas as pd
 import requests
+from instock.core.singleton_proxy import proxys
 
 __author__ = 'myh '
 __date__ = '2023/6/12 '
@@ -59,7 +58,7 @@ def stock_individual_fund_flow_rank(indicator: str = "5日") -> pd.DataFrame:
         "fs": "m:0+t:6+f:!2,m:0+t:13+f:!2,m:0+t:80+f:!2,m:1+t:2+f:!2,m:1+t:23+f:!2,m:0+t:7+f:!2,m:1+t:3+f:!2",
         "fields": indicator_map[indicator][1],
     }
-    r = requests.get(url, params=params)
+    r = requests.get(url, proxies = proxys().get_proxies(), params=params)
     data_json = r.json()
     data = data_json["data"]["diff"]
     data_count = data_json["data"]["total"]
@@ -67,7 +66,7 @@ def stock_individual_fund_flow_rank(indicator: str = "5日") -> pd.DataFrame:
     while page_count > 1:
         page_current = page_current + 1
         params["pn"] = page_current
-        r = requests.get(url, params=params)
+        r = requests.get(url, proxies = proxys().get_proxies(), params=params)
         data_json = r.json()
         _data = data_json["data"]["diff"]
         data.extend(_data)
@@ -288,7 +287,7 @@ def stock_sector_fund_flow_rank(
         "cb": "jQuery18308357908311220152_1589256588824",
         "_": int(time.time() * 1000),
     }
-    r = requests.get(url, params=params, headers=headers)
+    r = requests.get(url, proxies = proxys().get_proxies(), params=params, headers=headers)
     text_data = r.text
     data_json = json.loads(text_data[text_data.find("{") : -2])
     data = data_json["data"]["diff"]
@@ -298,7 +297,7 @@ def stock_sector_fund_flow_rank(
     while page_count > 1:
         page_current = page_current + 1
         params["pn"] = page_current
-        r = requests.get(url, params=params, headers=headers)
+        r = requests.get(url, proxies = proxys().get_proxies(), params=params, headers=headers)
         text_data = r.text
         json_data = json.loads(text_data[text_data.find("{"): -2])
         _data = json_data["data"]["diff"]

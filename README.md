@@ -204,24 +204,27 @@ K线形态作业 klinepattern_data_daily_job.py
 策略数据作业 python strategy_data_daily_job.py
 回测数据 python backtest_data_daily_job.py
 ```
+## 十二：支持代理
 
-## 十二：存储采用数据库设计
+支持多代理获取数据。由于很多网站对大量请求有防护机制，使用单一IP地址频繁访问可能导致被封禁或限制访问。代理IP能够帮助分散请求来源，避免单一IP被封锁，从而保证爬虫程序的稳定运行。
+
+## 十三：存储采用数据库设计
 
 数据存储采用数据库设计，能保存历史数据，以及对数据进行扩展分析、统计、挖掘。系统实现自动创建数据库、数据表，封装了批量更新、插入数据，方便业务扩展。
 
 ![](img/07.jpg)
 
-## 十三：展示采用web设计
+## 十四：展示采用web设计
 
 采用web设计，可视化展示结果。对展示进行封装，添加新的业务表单，只需要配置视图字典就可自动出现业务可视化界面，方便业务功能扩展。
 
-## 十四：运行高效
+## 十五：运行高效
 
 
 采用多线程、单例共享资源有效提高运算效率。1天数据的抓取、计算指标、形态识别、策略选股、回测等全部任务运行时间大概4分钟（普通笔记本），计算天数越多效率越高。
 
 
-## 十五：方便调试
+## 十六：方便调试
 
 系统运行的重要日志记录在stock_execute_job.log(数据抓取、处理、分析)、stock_web.log(web服务)、stock_trade.log(交易服务)，方便调试发现问题。
 
@@ -325,7 +328,24 @@ db_port = 3306  # 数据库服务端口
 db_charset = "utf8mb4"  # 数据库字符集
 ```
 
-### 7.安装自动交易（可选）
+### 7：配置代理
+不使用代理，跳过本步。
+
+具体设置如下：
+编辑proxy.txt，添加有效代理，格式为：ip:port，每个代理占一行。当不使用代理时清空该文件。
+编辑保存完代理文件，若本系统已经启动，需要重启本系统，才能生效。
+示例代理：
+```
+127.0.0.1:7860
+52.13.248.29:3128
+35.178.104.4:80
+65.1.244.232:3128
+13.126.79.133:80
+54.212.22.168:3128
+```
+注意：以上均为无效代理。
+
+### 8.安装自动交易（可选）
 
 ```
 1.安装交易软件
@@ -356,9 +376,9 @@ db_charset = "utf8mb4"  # 数据库字符集
         详情参阅usage.md，配置对应券商
 ```
 
-### 8.运行说明
+### 9.运行说明
 
-#### 8.1.执行数据抓取、处理、分析、识别
+#### 9.1.执行数据抓取、处理、分析、识别
 
 支持批量作业，具体参见run_job.bat中的注释说明。
 
@@ -384,14 +404,14 @@ db_charset = "utf8mb4"  # 数据库字符集
 #基础数据作业 
 python basic_data_daily_job.py
 ```
-#### 8.2.启动web服务
+#### 9.2.启动web服务
 
 ```
 运行 run_web.bat
 ```
 启动服务后，打开浏览器，输入：http://localhost:9988/ ，即可使用本系统的可视化功能。
 
-#### 8.3.启动交易服务
+#### 9.3.启动交易服务
 
 ```
 运行 run_trade.bat
@@ -401,7 +421,28 @@ python basic_data_daily_job.py
 
 没有docker环境，可以参考：[VirtualBox虚拟机安装Ubuntu](https://www.ljjyy.com/archives/2019/10/100590.html)，里面也介绍了python、docker等常用软件的安装，若想在Windows下安装docker自行百度。
 
-### 1.安装数据库镜像
+### 1：配置代理
+不使用代理，跳过本步。
+
+系统安装完成后，可以通过编辑宿主机的代理文件，来配置代理。
+
+具体设置如下：
+编辑宿主的代理文件，添加有效代理，格式为：ip:port，每个代理占一行。当不使用代理时清空该文件。
+编辑完代理文件，若本系统已经启动，需要重启本系统，才能生效。
+示例创建代理：
+```
+sudo sh -c 'echo "127.0.0.1:7860" > /data/instockproxy.txt'
+#创建代理文件，会自动替换掉原代理文件
+
+sudo sh -c 'echo "52.13.248.29:3128" >> /data/instockproxy.txt'
+#追加代理
+
+sudo sh -c 'echo "35.178.104.4:80" >> /data/instockproxy.txt'
+#追加代理
+```
+注意：以上均为无效代理。
+
+### 2.安装数据库镜像
 
 如果已经有Mysql、mariadb数据库可以跳过本步。
 
@@ -419,13 +460,14 @@ docker run -d --name InStockDbService \
     library/mariadb:latest
 ```
 
-### 2.安装本系统镜像
+### 3.安装本系统镜像
 
 a.若按上面【1.安装数据库镜像】装的数据库，运行下面命令：
 
 ```
 docker run -dit --name InStock --network=InStockService \
     -p 9988:9988 \
+    -v /data/instockproxy.txt:/data/InStock/instock/config/proxy.txt \
     -e db_host=InStockDbService \
     mayanghua/instock:latest
 ```
@@ -435,6 +477,7 @@ b.已经有Mysql、mariadb数据库，运行下面命令：
 ```
 docker run -dit --name InStock \
     -p 9988:9988 \
+    -v /data/instockproxy.txt:/data/InStock/instock/config/proxy.txt \
     -e db_host=localhost \
     -e db_user=root \
     -e db_password=root \
@@ -453,13 +496,13 @@ db_port       # 数据库服务端口
 ```
 按自己数据库实际情况配置参数。
 
-### 3. 系统运行
+### 4. 系统运行
 
 启动容器后，会自动运行，首先会初始化数据、启动web服务。然后每小时执行“基础数据抓取”，每天17:30执行所有的数据抓取、处理、分析、识别、回测。
 
 打开浏览器，输入：http://localhost:9988/ ，即可使用本系统的可视化功能。
 
-### 4.历史数据
+### 5.历史数据
 
 历史数据抓取、处理、分析、识别、回测，运行下面命令：
 
@@ -487,7 +530,7 @@ python execute_daily_job.py 2023-03-01,2023-03-02
 修改run_job.sh，然后运行 bash InStock/instock/bin/run_job.sh
 ```
 
-### 5.查看日志
+### 6.查看日志
 
 运行下面命令：
 
@@ -497,7 +540,7 @@ cat InStock/instock/log/stock_execute_job.log
 cat InStock/instock/log/stock_web.log
 ```
 
-### 6.docker常用命令
+### 7.docker常用命令
 
 ```
 docker container stop InStock InStockDbService
@@ -510,7 +553,7 @@ docker rmi mayanghua/instock:latest library/mariadb:latest
 
 具体参见：[Docker基础之 二.镜像及容器的基本操作](https://www.ljjyy.com/archives/2018/06/100208.html)
 
-### 7.自动交易
+### 8.自动交易
 
 目前只支持windows。参考常规安装方式,只需安装python、依赖库，**不需安装mysql、talib等**。
 

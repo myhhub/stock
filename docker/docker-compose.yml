@@ -18,6 +18,8 @@ services:
       - "9988:9988"
     environment:
       db_host: InStockDbService
+    volumes:
+      - /data/instockproxy.txt:/data/InStock/instock/config/proxy.txt
     depends_on:
       - instockdbservice
     networks:

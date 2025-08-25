@@ -8,6 +8,7 @@ http://excalc.icfqs.com:7616/TQLEX?Entry=HQServ.hq_nlp
 
 import pandas as pd
 import requests
+from instock.core.singleton_proxy import proxys
 
 def stock_chip_race_open(date: str = "") -> pd.DataFrame:
     """
@@ -29,7 +30,7 @@ def stock_chip_race_open(date: str = "") -> pd.DataFrame:
         "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36 TdxW",
     }
 
-    r = requests.post(url, json=params,headers=headers)
+    r = requests.post(url, proxies = proxys().get_proxies(), json=params,headers=headers)
     data_json = r.json()
     data = data_json["datas"]
     if not data:
@@ -93,7 +94,7 @@ def stock_chip_race_end(date: str = "") -> pd.DataFrame:
         "User-Agent": "TdxW",
     }
 
-    r = requests.post(url, json=params,headers=headers)
+    r = requests.post(url, proxies = proxys().get_proxies(), json=params,headers=headers)
     data_json = r.json()
     data = data_json["datas"]
     if not data:
