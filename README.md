@@ -328,7 +328,7 @@ db_port = 3306  # 数据库服务端口
 db_charset = "utf8mb4"  # 数据库字符集
 ```
 
-### 7：配置代理
+### 7.配置代理
 不使用代理，跳过本步。
 
 具体设置如下：
@@ -421,7 +421,7 @@ python basic_data_daily_job.py
 
 没有docker环境，可以参考：[VirtualBox虚拟机安装Ubuntu](https://www.ljjyy.com/archives/2019/10/100590.html)，里面也介绍了python、docker等常用软件的安装，若想在Windows下安装docker自行百度。
 
-### 1：配置代理
+### 1.配置代理
 不使用代理，跳过本步。
 
 系统安装完成后，可以通过编辑宿主机的代理文件，来配置代理。
