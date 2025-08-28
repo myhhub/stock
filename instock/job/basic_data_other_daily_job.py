@@ -14,6 +14,7 @@ import instock.lib.run_template as runt
 import instock.core.tablestructure as tbs
 import instock.lib.database as mdb
 import instock.core.stockfetch as stf
+from instock.lib.common_check import check_and_delete_old_data_for_realtime_data
 
 __author__ = 'myh '
 __date__ = '2023/3/10 '
@@ -29,15 +30,7 @@ def save_nph_stock_top_data(date, before=True):
         if data is None or len(data.index) == 0:
             return
 
-        table_name = tbs.TABLE_CN_STOCK_TOP['name']
-        # 删除老数据。
-        if mdb.checkTableIsExist(table_name):
-            del_sql = f"DELETE FROM `{table_name}` where `date` = '{date}'"
-            mdb.executeSql(del_sql)
-            cols_type = None
-        else:
-            cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_TOP['columns'])
-        mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
+        check_and_delete_old_data_for_realtime_data(tbs.TABLE_CN_STOCK_TOP, data, date)
     except Exception as e:
         logging.error(f"basic_data_other_daily_job.save_stock_top_data处理异常：{e}")
     stock_spot_buy(date)
@@ -68,16 +61,7 @@ def save_nph_stock_fund_flow_data(date, before=True):
 
         data.insert(0, 'date', date.strftime("%Y-%m-%d"))
 
-        table_name = tbs.TABLE_CN_STOCK_FUND_FLOW['name']
-        # 删除老数据。
-        if mdb.checkTableIsExist(table_name):
-            del_sql = f"DELETE FROM `{table_name}` where `date` = '{date}'"
-            mdb.executeSql(del_sql)
-            cols_type = None
-        else:
-            cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_FUND_FLOW['columns'])
-
-        mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
+        check_and_delete_old_data_for_realtime_data(tbs.TABLE_CN_STOCK_FUND_FLOW, data, date)
     except Exception as e:
         logging.error(f"basic_data_other_daily_job.save_nph_stock_fund_flow_data处理异常：{e}")
 

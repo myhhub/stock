@@ -17,7 +17,7 @@ def check_volume(code_name, data, date=None, threshold=60):
     if date is None:
         end_date = code_name[0]
     else:
-        end_date = date.strftime("%Y-%m-%d")
+        end_date = date
     if end_date is not None:
         mask = (pd.to_datetime(data['date']) <= pd.to_datetime(end_date))
         data = data.loc[mask].copy()

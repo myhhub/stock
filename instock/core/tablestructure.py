@@ -43,6 +43,24 @@ TABLE_CN_ETF_SPOT = {'name': 'cn_etf_spot', 'cn': '每日ETF数据',
                                  'free_cap': {'type': BIGINT, 'cn': '流通市值', 'size': 120}}}
 
 TABLE_CN_STOCK_SPOT = {'name': 'cn_stock_spot', 'cn': '每日股票数据',
+                        'columns_to_history_db':{
+                            'date': 'date',
+                            'code': 'code', 
+                            'open_price': 'open',
+                            'high_price': 'high',
+                            'low_price': 'low',
+                            'new_price': 'close',
+                            'pre_close_price': 'preclose',
+                            'volume': 'volume', # TODO 注意单位API返回的是手，数据库存储的是股,
+                            'turnoverrate': 'turn',
+                            'change_rate': 'p_change',
+                        },
+                        'db_description':{
+                            'amount': '成交额(元), 需要计算后存',
+                            'isST': '是否ST股, 需要计算后存',
+                            'tradestatus': '能查到的股票都是交易中的,直接存1',
+                            'adjustflag': '复权状态, 默认不复权db中是3',
+                        },
                        'columns': {'date': {'type': DATE, 'cn': '日期', 'size': 0},
                                    'code': {'type': VARCHAR(6, _COLLATE), 'cn': '代码', 'size': 60},
                                    'name': {'type': VARCHAR(20, _COLLATE), 'cn': '名称', 'size': 70},
@@ -263,9 +281,10 @@ CN_STOCK_HIST_DATA = {'name': 'fund_etf_hist_em', 'cn': '基金某时间段的�
                                   'volume': {'type': FLOAT, 'cn': '成交量'},
                                   'amount': {'type': FLOAT, 'cn': '成交额'},
                                   'amplitude': {'type': FLOAT, 'cn': '振幅'},
-                                  'quote_change': {'type': FLOAT, 'cn': '涨跌幅'},
+                                  'p_change': {'type': FLOAT, 'cn': '涨跌幅'},
                                   'ups_downs': {'type': FLOAT, 'cn': '涨跌额'},
                                   'turnover': {'type': FLOAT, 'cn': '换手率'}}}
+
 
 TABLE_CN_STOCK_FOREIGN_KEY = {'name': 'cn_stock_foreign_key', 'cn': '股票外键',
                               'columns': {'date': {'type': DATE, 'cn': '日期', 'size': 0},

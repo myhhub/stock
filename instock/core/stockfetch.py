@@ -22,7 +22,6 @@ import instock.core.crawling.stock_chip_race as scr
 import instock.core.crawling.stock_limitup_reason as slr
 from instock.core.proxy_pool import get_proxy
 from instock.core.tablestructure import TABLE_CN_STOCK_SPOT
-from instock.lib.database import read_sql_to_df, read_table_to_df
 __author__ = 'myh '
 __date__ = '2023/3/10 '
 
@@ -64,7 +63,7 @@ def is_open_with_line(price):
 # 读取股票交易日历数据
 def fetch_stocks_trade_date():
     try:
-        data = tdh.tool_trade_date_hist_sina(proxy=get_proxy())
+        data = tdh.tool_trade_date_hist_sina()
         if data is None or len(data.index) == 0:
             return None
         data_date = set(data['trade_date'].values.tolist())
@@ -74,18 +73,35 @@ def fetch_stocks_trade_date():
     return None
 
 
-# 读取当天股票数据
-def fetch_etfs(date):
+# 读取当天ETF数据
+def fetch_etfs(date, save_to_db=True):
     try:
         data = fee.fund_etf_spot_em(proxy=get_proxy())
         if data is None or len(data.index) == 0:
             return None
         if date is None:
-            data.insert(0, 'date', datetime.datetime.now().strftime("%Y-%m-%d"))
+            date = datetime.datetime.now()
+            data.insert(0, 'date', date.strftime("%Y-%m-%d"))
         else:
             data.insert(0, 'date', date.strftime("%Y-%m-%d"))
         data.columns = list(tbs.TABLE_CN_ETF_SPOT['columns'])
         data = data.loc[data['new_price'].apply(is_open)]
+        
+        # 保存到数据库
+        if save_to_db and data is not None and len(data) > 0:
+            from instock.lib.common_check import check_and_delete_old_data_for_realtime_data
+            try:
+                # 保存到实时表（ETF表可能没有历史表映射配置）
+                check_and_delete_old_data_for_realtime_data(
+                    tbs.TABLE_CN_ETF_SPOT, 
+                    data, 
+                    date.strftime("%Y-%m-%d") if hasattr(date, 'strftime') else date,
+                    save_to_history=False  # ETF可能没有配置历史表映射
+                )
+                logging.info(f"成功保存 {len(data)} 条ETF实时数据到数据库")
+            except Exception as db_e:
+                logging.error(f"保存ETF数据到数据库失败：{db_e}")
+        
         return data
     except Exception as e:
         logging.error(f"stockfetch.fetch_etfs处理异常：{e}")
@@ -93,18 +109,36 @@ def fetch_etfs(date):
 
 
 # 读取当天股票数据
-def fetch_stocks(date):
+def fetch_stocks(date, save_to_db=True):
     try:
-        # 从数据库中获取
+        # 实时获取
         data = she.stock_zh_a_spot_em(proxy=get_proxy())
         if data is None or len(data.index) == 0:
             return None
         if date is None:
-            data.insert(0, 'date', datetime.datetime.now().strftime("%Y-%m-%d"))
+            date = datetime.datetime.now()
+            data.insert(0, 'date', date.strftime("%Y-%m-%d"))
         else:
             data.insert(0, 'date', date.strftime("%Y-%m-%d"))
         data.columns = list(tbs.TABLE_CN_STOCK_SPOT['columns'])
         data = data.loc[data['code'].apply(is_a_stock)].loc[data['new_price'].apply(is_open)]
+        
+        # 保存到数据库
+        if save_to_db and data is not None and len(data) > 0:
+            from instock.lib.common_check import check_and_delete_old_data_for_realtime_data
+            try:
+                # 保存到实时表和历史表
+                check_and_delete_old_data_for_realtime_data(
+                    tbs.TABLE_CN_STOCK_SPOT, 
+                    data, 
+                    date.strftime("%Y-%m-%d") if hasattr(date, 'strftime') else date,
+                    save_to_history=True,
+                    use_batch=True
+                )
+                logging.info(f"成功保存 {len(data)} 条股票实时数据到数据库")
+            except Exception as db_e:
+                logging.error(f"保存股票数据到数据库失败：{db_e}")
+        
         return data
     except Exception as e:
         logging.error(f"stockfetch.fetch_stocks处理异常：{e}")
@@ -330,89 +364,98 @@ def fetch_etf_hist(data_base, date_start=None, date_end=None, adjust='qfq'):
 
 
 # 读取股票历史数据
-def fetch_stock_hist(data_base, date_start=None, is_cache=True):
+def fetch_stock_hist(data_base, date_start=None, is_cache=True, cached_data=None):
     date = data_base[0]
     code = data_base[1]
 
     if date_start is None:
         date_start, is_cache = trd.get_trade_hist_interval(date)  # 提高运行效率，只运行一次
         # date_end = date_end.strftime("%Y%m%d")
+
     try:
-        data = stock_hist_cache(code, date_start, None, is_cache, 'qfq')
-        if data is not None:
-            data.loc[:, 'p_change'] = tl.ROC(data['close'].values, 1)
-            data['p_change'].values[np.isnan(data['p_change'].values)] = 0.0
-            data["volume"] = data['volume'].values.astype('double') * 100  # 成交量单位从手变成股。
+        if cached_data is not None:
+            data = cached_data.loc[cached_data['code'].str.endswith(code)]
+            if data is not None:
+                data.loc[:, 'p_change'] = tl.ROC(data['close'].values, 1)
+                data['p_change'].values[np.isnan(data['p_change'].values)] = 0.0
+                data["volume"] = data['volume'].values.astype('double') * 100  # 成交量单位从手变成股。
+        print(f"fetch_stock_hist: 完成股票{code}历史数据获取")
         return data
     except Exception as e:
         logging.exception(f"stockfetch.fetch_stock_hist处理异常：{e}")
     return None
 
-
-# 增加读取股票缓存方法。加快处理速度。多线程解决效率
-def stock_hist_cache(code, date_start, date_end=None, is_cache=True, adjust=''):
-    cache_dir = os.path.join(stock_hist_cache_path, date_start[0:6], date_start)
-    # 如果没有文件夹创建一个。月文件夹和日文件夹。方便删除。
+def convert_date_format(date_string):
     try:
-        if not os.path.exists(cache_dir):
-            os.makedirs(cache_dir)
-    except Exception:
-        pass
-    cache_file = os.path.join(cache_dir, "%s%s.gzip.pickle" % (code, adjust))
+        parsed_date = datetime.datetime.strptime(date_string, "%Y%m%d")
+        formatted_date = parsed_date.strftime("%Y-%m-%d")
+        
+        return formatted_date
+    
+    except Exception as e:
+        print(f"错误：无效的日期格式 '{date_string}'。期望格式：YYYYMMDD")
+        return date_string
+# 增加读取股票缓存方法。加快处理速度。多线程解决效率
+def stock_hist_cache(code, date_start, date_end=None, is_cache=True, adjust='', cached_data=None):
+    # cache_dir = os.path.join(stock_hist_cache_path, date_start[0:6], date_start)
+    # # 如果没有文件夹创建一个。月文件夹和日文件夹。方便删除。
+    # try:
+    #     if not os.path.exists(cache_dir):
+    #         os.makedirs(cache_dir)
+    # except Exception:
+    #     pass
+    # cache_file = os.path.join(cache_dir, "%s%s.gzip.pickle" % (code, adjust))
     # 如果缓存存在就直接返回缓存数据。压缩方式。
     try:
-        if os.path.isfile(cache_file):
-            return pd.read_pickle(cache_file, compression="gzip")
-        else:
-            # 获取当前时间，如果时间是交易时间段内，就不缓存。
-            now = datetime.datetime.now()
-            if trd.is_tradetime(now):
-                if date_end is not None:
-                    stock = she.stock_zh_a_hist(symbol=code, period="daily", start_date=date_start, end_date=date_end,
-                                                adjust=adjust, proxy=get_proxy())
-                else:
-                    stock = she.stock_zh_a_hist(symbol=code, period="daily", start_date=date_start, adjust=adjust, proxy=get_proxy())
-            else:
-                from instock.lib.database import read_table_to_df
-                columns = {
-                    "日期": "date",
-                    "开盘": "open_price",
-                    "收盘": "new_price",
-                    "最高": "high_price",
-                    "最低": "low_price",
-                    "成交量": "volume",
-                    "成交额": "deal_amount",
-                    "振幅": "amplitude",
-                    "涨跌幅": "change_rate",
-                    "涨跌额": "ups_downs",
-                    "换手率": "turnoverrate"
-                }
-                stock = read_table_to_df(
-                    TABLE_CN_STOCK_SPOT['name'], 
-                    list(columns.values()), 
-                    where="code=%s and date>=%s",
-                    params=(code, date_start)
-                )
-                # 将结果列名替换成中文列名
-                stock.rename(columns={v: k for k, v in columns.items()}, inplace=True)
-            if stock is None or len(stock.index) == 0:
-                return None
-            stock.columns = tuple(tbs.CN_STOCK_HIST_DATA['columns'])
-            stock = stock.sort_index()  # 将数据按照日期排序下。
-            try:
-                if is_cache:
-                    stock.to_pickle(cache_file, compression="gzip")
-            except Exception:
-                pass
-            # time.sleep(1)
-            return stock
+
+        if is_cache and cached_data is not None:
+            stock = cached_data.loc[cached_data['code'].str.endswith(code)]
+        if stock is None or len(stock.index) == 0:
+            return None
+        stock.columns = tuple(tbs.CN_STOCK_HIST_DATA['columns'])
+        stock = stock.sort_index()  # 将数据按照日期排序下。
+        # try:
+        #     if is_cache:
+        #         stock.to_pickle(cache_file, compression="gzip")
+        # except Exception:
+        #     pass
+        # time.sleep(1)
+        return stock
     except Exception as e:
         logging.error(f"stockfetch.stock_hist_cache处理异常：{code}代码{e}")
     return None
 
+def get_stock_hist_from_db(date_start, date_end=None, table_name=None):
+    from instock.lib.database import query_history_data_by_date_range
+
+    date_start = convert_date_format(date_start)
+    date_end = convert_date_format(date_end)
+    columns = ["code","date","open","high","low","close","preclose","volume","amount","turn","p_change"]
+    stock = query_history_data_by_date_range(
+        date_start, date_end, 
+        columns= columns
+    )
+    # 将结果列的turn修改为turnover，和CN_STOCK_HIST_DATA保持一致
+    stock.rename(columns={"turn": "turnover"}, inplace=True)
+    
+    if stock is None or len(stock.index) == 0:
+        return None
+        
+    # 计算生成新列
+    stock["ups_downs"] = stock["close"] - stock["preclose"]  # 涨跌额：收盘价-昨收价
+    # stock["new_price"] = stock["close"]
+    stock["amplitude"] = (stock["high"] - stock["low"]) / stock["preclose"] * 100  # 振幅百分比
+
+    # 只选择 CN_STOCK_HIST_DATA 需要的列
+    expected_columns = list(tbs.CN_STOCK_HIST_DATA['columns'].keys())
+    expected_columns.append('code')
+    result_stock = stock[expected_columns]
+    result_stock = result_stock.sort_index()  # 将数据按照日期排序下。
+    print("Finished rearranging and renaming to match CN_STOCK_HIST_DATA structure.")
+    return result_stock
 def get_stock_code_name(date=None):
     try:
-        TABLE_CN_STOCK_SPOT
+        from instock.lib.database import read_sql_to_df
         # 查询最大的date作为时间，获取最新的股票代码和名称
         sql = f"SELECT `date`,`code`,`name` FROM `{TABLE_CN_STOCK_SPOT['name']}` WHERE `date` = (SELECT MAX(`date`) FROM `{TABLE_CN_STOCK_SPOT['name']}`)"
         data = read_sql_to_df(sql)
@@ -426,3 +469,62 @@ def get_stock_code_name(date=None):
     except Exception as e:
         logging.error(f"stockfetch.get_stock_code_name处理异常：{e}")
     return None
+
+
+# 批量获取并保存实时数据
+def fetch_and_save_realtime_data(date=None, include_etf=True):
+    """
+    获取并保存实时股票和ETF数据到数据库
+    
+    Args:
+        date: 指定日期，None表示当前日期
+        include_etf: 是否包含ETF数据
+    
+    Returns:
+        dict: 包含处理结果的字典
+    """
+    result = {
+        'success': False,
+        'stock_count': 0,
+        'etf_count': 0,
+        'errors': []
+    }
+    
+    try:
+        # 获取并保存股票数据
+        logging.info("开始获取股票实时数据...")
+        stock_data = fetch_stocks(date, save_to_db=True)
+        if stock_data is not None:
+            result['stock_count'] = len(stock_data)
+            logging.info(f"成功获取并保存 {result['stock_count']} 条股票数据")
+        else:
+            result['errors'].append("获取股票数据失败")
+            logging.warning("获取股票数据失败")
+        
+        # 获取并保存ETF数据
+        if include_etf:
+            logging.info("开始获取ETF实时数据...")
+            etf_data = fetch_etfs(date, save_to_db=True)
+            if etf_data is not None:
+                result['etf_count'] = len(etf_data)
+                logging.info(f"成功获取并保存 {result['etf_count']} 条ETF数据")
+            else:
+                result['errors'].append("获取ETF数据失败")
+                logging.warning("获取ETF数据失败")
+        
+        # 判断整体是否成功
+        result['success'] = (result['stock_count'] > 0 or result['etf_count'] > 0)
+        
+        if result['success']:
+            total_count = result['stock_count'] + result['etf_count']
+            logging.info(f"实时数据获取和保存完成，共处理 {total_count} 条记录")
+        else:
+            logging.error("实时数据获取和保存失败")
+        
+        return result
+        
+    except Exception as e:
+        error_msg = f"批量获取实时数据时发生异常：{e}"
+        logging.error(error_msg)
+        result['errors'].append(error_msg)
+        return result

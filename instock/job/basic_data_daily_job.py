@@ -4,13 +4,16 @@
 import logging
 import os.path
 import sys
+import datetime
 
 cpath_current = os.path.dirname(os.path.dirname(__file__))
 cpath = os.path.abspath(os.path.join(cpath_current, os.pardir))
 sys.path.append(cpath)
+import instock.lib.trade_time as trd
 import instock.lib.run_template as runt
 import instock.core.tablestructure as tbs
 import instock.lib.database as mdb
+from instock.lib.common_check import check_and_delete_old_data_for_realtime_data
 import instock.core.stockfetch as stf
 from instock.core.singleton_stock import stock_data
 
@@ -27,18 +30,7 @@ def save_nph_stock_spot_data(date, before=True):
         data = stock_data(date).get_data()
         if data is None or len(data.index) == 0:
             return
-
-        table_name = tbs.TABLE_CN_STOCK_SPOT['name']
-        # 删除老数据。
-        # if mdb.checkTableIsExist(table_name):
-        #     del_sql = f"DELETE FROM `{table_name}` where `date` = '{date}'"
-        #     mdb.executeSql(del_sql)
-        #     cols_type = None
-        # else:
-        cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_SPOT['columns'])
-
-        mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
-
+        check_and_delete_old_data_for_realtime_data(tbs.TABLE_CN_STOCK_SPOT, data, date)
     except Exception as e:
         logging.error(f"basic_data_daily_job.save_stock_spot_data处理异常：{e}")
 
@@ -52,17 +44,7 @@ def save_nph_etf_spot_data(date, before=True):
         data = stf.fetch_etfs(date)
         if data is None or len(data.index) == 0:
             return
-
-        table_name = tbs.TABLE_CN_ETF_SPOT['name']
-        # 删除老数据。
-        # if mdb.checkTableIsExist(table_name):
-        #     del_sql = f"DELETE FROM `{table_name}` where `date` = '{date}'"
-        #     mdb.executeSql(del_sql)
-        #     cols_type = None
-        # else:
-        cols_type = tbs.get_field_types(tbs.TABLE_CN_ETF_SPOT['columns'])
-
-        mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
+        check_and_delete_old_data_for_realtime_data(tbs.TABLE_CN_ETF_SPOT, data, date)
     except Exception as e:
         logging.error(f"basic_data_daily_job.save_nph_etf_spot_data处理异常：{e}")
 
