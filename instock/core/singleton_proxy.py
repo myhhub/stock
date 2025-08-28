@@ -34,3 +34,31 @@ class proxys(metaclass=singleton_type):
 
         proxy = random.choice(self.data)
         return {"http": proxy, "https": proxy}
+
+"""
+    def get_proxies(self):
+        if self.data is None:
+            return None
+
+        while len(self.data) > 0:
+            proxy = random.choice(self.data)
+            if https_validator(proxy):
+                return {"http": proxy, "https": proxy}
+            self.data.remove(proxy)
+
+        return None
+
+
+from requests import head
+def https_validator(proxy):
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:34.0) Gecko/20100101 Firefox/34.0',
+               'Accept': '*/*',
+               'Connection': 'keep-alive',
+               'Accept-Language': 'zh-CN,zh;q=0.8'}
+    proxies = {"http": f"{proxy}", "https": f"{proxy}"}
+    try:
+        r = head("https://data.eastmoney.com", headers=headers, proxies=proxies, timeout=3, verify=False)
+        return True if r.status_code == 200 else False
+    except Exception as e:
+        return False
+"""
