@@ -1,5 +1,5 @@
 numpy>=2.3.1
-pandas>=2.3.1
+clickhouse-connect>=0.8.6s>=2.3.1
 py_mini_racer>=0.6.0
 mini-racer>=0.12.4
 TA_Lib>=0.6.4
