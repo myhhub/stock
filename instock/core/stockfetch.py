@@ -364,21 +364,20 @@ def fetch_etf_hist(data_base, date_start=None, date_end=None, adjust='qfq'):
 
 
 # 读取股票历史数据
-def fetch_stock_hist(data_base, date_start=None, is_cache=True, cached_data=None):
+def fetch_stock_hist(data_base, date_start=None, cached_data=None):
     date = data_base[0]
     code = data_base[1]
 
     if date_start is None:
         date_start, is_cache = trd.get_trade_hist_interval(date)  # 提高运行效率，只运行一次
         # date_end = date_end.strftime("%Y%m%d")
-
+    
     try:
         if cached_data is not None:
             data = cached_data.loc[cached_data['code'].str.endswith(code)]
-            if data is not None:
-                data.loc[:, 'p_change'] = tl.ROC(data['close'].values, 1)
-                data['p_change'].values[np.isnan(data['p_change'].values)] = 0.0
-                data["volume"] = data['volume'].values.astype('double') * 100  # 成交量单位从手变成股。
+        else:
+            data = get_stock_hist_from_db(date_start, code=code)
+            print(f"fetch_stock_hist: 从数据库获取股票{code}历史数据，结果数量：{len(data) if data is not None else 0}")
         print(f"fetch_stock_hist: 完成股票{code}历史数据获取")
         return data
     except Exception as e:
@@ -425,16 +424,34 @@ def stock_hist_cache(code, date_start, date_end=None, is_cache=True, adjust='', 
         logging.error(f"stockfetch.stock_hist_cache处理异常：{code}代码{e}")
     return None
 
-def get_stock_hist_from_db(date_start, date_end=None, table_name=None):
-    from instock.lib.database import query_history_data_by_date_range
-
+def get_stock_hist_from_db(date_start, date_end=None, code=None):
+    from instock.lib.clickhouse_client import create_clickhouse_client
     date_start = convert_date_format(date_start)
     date_end = convert_date_format(date_end)
     columns = ["code","date","open","high","low","close","preclose","volume","amount","turn","p_change"]
-    stock = query_history_data_by_date_range(
-        date_start, date_end, 
-        columns= columns
-    )
+    
+    with create_clickhouse_client() as client:
+        stock = client.get_stock_data(code, date_start, date_end, order_by="date ASC")
+        if stock is not None and not stock.empty:
+            stock = stock[columns]
+            
+            # 确保所有数值列为float类型，避免Decimal和序列化问题
+            numeric_columns = ["open","high","low","close","preclose","volume","amount","turn","p_change"]
+            for col in numeric_columns:
+                if col in stock.columns:
+                    try:
+                        stock[col] = stock[col].astype(float)
+                    except:
+                        pass
+        
+    #from instock.lib.database import query_history_data_by_date_range
+    # stock = query_history_data_by_date_range(
+    #     date_start, date_end, 
+    #     columns=columns,
+    #     where_extra=f" code = %s" if code else "",
+    #     params=(code,) if code else None
+    # )
+    
     # 将结果列的turn修改为turnover，和CN_STOCK_HIST_DATA保持一致
     stock.rename(columns={"turn": "turnover"}, inplace=True)
     
@@ -444,7 +461,15 @@ def get_stock_hist_from_db(date_start, date_end=None, table_name=None):
     # 计算生成新列
     stock["ups_downs"] = stock["close"] - stock["preclose"]  # 涨跌额：收盘价-昨收价
     # stock["new_price"] = stock["close"]
-    stock["amplitude"] = (stock["high"] - stock["low"]) / stock["preclose"] * 100  # 振幅百分比
+    # 规避preclose为0的情况，避免除零错误
+    # 确保相关列为float64类型，避免数据类型不兼容问题
+    stock["high"] = stock["high"].astype(float)
+    stock["low"] = stock["low"].astype(float)
+    stock["preclose"] = stock["preclose"].astype(float)
+    
+    stock["amplitude"] = 0.0  # 初始化为0
+    mask = stock["preclose"] != 0  # 创建非零掩码
+    stock.loc[mask, "amplitude"] = (stock.loc[mask, "high"] - stock.loc[mask, "low"]) / stock.loc[mask, "preclose"] * 100  # 振幅百分比
 
     # 只选择 CN_STOCK_HIST_DATA 需要的列
     expected_columns = list(tbs.CN_STOCK_HIST_DATA['columns'].keys())

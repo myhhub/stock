@@ -22,10 +22,63 @@
             });
         }
 </script>
-{% for element in comp_list %}
-<div>
-    {% raw element["div"] %}
-    {% raw element["script"] %}
+
+<div class="container-fluid">
+    <!-- 页面标题 -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <h3>K线图分析
+                {% if code and name %}
+                - {{ name }}({{ code }})
+                {% elif code %}
+                - {{ code }}
+                {% end %}
+                {% if date %}
+                - {{ date }}
+                {% end %}
+            </h3>
+        </div>
+    </div>
+    
+    <!-- 错误信息 -->
+    {% if error_msg %}
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="alert alert-danger" role="alert">
+                <i class="fa fa-exclamation-triangle"></i> {{ error_msg }}
+                <br>
+                <small class="text-muted">
+                    请检查以下项目：
+                    <ul class="mt-2 mb-0">
+                        <li>股票代码是否正确（6位数字）</li>
+                        <li>该股票是否存在历史数据</li>
+                        <li>网络连接是否正常</li>
+                    </ul>
+                </small>
+            </div>
+        </div>
+    </div>
+    {% end %}
+    
+    <!-- K线图内容 -->
+    {% if comp_list %}
+        {% for element in comp_list %}
+        <div class="row">
+            <div class="col-12">
+                {% raw element["div"] %}
+                {% raw element["script"] %}
+            </div>
+        </div>
+        {% end %}
+    {% elif not error_msg %}
+        <div class="row">
+            <div class="col-12">
+                <div class="alert alert-info" role="alert">
+                    <i class="fa fa-info-circle"></i> 正在加载K线图数据，请稍候...
+                </div>
+            </div>
+        </div>
+    {% end %}
 </div>
-{% end %}
+
 {% end %}

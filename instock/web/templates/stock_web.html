@@ -18,15 +18,28 @@
             </span>
             <input type="hidden" id="dateid_old">
             <input type="text" value="{{ date_now }}" id="dateid" class="input-group-sm form-control date-picker" style="display: inline-block; width: 120px; margin-left: 10px;">
+            
+            <!-- 搜索控件 -->
+            <span style="margin-left: 20px; font-weight: bold; color: #333;">搜索：</span>
+            <input type="text" id="searchInput" placeholder="输入股票代码或名称" class="input-group-sm form-control" style="display: inline-block; width: 200px; margin-left: 10px;">
+            <button type="button" id="searchBtn" class="btn btn-default btn-sm" style="margin-left: 5px;" title="搜索">
+                <i class="fa fa-search"></i>
+            </button>
+            <button type="button" id="clearSearchBtn" class="btn btn-default btn-sm" style="margin-left: 2px; display: none;" title="清除搜索">
+                <i class="fa fa-times"></i>
+            </button>
         </div>
         <div style="display:inline-block; float:right; height:100%;">
+            <button type="button" id="viewKLine" class="btn btn-info btn-sm" style="margin-right: 5px;" title="查看选中股票的K线图">
+                <i class="fa fa-line-chart"></i> K线图
+            </button>
             <button type="button" id="resetFilter" class="btn btn-primary btn-sm" style="margin-right: 5px;">重置筛选</button>
             <button type="button" id="saveExcel" class="btn btn-success btn-sm">导出Excel</button>
         </div>
     </div>
     
     <!-- Luckysheet容器 -->
-    <div id="luckysheet" style="width:100%; height:calc(100% - 55px); margin:0; padding:0;">
+    <div id="luckysheet" style="width:100%; height:calc(100% - 95px); margin:0; padding:0;">
         <div id="loadingIndicator" style="display: flex; align-items: center; justify-content: center; height: 100%; background: #f8f9fa;">
             <div style="text-align: center; color: #6c757d;">
                 <div style="margin-bottom: 10px;">
@@ -37,8 +50,45 @@
         </div>
     </div>
     
-    <div id="statusBar" style="width:100%; height:20px; background: #f9f9f9; border-top: 1px solid #ddd; padding: 2px 10px; font-size: 12px; line-height: 16px;">
-        <span id="statusInfo">准备就绪</span>
+    <div id="statusBar" style="width:100%; height:60px; background: #f9f9f9; border-top: 1px solid #ddd; padding: 10px; font-size: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span id="statusInfo">准备就绪</span>
+            
+            <!-- 分页控件 -->
+            <div id="paginationControls" style="display: none;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span>每页显示:</span>
+                    <select id="pageSizeSelect" class="form-control" style="width: 80px; height: 30px; font-size: 12px;">
+                        <option value="50">50</option>
+                        <option value="100" selected>100</option>
+                        <option value="200">200</option>
+                        <option value="500">500</option>
+                        <option value="9999">9999</option>
+                    </select>
+                    
+                    <span id="pageInfo" style="margin: 0 10px;"></span>
+                    
+                    <div class="btn-group" style="gap: 5px; display: flex;">
+                        <button id="firstPageBtn" class="btn btn-default btn-sm" title="首页">
+                            <i class="fa fa-angle-double-left"></i>
+                        </button>
+                        <button id="prevPageBtn" class="btn btn-default btn-sm" title="上一页">
+                            <i class="fa fa-angle-left"></i>
+                        </button>
+                        <button id="nextPageBtn" class="btn btn-default btn-sm" title="下一页">
+                            <i class="fa fa-angle-right"></i>
+                        </button>
+                        <button id="lastPageBtn" class="btn btn-default btn-sm" title="末页">
+                            <i class="fa fa-angle-double-right"></i>
+                        </button>
+                    </div>
+                    
+                    <span style="margin: 0 10px;">跳转到:</span>
+                    <input id="pageJumpInput" type="number" min="1" class="form-control" style="width: 60px; height: 30px; font-size: 12px;">
+                    <button id="pageJumpBtn" class="btn btn-primary btn-sm">跳转</button>
+                </div>
+            </div>
+        </div>
     </div>
     
     <!-- 隐藏的数据容器，用于传递后端数据到前端 -->
@@ -68,6 +118,16 @@
     
     const nameParam = $.getUrlVar('table_name');
     let dateParam = "{{ date_now }}";
+    
+    // 分页相关变量
+    let currentPage = 1;
+    let pageSize = 100;
+    let totalPages = 1;
+    let totalRecords = 0;
+    
+    // 搜索相关变量
+    let searchKeyword = '';
+    let isSearching = false;
     
     // 从隐藏的script标签中读取列信息数据
     let colInfos = [];
@@ -118,9 +178,15 @@
         // 初始化事件
         initEvents();
         
+        // 初始化分页事件
+        initPaginationEvents();
+        
+        // 初始化搜索事件
+        initSearchEvents();
+        
         // 延迟一点时间再加载数据，确保所有依赖都已准备好
         setTimeout(() => {
-            loadData();
+            loadData(1);
         }, 500);
         
         // 初始化日期选择器
@@ -132,7 +198,10 @@
             autoclose: true,
             todayHighlight: true
         }).on('changeDate', function(ev){
-            loadData();
+            // 日期改变时清除搜索并重置到第一页
+            clearSearch();
+            currentPage = 1;
+            loadData(1, '');
         });
     });
     
@@ -166,39 +235,90 @@
         }
     }
     
-    function loadData() {
+    function loadData(page = 1, keyword = '') {
         const dateParam_old = document.getElementById("dateid_old").value;
         dateParam = document.getElementById('dateid').value;
         
-        if (dateParam_old === dateParam) return;
+        // 更新搜索状态
+        if (keyword !== searchKeyword) {
+            searchKeyword = keyword;
+            currentPage = 1;
+            page = 1;
+        }
+        isSearching = keyword && keyword.trim().length > 0;
+        
+        if (dateParam_old === dateParam && page === currentPage && keyword === searchKeyword) return;
         document.getElementById("dateid_old").value = dateParam;
         
-        updateStatusBar("加载数据中...");
-        showLoadingIndicator("正在加载数据...");
+        currentPage = page;
         
-        // 加载数据
-        fetch(`/instock/api_data?name=${nameParam}&date=${dateParam}`)
+        updateStatusBar(isSearching ? `搜索"${keyword}"中...` : "加载数据中...");
+        showLoadingIndicator(isSearching ? `正在搜索"${keyword}"...` : "正在加载数据...");
+        
+        // 构建请求URL，包含分页和搜索参数
+        let url = `/instock/api_data?name=${nameParam}&date=${dateParam}&page=${currentPage}&page_size=${pageSize}`;
+        if (isSearching) {
+            url += `&search=${encodeURIComponent(keyword)}`;
+        }
+        
+        fetch(url)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
                 return response.json();
             })
-            .then(data => {
-                console.log('Data loaded:', data.length, 'records');
-                if (data.length === 0) {
+            .then(result => {
+                console.log('Data loaded:', result);
+                
+                // 检查响应格式
+                let data, pagination;
+                if (result.data && result.pagination) {
+                    // 新的分页格式
+                    data = result.data;
+                    pagination = result.pagination;
+                    totalRecords = pagination.total;
+                    totalPages = pagination.total_pages;
+                    currentPage = pagination.page;
+                } else if (Array.isArray(result)) {
+                    // 兼容旧格式（无分页）
+                    data = result;
+                    totalRecords = data.length;
+                    totalPages = 1;
+                    currentPage = 1;
+                } else {
+                    throw new Error('无效的响应格式');
+                }
+                
+                console.log('分页信息:', { currentPage, totalPages, totalRecords, pageSize });
+                
+                if (data.length === 0 && currentPage === 1) {
                     console.warn(`No data found for date ${dateParam}, trying latest available date...`);
                     showLoadingIndicator("当前日期无数据，尝试加载最新数据...");
                     
                     // 如果当前日期没有数据，尝试使用最新可用日期
-                    return fetch(`/instock/api_data?name=${nameParam}&date=2025-08-22`)
+                    return fetch(`/instock/api_data?name=${nameParam}&date=2025-08-22&page=1&page_size=${pageSize}`)
                         .then(response => {
                             if (!response.ok) {
                                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                             }
                             return response.json();
                         })
-                        .then(fallbackData => {
+                        .then(fallbackResult => {
+                            let fallbackData, fallbackPagination;
+                            if (fallbackResult.data && fallbackResult.pagination) {
+                                fallbackData = fallbackResult.data;
+                                fallbackPagination = fallbackResult.pagination;
+                                totalRecords = fallbackPagination.total;
+                                totalPages = fallbackPagination.total_pages;
+                                currentPage = 1;
+                            } else if (Array.isArray(fallbackResult)) {
+                                fallbackData = fallbackResult;
+                                totalRecords = fallbackData.length;
+                                totalPages = 1;
+                                currentPage = 1;
+                            }
+                            
                             console.log('Fallback data loaded:', fallbackData.length, 'records');
                             if (fallbackData.length > 0) {
                                 // 更新日期选择器显示实际使用的日期
@@ -209,11 +329,13 @@
                             currentData = fallbackData;
                             filteredData = fallbackData.slice();
                             displayDataInLuckysheet(fallbackData);
+                            updatePaginationControls();
                         });
                 } else {
                     currentData = data;
                     filteredData = data.slice();
                     displayDataInLuckysheet(data);
+                    updatePaginationControls();
                     updateStatusBar();
                 }
             })
@@ -233,11 +355,12 @@
                                 </div>
                                 <div>数据加载失败</div>
                                 <div style="font-size: 12px; margin-top: 5px; color: #6c757d;">${error.message}</div>
-                                <button onclick="loadData()" class="btn btn-primary btn-sm" style="margin-top: 10px;">重试</button>
+                                <button onclick="loadData(1, searchKeyword)" class="btn btn-primary btn-sm" style="margin-top: 10px;">重试</button>
                             </div>
                         </div>
                     `;
                 }
+                hidePaginationControls();
             });
     }
     
@@ -314,8 +437,8 @@
                 });
             });
             
-            // 添加数据行（限制显示前1000行以提高性能）
-            const displayData = data
+            // 添加数据行
+            const displayData = data;
             displayData.forEach((row, rowIndex) => {
                 if (!row || typeof row !== 'object') {
                     console.warn('无效的行数据:', rowIndex, row);
@@ -571,9 +694,9 @@
         });
         html += '</tr></thead>';
         
-        // 数据行（限制显示前500行以避免性能问题）
+        // 数据行
         html += '<tbody>';
-        const maxRows = Math.min(data.length, 500);
+        const maxRows = Math.min(data.length, pageSize); // 使用页面大小限制
         for (let i = 0; i < maxRows; i++) {
             const row = data[i];
             html += '<tr>';
@@ -611,29 +734,30 @@
         }
         html += '</tbody></table>';
         
-        if (data.length > 500) {
+        if (totalPages > 1) {
             html += `<div style="padding: 10px; text-align: center; color: #666; background: #f0f0f0; margin-top: 10px;">
-                        <i class="fa fa-info-circle"></i> 为提高性能，仅显示前500条记录，总共${data.length}条记录
+                        <i class="fa fa-info-circle"></i> 当前显示第 ${currentPage} 页，每页 ${pageSize} 条记录，总共 ${totalRecords} 条记录
                      </div>`;
         }
         
         html += '</div>';
         
         container.innerHTML = html;
-        updateStatusBar(`显示前${maxRows}条数据 (共${data.length}条) - 使用备用表格`);
+        updateStatusBar(`显示第${currentPage}页数据 (共${totalRecords}条) - 使用备用表格`);
     }
     
     function initEvents() {
         // 导出Excel
         document.getElementById('saveExcel').onclick = function() {
             if (typeof luckysheet !== 'undefined' && luckysheet.exportXlsx) {
+                const filename = `${nameParam}_${dateParam}_第${currentPage}页`;
                 luckysheet.exportXlsx({
-                    title: `${nameParam}_${dateParam}`,
+                    title: filename,
                     success: function(blobUrl) {
                         // 创建下载链接
                         const a = document.createElement('a');
                         a.href = blobUrl;
-                        a.download = `${nameParam}_${dateParam}.xlsx`;
+                        a.download = `${filename}.xlsx`;
                         document.body.appendChild(a);
                         a.click();
                         document.body.removeChild(a);
@@ -650,18 +774,190 @@
             }
         };
         
+        // K线图查看功能
+        document.getElementById('viewKLine').onclick = function() {
+            viewKLineChart();
+        };
+        
         // 重置筛选
         document.getElementById('resetFilter').onclick = function() {
+            // 清除搜索并重新加载数据
+            clearSearch();
             filteredData = currentData.slice();
             displayDataInLuckysheet(filteredData);
             updateStatusBar("筛选已重置");
         };
     }
     
+    // 初始化分页事件
+    function initPaginationEvents() {
+        // 页面大小选择
+        document.getElementById('pageSizeSelect').onchange = function() {
+            pageSize = parseInt(this.value);
+            currentPage = 1; // 重置到第一页
+            loadData(1, searchKeyword); // 保持当前搜索状态
+        };
+        
+        // 分页按钮
+        document.getElementById('firstPageBtn').onclick = function() {
+            if (currentPage > 1) {
+                loadData(1, searchKeyword);
+            }
+        };
+        
+        document.getElementById('prevPageBtn').onclick = function() {
+            if (currentPage > 1) {
+                loadData(currentPage - 1, searchKeyword);
+            }
+        };
+        
+        document.getElementById('nextPageBtn').onclick = function() {
+            if (currentPage < totalPages) {
+                loadData(currentPage + 1, searchKeyword);
+            }
+        };
+        
+        document.getElementById('lastPageBtn').onclick = function() {
+            if (currentPage < totalPages) {
+                loadData(totalPages, searchKeyword);
+            }
+        };
+        
+        // 页面跳转
+        document.getElementById('pageJumpBtn').onclick = function() {
+            const targetPage = parseInt(document.getElementById('pageJumpInput').value);
+            if (targetPage >= 1 && targetPage <= totalPages && targetPage !== currentPage) {
+                loadData(targetPage, searchKeyword);
+            }
+        };
+        
+        // 回车键跳转
+        document.getElementById('pageJumpInput').onkeypress = function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('pageJumpBtn').click();
+            }
+        };
+    }
+    
+    // 初始化搜索事件
+    function initSearchEvents() {
+        // 搜索按钮点击事件
+        document.getElementById('searchBtn').onclick = function() {
+            performSearch();
+        };
+        
+        // 清除搜索按钮
+        document.getElementById('clearSearchBtn').onclick = function() {
+            clearSearch();
+        };
+        
+        // 搜索框回车事件
+        document.getElementById('searchInput').onkeypress = function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        };
+        
+        // 搜索框输入事件（实时搜索，防抖处理）
+        let searchTimeout;
+        document.getElementById('searchInput').oninput = function() {
+            clearTimeout(searchTimeout);
+            const keyword = this.value.trim();
+            
+            // 如果搜索框为空，自动清除搜索
+            if (keyword === '') {
+                clearSearch();
+                return;
+            }
+            
+            // 防抖：延迟500ms执行搜索
+            searchTimeout = setTimeout(() => {
+                if (keyword.length >= 1) { // 至少输入1个字符才搜索
+                    performSearch();
+                }
+            }, 500);
+        };
+    }
+    
+    // 执行搜索
+    function performSearch() {
+        const keyword = document.getElementById('searchInput').value.trim();
+        if (keyword === '') {
+            clearSearch();
+            return;
+        }
+        
+        loadData(1, keyword);
+        updateSearchUI(true);
+    }
+    
+    // 清除搜索
+    function clearSearch() {
+        document.getElementById('searchInput').value = '';
+        searchKeyword = '';
+        isSearching = false;
+        currentPage = 1;
+        loadData(1, '');
+        updateSearchUI(false);
+    }
+    
+    // 更新搜索相关UI
+    function updateSearchUI(searching) {
+        const clearBtn = document.getElementById('clearSearchBtn');
+        if (searching) {
+            clearBtn.style.display = 'inline-block';
+        } else {
+            clearBtn.style.display = 'none';
+        }
+    }
+    
+    // 更新分页控件
+    function updatePaginationControls() {
+        const paginationControls = document.getElementById('paginationControls');
+        const pageInfo = document.getElementById('pageInfo');
+        const pageJumpInput = document.getElementById('pageJumpInput');
+        
+        if (totalPages > 1) {
+            paginationControls.style.display = 'block';
+            pageInfo.textContent = `第 ${currentPage} 页，共 ${totalPages} 页 (总计 ${totalRecords} 条记录)`;
+            pageJumpInput.max = totalPages;
+            pageJumpInput.value = currentPage;
+            
+            // 更新按钮状态
+            document.getElementById('firstPageBtn').disabled = currentPage === 1;
+            document.getElementById('prevPageBtn').disabled = currentPage === 1;
+            document.getElementById('nextPageBtn').disabled = currentPage === totalPages;
+            document.getElementById('lastPageBtn').disabled = currentPage === totalPages;
+        } else {
+            paginationControls.style.display = 'none';
+        }
+    }
+    
+    // 隐藏分页控件
+    function hidePaginationControls() {
+        const paginationControls = document.getElementById('paginationControls');
+        paginationControls.style.display = 'none';
+    }
+    
     function exportToCSV() {
         if (!currentData || currentData.length === 0) {
-            alert('没有数据可导出');
+            alert('当前页没有数据可导出');
             return;
+        }
+        
+        // 询问用户是否导出所有数据
+        const exportAll = confirm(`当前页有 ${currentData.length} 条记录，总共有 ${totalRecords} 条记录。\n\n点击"确定"导出当前页数据，点击"取消"导出所有数据。`);
+        
+        let dataToExport = currentData;
+        let filename = `${nameParam}_${dateParam}_第${currentPage}页`;
+        
+        if (!exportAll) {
+            // 如果用户选择导出所有数据，需要重新请求
+            if (totalRecords > pageSize) {
+                alert('导出所有数据功能需要后端支持，当前只能导出当前页数据。');
+                return;
+            }
+            filename = `${nameParam}_${dateParam}_全部数据`;
         }
         
         // 创建CSV内容
@@ -678,7 +974,7 @@
         const headers = normalizedColInfos.map(col => col.displayText || col.field);
         const csvContent = [
             headers.join(','),
-            ...currentData.map(row => 
+            ...dataToExport.map(row => 
                 normalizedColInfos.map(col => {
                     const value = row[col.field] || '';
                     return `"${String(value).replace(/"/g, '""')}"`;
@@ -691,7 +987,7 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${nameParam}_${dateParam}.csv`;
+        a.download = `${filename}.csv`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -699,14 +995,99 @@
         updateStatusBar("CSV导出成功");
     }
     
+    // K线图查看相关函数
+    function viewKLineChart() {
+        // 获取当前选中的行数据
+        const selectedData = getSelectedRowData();
+        
+        if (!selectedData || !selectedData.code) {
+            // 如果没有选中行，显示输入对话框
+            showStockCodeInputDialog();
+            return;
+        }
+        
+        const code = selectedData.code;
+        const name = selectedData.name || selectedData.股票名称 || '';
+        const date = document.getElementById('dateid').value;
+        
+        openKLineWindow(code, name, date);
+    }
+    
+    // 获取选中行的数据
+    function getSelectedRowData() {
+        try {
+            // 尝试从 Luckysheet 获取选中数据
+            if (typeof luckysheet !== 'undefined' && luckysheet.getSelection) {
+                const selection = luckysheet.getSelection();
+                if (selection && selection.length > 0) {
+                    const range = selection[0];
+                    if (range.row && range.row.length > 0) {
+                        const rowIndex = range.row[0];
+                        if (rowIndex > 0 && currentData && currentData[rowIndex - 1]) {
+                            return currentData[rowIndex - 1];
+                        }
+                    }
+                }
+            }
+        } catch (error) {
+            console.log('从 Luckysheet 获取选中数据失败:', error);
+        }
+        
+        return null;
+    }
+    
+    // 显示股票代码输入对话框
+    function showStockCodeInputDialog() {
+        const code = prompt('请输入股票代码（例如：600000）:');
+        if (code && code.trim()) {
+            const cleanCode = code.trim();
+            if (/^\d{6}$/.test(cleanCode)) {
+                const date = document.getElementById('dateid').value;
+                openKLineWindow(cleanCode, '', date);
+            } else {
+                alert('请输入正确的6位股票代码');
+            }
+        }
+    }
+    
+    // 打开K线图窗口
+    function openKLineWindow(code, name, date) {
+        let url = `/instock/data/indicators?code=${encodeURIComponent(code)}`;
+        if (name) {
+            url += `&name=${encodeURIComponent(name)}`;
+        }
+        if (date) {
+            url += `&date=${encodeURIComponent(date)}`;
+        }
+        
+        window.open(url, '_blank', 'width=1400,height=900,scrollbars=yes,resizable=yes');
+        updateStatusBar(`正在打开 ${code} ${name} 的K线图...`);
+    }
+    
     function updateStatusBar(message) {
         const statusElement = document.getElementById('statusInfo');
         if (message) {
             statusElement.textContent = message;
         } else {
-            const totalRecords = currentData.length;
-            const visibleRecords = filteredData.length;
-            statusElement.innerHTML = `<i class="fa fa-info-circle"></i> 总记录数：<b>${totalRecords}</b> | 显示记录数：<b>${visibleRecords}</b> | 表格：${nameParam || '未知'}`;
+            const visibleRecords = currentData.length;
+            const startRecord = (currentPage - 1) * pageSize + 1;
+            const endRecord = Math.min(startRecord + visibleRecords - 1, totalRecords);
+            
+            let statusText = '';
+            if (isSearching) {
+                statusText = `<i class="fa fa-search"></i> 搜索"<b>${searchKeyword}</b>"结果：`;
+            } else {
+                statusText = `<i class="fa fa-info-circle"></i>`;
+            }
+            
+            if (totalPages > 1) {
+                statusText += ` 显示第 <b>${startRecord}-${endRecord}</b> 条，共 <b>${totalRecords}</b> 条记录`;
+            } else {
+                statusText += ` 总记录数：<b>${totalRecords}</b> | 显示记录数：<b>${visibleRecords}</b>`;
+            }
+            
+            statusText += ` | 表格：${nameParam || '未知'}`;
+            statusElement.innerHTML = statusText;
         }
     }
     

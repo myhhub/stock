@@ -20,10 +20,9 @@ class MyEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, bytes):
             return "✅" if ord(obj) == 1 else "❌"
-        elif isinstance(obj, datetime.date):
-            delta = datetime.datetime.combine(obj, datetime.time.min) - datetime.datetime(1899, 12, 30)
-            return f'/OADate({float(delta.days) + (float(delta.seconds) / 86400)})/'  # 86,400 seconds in day
-            # return obj.isoformat()
+        elif isinstance(obj, (datetime.date, datetime.datetime)):
+            # 返回标准的ISO日期格式 YYYY-MM-DD
+            return obj.isoformat()
         else:
             return json.JSONEncoder.default(self, obj)
 
@@ -42,7 +41,6 @@ class GetStockHtmlHandler(webBase.BaseHandler, ABC):
         
         # 将 column_names 序列化为 JSON 字符串，以便在模板中安全使用
         column_names_json = json.dumps(web_module_data.column_names, cls=MyEncoder, ensure_ascii=False)
-        
         self.render("stock_web.html", web_module_data=web_module_data, 
                    column_names_json=column_names_json,
                    date_now=date_now_str,
@@ -54,14 +52,58 @@ class GetStockDataHandler(webBase.BaseHandler, ABC):
     def get(self):
         name = self.get_argument("name", default=None, strip=False)
         date = self.get_argument("date", default=None, strip=False)
+        # 分页参数
+        page = int(self.get_argument("page", default=1, strip=False))
+        page_size = int(self.get_argument("page_size", default=100, strip=False))
+        # 搜索参数
+        search_keyword = self.get_argument("search", default=None, strip=False)
+        
         web_module_data = sswmd.stock_web_module_data().get_data(name)
         self.set_header('Content-Type', 'application/json;charset=UTF-8')
 
-        if date is None:
-            where = ""
-        else:
-            # where = f" WHERE `date` = '{date}'"
-            where = f" WHERE `date` = %s"
+        # 构建WHERE条件
+        where_conditions = []
+        params = []
+        
+        # 日期条件
+        if date is not None:
+            where_conditions.append("`date` = %s")
+            params.append(date)
+        
+        # 搜索条件
+        if search_keyword is not None and search_keyword.strip():
+            # 搜索股票代码和名称字段
+            search_conditions = []
+            search_value = f"%{search_keyword.strip()}%"
+            
+            # 根据表结构添加搜索字段
+            searchable_fields = []
+            for col_info in web_module_data.column_names:
+                if isinstance(col_info, dict):
+                    field_name = col_info.get('value', '')
+                    caption = col_info.get('caption', '').lower()
+                    # 搜索包含"代码"、"名称"、"股票"等关键词的字段
+                    if any(keyword in caption for keyword in ['代码', '名称', '股票', 'code', 'name']):
+                        searchable_fields.append(field_name)
+                        
+            # 如果没找到特定字段，使用常见的字段名
+            if not searchable_fields:
+                common_fields = ['code', 'name', 'stock_code', 'stock_name', '股票代码', '股票名称']
+                for field in common_fields:
+                    searchable_fields.append(field)
+            
+            # 为每个可搜索字段创建LIKE条件
+            for field in searchable_fields:
+                search_conditions.append(f"`{field}` LIKE %s")
+                params.append(search_value)
+            
+            if search_conditions:
+                where_conditions.append(f"({' OR '.join(search_conditions)})")
+
+        # 构建完整的WHERE子句
+        where = ""
+        if where_conditions:
+            where = " WHERE " + " AND ".join(where_conditions)
 
         order_by = ""
         if web_module_data.order_by is not None:
@@ -71,7 +113,43 @@ class GetStockDataHandler(webBase.BaseHandler, ABC):
         if web_module_data.order_columns is not None:
             order_columns = f",{web_module_data.order_columns}"
 
-        sql = f" SELECT *{order_columns} FROM `{web_module_data.table_name}`{where}{order_by}"
-        data = self.db.query(sql,date)
+        # 先查询总数
+        count_sql = f"SELECT COUNT(*) as total FROM `{web_module_data.table_name}`{where}"
+        try:
+            if params:
+                total_result = self.db.query(count_sql, *params)
+            else:
+                total_result = self.db.query(count_sql)
+            total = total_result[0]['total'] if total_result else 0
+        except Exception as e:
+            # 如果搜索字段不存在，返回空结果
+            print(f"搜索查询错误: {e}")
+            total = 0
 
-        self.write(json.dumps(data, cls=MyEncoder))
+        # 计算偏移量
+        offset = (page - 1) * page_size
+        
+        # 分页查询
+        if total > 0:
+            sql = f"SELECT *{order_columns} FROM `{web_module_data.table_name}`{where}{order_by} LIMIT %s OFFSET %s"
+            try:
+                query_params = params + [page_size, offset]
+                data = self.db.query(sql, *query_params)
+            except Exception as e:
+                print(f"数据查询错误: {e}")
+                data = []
+        else:
+            data = []
+
+        # 返回分页数据
+        result = {
+            'data': data,
+            'pagination': {
+                'page': page,
+                'page_size': page_size,
+                'total': total,
+                'total_pages': (total + page_size - 1) // page_size if total > 0 else 0
+            }
+        }
+
+        self.write(json.dumps(result, cls=MyEncoder))

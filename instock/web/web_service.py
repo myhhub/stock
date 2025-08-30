@@ -41,6 +41,8 @@ class Application(tornado.web.Application):
             # 使用datatable 展示报表数据模块。
             (r"/instock/api_data", dataTableHandler.GetStockDataHandler),
             (r"/instock/data", dataTableHandler.GetStockHtmlHandler),
+            # 独立搜索页面
+            (r"/instock/search", SearchPageHandler),
             # 获得股票指标数据。
             (r"/instock/data/indicators", dataIndicatorsHandler.GetDataIndicatorsHandler),
             # 加入关注
@@ -65,6 +67,19 @@ class HomeHandler(webBase.BaseHandler, ABC):
     def get(self):
         self.render("index.html",
                     stockVersion=version.__version__,
+                    leftMenu=webBase.GetLeftMenu(self.request.uri))
+
+
+# 搜索页面handler。
+class SearchPageHandler(webBase.BaseHandler, ABC):
+    @gen.coroutine
+    def get(self):
+        import instock.lib.trade_time as trd
+        run_date, run_date_nph = trd.get_trade_date_last()
+        date_now_str = run_date.strftime("%Y-%m-%d")
+        
+        self.render("stock_search.html",
+                    date_now=date_now_str,
                     leftMenu=webBase.GetLeftMenu(self.request.uri))
 
 

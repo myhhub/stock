@@ -25,6 +25,15 @@ def get_indicators(data, end_date=None, threshold=120, calc_threshold=None):
         if isCopy:
             data = data.copy()
 
+        # 确保数值列为float64类型，避免TA-Lib函数报错
+        numeric_columns = ['open', 'high', 'low', 'close', 'volume', 'amount', 'p_change', 'turnover']
+        for col in numeric_columns:
+            if col in data.columns:
+                try:
+                    data[col] = pd.to_numeric(data[col], errors='coerce').astype(float)
+                except:
+                    logging.warning(f"无法转换列 {col} 为数值类型")
+
         # import stockstats
         # test = data.copy()
         # test = stockstats.StockDataFrame.retype(test)  # 验证计算结果

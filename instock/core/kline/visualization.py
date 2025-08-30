@@ -3,9 +3,11 @@
 
 
 import numpy as np
+import pandas as pd
 import json
 import logging
 import os.path
+import datetime
 # 首映 bokeh 画图。
 from bokeh import events
 from bokeh.io import curdoc
@@ -29,10 +31,58 @@ __date__ = '2023/4/6 '
 def get_plot_kline(code, stock, date, stock_name):
     plot_list = []
     try:
+        # 确保所有数值列为float类型，避免Decimal序列化问题
+        numeric_columns = ['open', 'high', 'low', 'close', 'volume', 'amount', 'p_change', 'turnover', 'preclose']
+        for col in numeric_columns:
+            if col in stock.columns:
+                try:
+                    stock[col] = stock[col].astype(float)
+                except:
+                    pass
+
+        # 计算涨跌额，用于显示
+        if 'ups_downs' not in stock.columns and 'close' in stock.columns and 'preclose' in stock.columns:
+            stock['ups_downs'] = stock['close'] - stock['preclose']
+            
+        # 计算涨跌幅百分比显示格式
+        if 'quote_change' not in stock.columns and 'p_change' in stock.columns:
+            stock['quote_change'] = stock['p_change']
+        # 确保原始数据按日期升序排列
+        stock = stock.sort_values('date').reset_index(drop=True)
 
         data = idr.get_indicators(stock, date, threshold=360)
         if data is None:
             return None
+
+        # 确保数据按日期升序排列（K线图需要时间序列正确排序）
+        data = data.sort_values('date').reset_index(drop=True)
+
+        # 确保日期列为字符串格式，便于显示，处理各种日期格式
+        if 'date' in data.columns:
+            def format_date(x):
+                if pd.isna(x) or x is None:
+                    return ''
+                if isinstance(x, (datetime.date, datetime.datetime)):
+                    return x.strftime('%Y-%m-%d')
+                # 处理时间戳（可能是整数或浮点数）
+                if isinstance(x, (int, float)) and x > 0:
+                    try:
+                        # 尝试作为时间戳解析（秒级）
+                        if x > 1e9:  # 秒级时间戳
+                            return datetime.fromtimestamp(x).strftime('%Y-%m-%d')
+                        # 尝试作为Excel日期序列号
+                        elif x > 1:
+                            excel_epoch = datetime(1900, 1, 1)
+                            return (excel_epoch + pd.Timedelta(days=x-2)).strftime('%Y-%m-%d')
+                    except:
+                        pass
+                # 尝试作为字符串解析
+                try:
+                    return pd.to_datetime(str(x)).strftime('%Y-%m-%d')
+                except:
+                    return str(x)
+            
+            data['date'] = data['date'].apply(format_date)
 
         threshold = 120
         stock_column = tbs.STOCK_KLINE_PATTERN_DATA['columns']
@@ -79,7 +129,7 @@ def get_plot_kline(code, stock, date, stock_name):
         # 悬停
         tooltips = [('日期', '@date'), ('开盘', '@open'),
                     ('最高', '@high'), ('最低', '@low'),
-                    ('收盘', '@close'), ('涨跌', '@quote_change%'),
+                    ('收盘', '@close'), ('涨跌幅', '@p_change%'),
                     ('金额', '@amount{¥0}'), ('换手', '@turnover%')]
 
         hover = HoverTool(tooltips=tooltips, description="悬停", renderers=[c_segment])
@@ -94,15 +144,22 @@ def get_plot_kline(code, stock, date, stock_name):
                        toolbar_location=None, y_axis_location="right")
         p_cyq.xgrid.grid_line_color = None
         p_cyq.xaxis.visible = False
-        cyq_avgcost_line = p_cyq.line(x="x", y="y", color="red", line_width=2, line_dash="dotted")
-        cyq_avgcost_text = p_cyq.add_glyph(ColumnDataSource(dict(x=[], y=[], text=[])),glyph = Text(x="x", y="y", text="text",text_align="center"))
-        cyq_down_varea = p_cyq.varea(x="x", y1="y1", y2=0, fill_alpha=0.3, fill_color="red")
-        cyq_up_varea = p_cyq.varea(x="x", y1="y1", y2=0, fill_alpha=0.3, fill_color="blue")
+        
+        # 创建筹码分布的初始数据源
+        cyq_line_source = ColumnDataSource(dict(x=[], y=[]))
+        cyq_text_source = ColumnDataSource(dict(x=[], y=[], text=[]))
+        cyq_down_source = ColumnDataSource(dict(x=[], y1=[]))
+        cyq_up_source = ColumnDataSource(dict(x=[], y1=[]))
+        
+        cyq_avgcost_line = p_cyq.line(x="x", y="y", source=cyq_line_source, color="red", line_width=2, line_dash="dotted")
+        cyq_avgcost_text = p_cyq.add_glyph(cyq_text_source, glyph=Text(x="x", y="y", text="text", text_align="center"))
+        cyq_down_varea = p_cyq.varea(x="x", y1="y1", y2=0, source=cyq_down_source, fill_alpha=0.3, fill_color="red")
+        cyq_up_varea = p_cyq.varea(x="x", y1="y1", y2=0, source=cyq_up_source, fill_alpha=0.3, fill_color="blue")
         json_str_stock = cyq_stock.to_json(orient="records")
         js_array_str_stock = json.dumps(json.loads(json_str_stock), indent=2)
-        cqy_callback =  CustomJS.from_file(os.path.join(os.path.dirname(__file__), "cyq.js"), isinit=False, div_cyq=div_cyq, cyq_avgcost_line=cyq_avgcost_line.data_source, cyq_avgcost_text=cyq_avgcost_text.data_source, cyq_down_varea=cyq_down_varea.data_source, cyq_up_varea=cyq_up_varea.data_source, kline_data=js_array_str_stock, k_range=k_length, cyq_days=cyq_days)
+        cqy_callback =  CustomJS.from_file(os.path.join(os.path.dirname(__file__), "cyq.js"), isinit=False, div_cyq=div_cyq, cyq_avgcost_line=cyq_line_source, cyq_avgcost_text=cyq_text_source, cyq_down_varea=cyq_down_source, cyq_up_varea=cyq_up_source, kline_data=js_array_str_stock, k_range=k_length, cyq_days=cyq_days)
         cqy_hover = HoverTool(tooltips=None, callback=cqy_callback, renderers=[c_segment])
-        cqy_callback_isinit =  CustomJS.from_file(os.path.join(os.path.dirname(__file__), "cyq.js"), isinit=True, div_cyq=div_cyq, cyq_avgcost_line=cyq_avgcost_line.data_source, cyq_avgcost_text=cyq_avgcost_text.data_source, cyq_down_varea=cyq_down_varea.data_source, cyq_up_varea=cyq_up_varea.data_source, kline_data=js_array_str_stock, k_range=k_length, cyq_days=cyq_days)
+        cqy_callback_isinit =  CustomJS.from_file(os.path.join(os.path.dirname(__file__), "cyq.js"), isinit=True, div_cyq=div_cyq, cyq_avgcost_line=cyq_line_source, cyq_avgcost_text=cyq_text_source, cyq_down_varea=cyq_down_source, cyq_up_varea=cyq_up_source, kline_data=js_array_str_stock, k_range=k_length, cyq_days=cyq_days)
         curdoc().on_event(events.DocumentReady, cqy_callback_isinit)
 
         # K线图添加工具
@@ -119,37 +176,41 @@ def get_plot_kline(code, stock, date, stock_name):
             label_mask_u = (data[k] > 0)
             label_data_u = data.loc[label_mask_u].copy()
             isHas = False
+            # 处理向上的形态标签
             if len(label_data_u.index) > 0:
                 label_data_u.loc[:, 'label_cn'] = label_cn
                 label_source_u = ColumnDataSource(label_data_u)
-                locals()[f'pattern_labels_u_{str(i)}'] = LabelSet(x='index', y='high', text="label_cn",
-                                                                  source=label_source_u, x_offset=7, y_offset=5,
-                                                                  angle=90, angle_units='deg', text_color='red',
-                                                                  text_font_style='bold', text_font_size="9pt",
-                                                                  visible=pattern_is_show)
-                p_kline.add_layout(locals()[f'pattern_labels_u_{str(i)}'])
-                checkboxes_args[f'lsu{str(i)}'] = locals()[f'pattern_labels_u_{str(i)}']
+                pattern_label_u = LabelSet(x='index', y='high', text="label_cn",
+                                          source=label_source_u, x_offset=7, y_offset=5,
+                                          angle=90, angle_units='deg', text_color='red',
+                                          text_font_style='bold', text_font_size="9pt",
+                                          visible=pattern_is_show)
+                p_kline.add_layout(pattern_label_u)
+                checkboxes_args[f'lsu{str(i)}'] = pattern_label_u
                 checkboxes_code = f"{checkboxes_code}lsu{i}.visible = acts.includes({i});"
                 pattern_labels.append(label_cn)
                 isHas = True
 
+            # 处理向下的形态标签
             label_mask_d = (data[k] < 0)
             label_data_d = data.loc[label_mask_d].copy()
             if len(label_data_d.index) > 0:
                 label_data_d.loc[:, 'label_cn'] = label_cn
                 label_source_d = ColumnDataSource(label_data_d)
-                locals()[f'pattern_labels_d_{str(i)}'] = LabelSet(x='index', y='low', text='label_cn',
-                                                                  source=label_source_d, x_offset=-7, y_offset=-5,
-                                                                  angle=270, angle_units='deg',
-                                                                  text_color='green',
-                                                                  text_font_style='bold', text_font_size="9pt",
-                                                                  visible=pattern_is_show)
-                p_kline.add_layout(locals()[f'pattern_labels_d_{str(i)}'])
-                checkboxes_args[f'lsd{str(i)}'] = locals()[f'pattern_labels_d_{str(i)}']
+                pattern_label_d = LabelSet(x='index', y='low', text='label_cn',
+                                          source=label_source_d, x_offset=-7, y_offset=-5,
+                                          angle=270, angle_units='deg',
+                                          text_color='green',
+                                          text_font_style='bold', text_font_size="9pt",
+                                          visible=pattern_is_show)
+                p_kline.add_layout(pattern_label_d)
+                checkboxes_args[f'lsd{str(i)}'] = pattern_label_d
                 checkboxes_code = f"{checkboxes_code}lsd{i}.visible = acts.includes({i});"
                 if not isHas:
                     pattern_labels.append(label_cn)
                     isHas = True
+            
+            # 只有当有标签时才增加计数器
             if isHas:
                 i += 1
         p_kline.xaxis.visible = False
@@ -165,7 +226,13 @@ def get_plot_kline(code, stock, date, stock_name):
         p_volume.legend.click_policy = "hide"
         p_volume.vbar('index', 0.5, 0, 'volume', color=c_cmap, source=source)
         p_volume.add_tools(crosshair)
-        p_volume.xaxis.major_label_overrides = {i: date for i, date in enumerate(data['date'])}
+        
+        # 设置日期标签，使用已格式化的日期字符串
+        try:
+            date_labels = {i: str(date_val) for i, date_val in enumerate(data['date'])}
+            p_volume.xaxis.major_label_overrides = date_labels
+        except Exception as e:
+            logging.exception(f"visualization.get_plot_kline设置日期标签异常：{code}代码{e}")
         # p_volume.xaxis.major_label_orientation = pi / 4
 
         # 形态复选框
@@ -270,5 +337,5 @@ def get_plot_kline(code, stock, date, stock_name):
 
         return {"script": script, "div": div}
     except Exception as e:
-        logging.error(f"visualization.get_plot_kline处理异常：{e}")
+        logging.exception(f"visualization.get_plot_kline处理异常：{e}")
     return None

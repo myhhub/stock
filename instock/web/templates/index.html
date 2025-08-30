@@ -7,6 +7,16 @@
         <div class="pull-left tableTools-container">
             <h3>功能介绍</h3>
         </div>
+        <div class="pull-right">
+            <div class="btn-group">
+                <button type="button" class="btn btn-primary" onclick="showKLineDialog()">
+                    <i class="fa fa-line-chart"></i> 查看K线图
+                </button>
+                <button type="button" class="btn btn-success" onclick="openSearchPage()">
+                    <i class="fa fa-search"></i> 股票搜索
+                </button>
+            </div>
+        </div>
     </div>
      <p dir="auto" class="red">一：综合选股</p>
     <div class="snippet-clipboard-content notranslate position-relative overflow-auto">
@@ -389,4 +399,95 @@
         </code></pre>
     </div>
 </div>
+
+<!-- K线图快捷入口对话框 -->
+<div class="modal fade" id="klineModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">
+                    <i class="fa fa-line-chart"></i> 股票K线图查看
+                </h4>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="klineForm">
+                    <div class="form-group">
+                        <label>股票代码：</label>
+                        <input type="text" class="form-control" id="stockCode" placeholder="请输入6位股票代码，如：600000" maxlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label>股票名称（可选）：</label>
+                        <input type="text" class="form-control" id="stockName" placeholder="请输入股票名称，如：浦发银行">
+                    </div>
+                    <div class="form-group">
+                        <label>查询日期（可选）：</label>
+                        <input type="date" class="form-control" id="queryDate">
+                    </div>
+                </form>
+                
+                <div class="alert alert-info">
+                    <strong>快速示例：</strong><br>
+                    <a href="javascript:void(0)" onclick="openKLineQuick('600000', '浦发银行')">浦发银行(600000)</a> |
+                    <a href="javascript:void(0)" onclick="openKLineQuick('000001', '平安银行')">平安银行(000001)</a> |
+                    <a href="javascript:void(0)" onclick="openKLineQuick('600036', '招商银行')">招商银行(600036)</a> |
+                    <a href="javascript:void(0)" onclick="openKLineQuick('600519', '贵州茅台')">贵州茅台(600519)</a>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="openKLine()">查看K线图</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showKLineDialog() {
+    $('#klineModal').modal('show');
+    // 设置默认日期为今天
+    document.getElementById('queryDate').valueAsDate = new Date();
+}
+
+function openSearchPage() {
+    window.open('/instock/search', '_blank');
+}
+
+function openKLineQuick(code, name) {
+    $('#klineModal').modal('hide');
+    const url = `/instock/data/indicators?code=${code}&name=${encodeURIComponent(name)}`;
+    window.open(url, '_blank', 'width=1400,height=900,scrollbars=yes,resizable=yes');
+}
+
+function openKLine() {
+    const code = document.getElementById('stockCode').value.trim();
+    const name = document.getElementById('stockName').value.trim();
+    const date = document.getElementById('queryDate').value;
+    
+    if (!code) {
+        alert('请输入股票代码');
+        return;
+    }
+    
+    if (!/^\d{6}$/.test(code)) {
+        alert('请输入正确的6位股票代码');
+        return;
+    }
+    
+    $('#klineModal').modal('hide');
+    
+    let url = `/instock/data/indicators?code=${code}`;
+    if (name) {
+        url += `&name=${encodeURIComponent(name)}`;
+    }
+    if (date) {
+        url += `&date=${date}`;
+    }
+    
+    window.open(url, '_blank', 'width=1400,height=900,scrollbars=yes,resizable=yes');
+}
+</script>
+
 {% end %}

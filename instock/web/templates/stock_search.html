@@ -1,0 +1,866 @@
+{% extends "layout/default.html" %}
+
+{% block main_content %}
+<link rel="stylesheet" href="/static/css/bootstrap-datepicker3.min.css" />
+<link rel="stylesheet" href="/static/css/luckysheet.css" type="text/css"/>
+<link rel="stylesheet" href="/static/css/luckysheet-plugins.css" type="text/css"/>
+<script type="text/javascript" src="/static/js/luckysheet.umd.js"></script>
+<script src="/static/js/luckysheet-plugins.js" type="text/javascript"></script>
+<script src="/static/js/FileSaver.js" type="text/javascript"></script>
+<script src="/static/js/bootstrap-datepicker.min.js"></script>
+<script src="/static/js/bootstrap-datepicker.zh-CN.min.js"></script>
+
+<style>
+.search-container {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 30px 0;
+    margin-bottom: 20px;
+}
+
+.search-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    padding: 30px;
+    margin: 0 auto;
+    max-width: 800px;
+}
+
+.search-title {
+    color: #333;
+    font-size: 28px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.search-subtitle {
+    color: #666;
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 16px;
+}
+
+.search-input-group {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 15px 50px 15px 20px;
+    font-size: 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 25px;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.search-btn {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #667eea;
+    border: none;
+    border-radius: 20px;
+    width: 40px;
+    height: 40px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.search-btn:hover {
+    background: #5a6fd8;
+    transform: translateY(-50%) scale(1.1);
+}
+
+.search-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.search-filters {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.search-filter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.search-filter label {
+    font-weight: 500;
+    color: #555;
+    margin: 0;
+}
+
+.search-filter select, 
+.search-filter input {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.quick-search {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.quick-search-title {
+    color: #666;
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+
+.quick-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+}
+
+.quick-tag {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 20px;
+    padding: 6px 15px;
+    color: #495057;
+    text-decoration: none;
+    font-size: 13px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.quick-tag:hover {
+    background: #667eea;
+    color: white;
+    text-decoration: none;
+}
+
+.results-container {
+    margin: 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.results-header {
+    background: #f8f9fa;
+    padding: 15px 20px;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.results-info {
+    color: #495057;
+    font-weight: 500;
+}
+
+.results-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-action {
+    padding: 6px 12px;
+    font-size: 13px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    background: white;
+    color: #495057;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-action:hover {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+.no-results {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6c757d;
+}
+
+.no-results i {
+    font-size: 48px;
+    margin-bottom: 20px;
+    color: #dee2e6;
+}
+
+.loading-container {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6c757d;
+}
+
+.loading-spinner {
+    font-size: 24px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 15px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+    .search-card {
+        margin: 0 15px;
+        padding: 20px;
+    }
+    
+    .search-options {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .search-filters {
+        justify-content: center;
+    }
+}
+</style>
+
+<div style="height: 100vh; overflow: auto; background: #f5f6fa;">
+    <!-- 搜索区域 -->
+    <div class="search-container">
+        <div class="search-card">
+            <h1 class="search-title">
+                <i class="fa fa-search"></i> 股票智能搜索
+            </h1>
+            <p class="search-subtitle">快速查找股票代码、名称，支持模糊搜索和高级筛选</p>
+            
+            <div class="search-input-group">
+                <input type="text" id="searchInput" class="search-input" 
+                       placeholder="输入股票代码（如：600000）或股票名称（如：浦发银行）...">
+                <button type="button" id="searchBtn" class="search-btn">
+                    <i class="fa fa-search"></i>
+                </button>
+            </div>
+            
+            <div class="search-options">
+                <div class="search-filters">
+                    <div class="search-filter">
+                        <label>数据表：</label>
+                        <select id="tableSelect" class="form-control">
+                            <option value="cn_stock_selection">综合选股</option>
+                            <option value="cn_stock_spot">股票基本数据</option>
+                            <option value="cn_stock_indicators">股票指标数据</option>
+                            <option value="cn_stock_kline_pattern">K线形态</option>
+                        </select>
+                    </div>
+                    
+                    <div class="search-filter">
+                        <label>日期：</label>
+                        <input type="text" id="datePicker" class="form-control date-picker" 
+                               value="{{ date_now }}" style="width: 120px;">
+                    </div>
+                    
+                    <div class="search-filter">
+                        <label>每页：</label>
+                        <select id="pageSizeSelect" class="form-control">
+                            <option value="20">20</option>
+                            <option value="50" selected>50</option>
+                            <option value="100">100</option>
+                            <option value="200">200</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="search-filters">
+                    <button type="button" id="clearBtn" class="btn btn-secondary btn-sm">
+                        <i class="fa fa-times"></i> 清除
+                    </button>
+                    <button type="button" id="advancedBtn" class="btn btn-info btn-sm">
+                        <i class="fa fa-cog"></i> 高级搜索
+                    </button>
+                </div>
+            </div>
+            
+            <div class="quick-search">
+                <div class="quick-search-title">快速搜索：</div>
+                <div class="quick-tags">
+                    <span class="quick-tag" data-search="600">600系列</span>
+                    <span class="quick-tag" data-search="000">000系列</span>
+                    <span class="quick-tag" data-search="002">002系列</span>
+                    <span class="quick-tag" data-search="300">300系列</span>
+                    <span class="quick-tag" data-search="银行">银行</span>
+                    <span class="quick-tag" data-search="科技">科技</span>
+                    <span class="quick-tag" data-search="医药">医药</span>
+                    <span class="quick-tag" data-search="新能源">新能源</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 结果区域 -->
+    <div class="results-container" id="resultsContainer" style="display: none;">
+        <div class="results-header">
+            <div class="results-info" id="resultsInfo">
+                <i class="fa fa-list"></i> 搜索结果
+            </div>
+            <div class="results-actions">
+                <button type="button" id="exportBtn" class="btn-action">
+                    <i class="fa fa-download"></i> 导出
+                </button>
+                <button type="button" id="viewBtn" class="btn-action">
+                    <i class="fa fa-line-chart"></i> 查看K线
+                </button>
+            </div>
+        </div>
+        
+        <!-- 数据展示区域 -->
+        <div id="dataContainer" style="height: 400px; overflow: auto;">
+            <!-- 这里显示搜索结果 -->
+        </div>
+        
+        <!-- 分页控件 -->
+        <div id="paginationContainer" style="padding: 15px 20px; border-top: 1px solid #e9ecef; background: #f8f9fa;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div id="pageInfo" class="results-info">第 1 页，共 1 页</div>
+                <div style="display: flex; gap: 5px;">
+                    <button id="firstPageBtn" class="btn-action" title="首页">
+                        <i class="fa fa-angle-double-left"></i>
+                    </button>
+                    <button id="prevPageBtn" class="btn-action" title="上一页">
+                        <i class="fa fa-angle-left"></i>
+                    </button>
+                    <span style="margin: 0 10px; color: #6c757d;">跳转到：</span>
+                    <input id="pageJumpInput" type="number" min="1" style="width: 60px; padding: 4px 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <button id="pageJumpBtn" class="btn-action">跳转</button>
+                    <button id="nextPageBtn" class="btn-action" title="下一页">
+                        <i class="fa fa-angle-right"></i>
+                    </button>
+                    <button id="lastPageBtn" class="btn-action" title="末页">
+                        <i class="fa fa-angle-double-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 空状态 -->
+    <div id="emptyState" class="results-container">
+        <div class="no-results">
+            <i class="fa fa-search"></i>
+            <h4>输入关键词开始搜索</h4>
+            <p>支持股票代码、股票名称的模糊搜索</p>
+        </div>
+    </div>
+    
+    <!-- 加载状态 -->
+    <div id="loadingState" class="results-container" style="display: none;">
+        <div class="loading-container">
+            <i class="fa fa-spinner loading-spinner"></i>
+            <h4>正在搜索中...</h4>
+            <p id="loadingText">请稍候</p>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    // 搜索状态变量
+    let currentPage = 1;
+    let pageSize = 50;
+    let totalPages = 1;
+    let totalRecords = 0;
+    let currentKeyword = '';
+    let currentTable = 'cn_stock_selection';
+    let currentDate = "{{ date_now }}";
+    let searchResults = [];
+    let selectedRowData = null;
+
+    $(document).ready(function() {
+        console.log('股票搜索页面初始化...');
+        
+        // 初始化日期选择器
+        initDatePicker();
+        
+        // 初始化事件
+        initEvents();
+        
+        // 检查URL参数
+        checkUrlParams();
+    });
+    
+    function initDatePicker() {
+        $(".date-picker").datepicker({
+            language: 'zh-CN',
+            format: "yyyy-mm-dd",
+            showOtherMonths: true,
+            selectOtherMonths: false,
+            autoclose: true,
+            todayHighlight: true
+        }).on('changeDate', function(ev) {
+            currentDate = this.value;
+            // 如果已经有搜索结果，重新搜索
+            if (currentKeyword) {
+                performSearch();
+            }
+        });
+    }
+    
+    function initEvents() {
+        // 搜索按钮
+        $('#searchBtn').click(function() {
+            performSearch();
+        });
+        
+        // 搜索框回车
+        $('#searchInput').keypress(function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+        
+        // 实时搜索（防抖）
+        let searchTimeout;
+        $('#searchInput').on('input', function() {
+            clearTimeout(searchTimeout);
+            const keyword = $(this).val().trim();
+            
+            if (keyword === '') {
+                clearSearch();
+                return;
+            }
+            
+            searchTimeout = setTimeout(() => {
+                if (keyword.length >= 1) {
+                    performSearch();
+                }
+            }, 500);
+        });
+        
+        // 清除按钮
+        $('#clearBtn').click(function() {
+            clearSearch();
+        });
+        
+        // 表格选择
+        $('#tableSelect').change(function() {
+            currentTable = $(this).val();
+            if (currentKeyword) {
+                performSearch();
+            }
+        });
+        
+        // 页面大小选择
+        $('#pageSizeSelect').change(function() {
+            pageSize = parseInt($(this).val());
+            currentPage = 1;
+            if (currentKeyword) {
+                performSearch();
+            }
+        });
+        
+        // 快速搜索标签
+        $('.quick-tag').click(function() {
+            const keyword = $(this).data('search');
+            $('#searchInput').val(keyword);
+            performSearch();
+        });
+        
+        // 分页按钮
+        $('#firstPageBtn').click(() => goToPage(1));
+        $('#prevPageBtn').click(() => goToPage(Math.max(1, currentPage - 1)));
+        $('#nextPageBtn').click(() => goToPage(Math.min(totalPages, currentPage + 1)));
+        $('#lastPageBtn').click(() => goToPage(totalPages));
+        
+        // 页面跳转
+        $('#pageJumpBtn').click(function() {
+            const targetPage = parseInt($('#pageJumpInput').val());
+            if (targetPage >= 1 && targetPage <= totalPages) {
+                goToPage(targetPage);
+            }
+        });
+        
+        $('#pageJumpInput').keypress(function(e) {
+            if (e.key === 'Enter') {
+                $('#pageJumpBtn').click();
+            }
+        });
+        
+        // 导出按钮
+        $('#exportBtn').click(function() {
+            exportResults();
+        });
+        
+        // 查看K线按钮
+        $('#viewBtn').click(function() {
+            viewKLine();
+        });
+    }
+    
+    function checkUrlParams() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const keyword = urlParams.get('search');
+        const table = urlParams.get('table');
+        
+        if (keyword) {
+            $('#searchInput').val(keyword);
+            currentKeyword = keyword;
+        }
+        
+        if (table) {
+            $('#tableSelect').val(table);
+            currentTable = table;
+        }
+        
+        if (keyword) {
+            performSearch();
+        }
+    }
+    
+    function performSearch() {
+        const keyword = $('#searchInput').val().trim();
+        if (!keyword) {
+            clearSearch();
+            return;
+        }
+        
+        currentKeyword = keyword;
+        currentPage = 1;
+        currentTable = $('#tableSelect').val();
+        currentDate = $('#datePicker').val();
+        
+        showLoading(`正在搜索"${keyword}"...`);
+        
+        // 构建搜索URL
+        const url = `/instock/api_data?name=${currentTable}&search=${encodeURIComponent(keyword)}&page=${currentPage}&page_size=${pageSize}&date=${currentDate}`;
+        
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(result => {
+                console.log('搜索结果:', result);
+                handleSearchResult(result);
+            })
+            .catch(error => {
+                console.error('搜索失败:', error);
+                showError(`搜索失败: ${error.message}`);
+            });
+    }
+    
+    function goToPage(page) {
+        if (page === currentPage || page < 1 || page > totalPages) {
+            return;
+        }
+        
+        currentPage = page;
+        
+        showLoading(`正在加载第 ${page} 页...`);
+        
+        const url = `/instock/api_data?name=${currentTable}&search=${encodeURIComponent(currentKeyword)}&page=${currentPage}&page_size=${pageSize}&date=${currentDate}`;
+        
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(result => {
+                handleSearchResult(result);
+            })
+            .catch(error => {
+                console.error('加载失败:', error);
+                showError(`加载失败: ${error.message}`);
+            });
+    }
+    
+    function handleSearchResult(result) {
+        let data, pagination;
+        
+        if (result.data && result.pagination) {
+            data = result.data;
+            pagination = result.pagination;
+            totalRecords = pagination.total;
+            totalPages = pagination.total_pages;
+            currentPage = pagination.page;
+        } else if (Array.isArray(result)) {
+            data = result;
+            totalRecords = data.length;
+            totalPages = 1;
+            currentPage = 1;
+        } else {
+            throw new Error('无效的响应格式');
+        }
+        
+        searchResults = data;
+        
+        if (data.length === 0) {
+            showNoResults();
+        } else {
+            showResults(data);
+            updatePagination();
+        }
+    }
+    
+    function showResults(data) {
+        hideAllStates();
+        $('#resultsContainer').show();
+        
+        // 更新结果信息
+        const startRecord = (currentPage - 1) * pageSize + 1;
+        const endRecord = Math.min(startRecord + data.length - 1, totalRecords);
+        $('#resultsInfo').html(`
+            <i class="fa fa-search"></i> 搜索"<strong>${currentKeyword}</strong>"结果：
+            显示第 <strong>${startRecord}-${endRecord}</strong> 条，共 <strong>${totalRecords}</strong> 条记录
+        `);
+        
+        // 显示数据表格
+        displayDataTable(data);
+    }
+    
+    function displayDataTable(data) {
+        if (!data || data.length === 0) {
+            return;
+        }
+        
+        // 获取字段信息
+        const fields = Object.keys(data[0]);
+        
+        let html = '<div style="padding: 20px;">';
+        html += '<table class="table table-striped table-hover" style="margin: 0;">';
+        
+        // 表头
+        html += '<thead style="background: #f8f9fa;"><tr>';
+        fields.forEach(field => {
+            html += `<th style="padding: 12px; border-bottom: 2px solid #dee2e6; font-weight: 600; color: #495057;">${field}</th>`;
+        });
+        html += '</tr></thead>';
+        
+        // 数据行
+        html += '<tbody>';
+        data.forEach((row, index) => {
+            html += `<tr style="cursor: pointer;" onclick="selectRow(${index})">`;
+            fields.forEach(field => {
+                let value = row[field];
+                if (value === null || value === undefined) {
+                    value = '';
+                } else if (typeof value === 'number') {
+                    value = value.toFixed(2);
+                } else if (field.includes('date') && value) {
+                    try {
+                        const date = new Date(value);
+                        if (!isNaN(date.getTime())) {
+                            value = date.toISOString().split('T')[0];
+                        }
+                    } catch (e) {}
+                }
+                
+                // 高亮搜索关键词
+                const strValue = String(value);
+                const highlightedValue = highlightKeyword(strValue, currentKeyword);
+                
+                html += `<td style="padding: 12px; border-bottom: 1px solid #dee2e6;">${highlightedValue}</td>`;
+            });
+            html += '</tr>';
+        });
+        html += '</tbody></table></div>';
+        
+        $('#dataContainer').html(html);
+    }
+    
+    function highlightKeyword(text, keyword) {
+        if (!keyword || !text) return text;
+        
+        const regex = new RegExp(`(${keyword})`, 'gi');
+        return text.replace(regex, '<mark style="background: #fff3cd; padding: 2px 4px; border-radius: 3px;">$1</mark>');
+    }
+    
+    function selectRow(index) {
+        // 移除之前的选中状态
+        $('#dataContainer tbody tr').removeClass('table-active');
+        
+        // 添加当前行的选中状态
+        $(`#dataContainer tbody tr:eq(${index})`).addClass('table-active');
+        
+        // 保存选中的行数据
+        selectedRowData = searchResults[index];
+        
+        console.log('选中行数据:', selectedRowData);
+    }
+    
+    function updatePagination() {
+        if (totalPages <= 1) {
+            $('#paginationContainer').hide();
+            return;
+        }
+        
+        $('#paginationContainer').show();
+        $('#pageInfo').text(`第 ${currentPage} 页，共 ${totalPages} 页 (总计 ${totalRecords} 条记录)`);
+        $('#pageJumpInput').attr('max', totalPages).val(currentPage);
+        
+        // 更新按钮状态
+        $('#firstPageBtn').prop('disabled', currentPage === 1);
+        $('#prevPageBtn').prop('disabled', currentPage === 1);
+        $('#nextPageBtn').prop('disabled', currentPage === totalPages);
+        $('#lastPageBtn').prop('disabled', currentPage === totalPages);
+    }
+    
+    function showLoading(message = '正在搜索...') {
+        hideAllStates();
+        $('#loadingText').text(message);
+        $('#loadingState').show();
+    }
+    
+    function showNoResults() {
+        hideAllStates();
+        $('#resultsContainer').show();
+        $('#resultsInfo').html(`<i class="fa fa-search"></i> 搜索"<strong>${currentKeyword}</strong>"无结果`);
+        $('#dataContainer').html(`
+            <div class="no-results">
+                <i class="fa fa-search"></i>
+                <h4>未找到相关结果</h4>
+                <p>尝试使用其他关键词或检查输入是否正确</p>
+            </div>
+        `);
+        $('#paginationContainer').hide();
+    }
+    
+    function showError(message) {
+        hideAllStates();
+        $('#resultsContainer').show();
+        $('#resultsInfo').html(`<i class="fa fa-exclamation-triangle"></i> 搜索出错`);
+        $('#dataContainer').html(`
+            <div class="no-results">
+                <i class="fa fa-exclamation-triangle" style="color: #dc3545;"></i>
+                <h4>搜索失败</h4>
+                <p>${message}</p>
+                <button class="btn btn-primary" onclick="performSearch()">重试</button>
+            </div>
+        `);
+        $('#paginationContainer').hide();
+    }
+    
+    function hideAllStates() {
+        $('#resultsContainer').hide();
+        $('#emptyState').hide();
+        $('#loadingState').hide();
+    }
+    
+    function clearSearch() {
+        $('#searchInput').val('');
+        currentKeyword = '';
+        selectedRowData = null;
+        hideAllStates();
+        $('#emptyState').show();
+    }
+    
+    function exportResults() {
+        if (!searchResults || searchResults.length === 0) {
+            alert('没有数据可导出');
+            return;
+        }
+        
+        // 简单的CSV导出
+        const fields = Object.keys(searchResults[0]);
+        const csvContent = [
+            fields.join(','),
+            ...searchResults.map(row => 
+                fields.map(field => {
+                    const value = row[field] || '';
+                    return `"${String(value).replace(/"/g, '""')}"`;
+                }).join(',')
+            )
+        ].join('\n');
+        
+        const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `搜索结果_${currentKeyword}_${currentDate}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        alert('导出成功！');
+    }
+    
+    function viewKLine() {
+        let code = '';
+        let name = '';
+        
+        if (selectedRowData) {
+            // 尝试从选中的行数据中获取股票代码
+            code = selectedRowData.code || selectedRowData.股票代码 || selectedRowData['股票代码'] || '';
+            name = selectedRowData.name || selectedRowData.股票名称 || selectedRowData['股票名称'] || '';
+        }
+        
+        if (!code) {
+            code = prompt('请输入股票代码（例如：600000）:');
+            if (!code || !code.trim()) {
+                return;
+            }
+            code = code.trim();
+        }
+        
+        if (!/^\d{6}$/.test(code)) {
+            alert('请输入正确的6位股票代码');
+            return;
+        }
+        
+        // 打开K线图窗口
+        let url = `/instock/data/indicators?code=${encodeURIComponent(code)}`;
+        if (name) {
+            url += `&name=${encodeURIComponent(name)}`;
+        }
+        url += `&date=${encodeURIComponent(currentDate)}`;
+        
+        window.open(url, '_blank', 'width=1400,height=900,scrollbars=yes,resizable=yes');
+    }
+</script>
+
+<style>
+/* 表格行选中样式 */
+.table-active {
+    background-color: #e3f2fd !important;
+}
+
+.table tbody tr:hover {
+    background-color: #f5f5f5;
+}
+
+/* 分页按钮禁用样式 */
+.btn-action:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* 高亮标记样式 */
+mark {
+    background: #fff3cd !important;
+    padding: 2px 4px !important;
+    border-radius: 3px !important;
+    font-weight: bold;
+}
+</style>
+
+{% end %}
