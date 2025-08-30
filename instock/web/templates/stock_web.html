@@ -19,14 +19,9 @@
             <input type="hidden" id="dateid_old">
             <input type="text" value="{{ date_now }}" id="dateid" class="input-group-sm form-control date-picker" style="display: inline-block; width: 120px; margin-left: 10px;">
             
-            <!-- 搜索控件 -->
-            <span style="margin-left: 20px; font-weight: bold; color: #333;">搜索：</span>
-            <input type="text" id="searchInput" placeholder="输入股票代码或名称" class="input-group-sm form-control" style="display: inline-block; width: 200px; margin-left: 10px;">
-            <button type="button" id="searchBtn" class="btn btn-default btn-sm" style="margin-left: 5px;" title="搜索">
-                <i class="fa fa-search"></i>
-            </button>
-            <button type="button" id="clearSearchBtn" class="btn btn-default btn-sm" style="margin-left: 2px; display: none;" title="清除搜索">
-                <i class="fa fa-times"></i>
+            <!-- 搜索链接 -->
+            <button type="button" id="openSearchBtn" class="btn btn-info btn-sm" style="margin-left: 20px;" title="打开独立搜索页面" onclick="openSearchPage()">
+                <i class="fa fa-search"></i> 搜索股票
             </button>
         </div>
         <div style="display:inline-block; float:right; height:100%;">
@@ -129,6 +124,12 @@
     let searchKeyword = '';
     let isSearching = false;
     
+    // 打开独立搜索页面
+    function openSearchPage() {
+        const url = `/instock/search?table_name=${encodeURIComponent(nameParam)}&date=${encodeURIComponent(dateParam)}`;
+        window.open(url, '_blank');
+    }
+    
     // 从隐藏的script标签中读取列信息数据
     let colInfos = [];
     try {
@@ -181,9 +182,6 @@
         // 初始化分页事件
         initPaginationEvents();
         
-        // 初始化搜索事件
-        initSearchEvents();
-        
         // 延迟一点时间再加载数据，确保所有依赖都已准备好
         setTimeout(() => {
             loadData(1);
@@ -198,10 +196,9 @@
             autoclose: true,
             todayHighlight: true
         }).on('changeDate', function(ev){
-            // 日期改变时清除搜索并重置到第一页
-            clearSearch();
+            // 日期改变时重置到第一页
             currentPage = 1;
-            loadData(1, '');
+            loadData(1);
         });
     });
     
@@ -235,31 +232,20 @@
         }
     }
     
-    function loadData(page = 1, keyword = '') {
+    function loadData(page = 1) {
         const dateParam_old = document.getElementById("dateid_old").value;
         dateParam = document.getElementById('dateid').value;
         
-        // 更新搜索状态
-        if (keyword !== searchKeyword) {
-            searchKeyword = keyword;
-            currentPage = 1;
-            page = 1;
-        }
-        isSearching = keyword && keyword.trim().length > 0;
-        
-        if (dateParam_old === dateParam && page === currentPage && keyword === searchKeyword) return;
+        if (dateParam_old === dateParam && page === currentPage) return;
         document.getElementById("dateid_old").value = dateParam;
         
         currentPage = page;
         
-        updateStatusBar(isSearching ? `搜索"${keyword}"中...` : "加载数据中...");
-        showLoadingIndicator(isSearching ? `正在搜索"${keyword}"...` : "正在加载数据...");
+        updateStatusBar("加载数据中...");
+        showLoadingIndicator("正在加载数据...");
         
-        // 构建请求URL，包含分页和搜索参数
+        // 构建请求URL，包含分页参数
         let url = `/instock/api_data?name=${nameParam}&date=${dateParam}&page=${currentPage}&page_size=${pageSize}`;
-        if (isSearching) {
-            url += `&search=${encodeURIComponent(keyword)}`;
-        }
         
         fetch(url)
             .then(response => {
@@ -781,8 +767,7 @@
         
         // 重置筛选
         document.getElementById('resetFilter').onclick = function() {
-            // 清除搜索并重新加载数据
-            clearSearch();
+            // 重新加载数据
             filteredData = currentData.slice();
             displayDataInLuckysheet(filteredData);
             updateStatusBar("筛选已重置");
@@ -795,31 +780,31 @@
         document.getElementById('pageSizeSelect').onchange = function() {
             pageSize = parseInt(this.value);
             currentPage = 1; // 重置到第一页
-            loadData(1, searchKeyword); // 保持当前搜索状态
+            loadData(1);
         };
         
         // 分页按钮
         document.getElementById('firstPageBtn').onclick = function() {
             if (currentPage > 1) {
-                loadData(1, searchKeyword);
+                loadData(1);
             }
         };
         
         document.getElementById('prevPageBtn').onclick = function() {
             if (currentPage > 1) {
-                loadData(currentPage - 1, searchKeyword);
+                loadData(currentPage - 1);
             }
         };
         
         document.getElementById('nextPageBtn').onclick = function() {
             if (currentPage < totalPages) {
-                loadData(currentPage + 1, searchKeyword);
+                loadData(currentPage + 1);
             }
         };
         
         document.getElementById('lastPageBtn').onclick = function() {
             if (currentPage < totalPages) {
-                loadData(totalPages, searchKeyword);
+                loadData(totalPages);
             }
         };
         
@@ -827,7 +812,7 @@
         document.getElementById('pageJumpBtn').onclick = function() {
             const targetPage = parseInt(document.getElementById('pageJumpInput').value);
             if (targetPage >= 1 && targetPage <= totalPages && targetPage !== currentPage) {
-                loadData(targetPage, searchKeyword);
+                loadData(targetPage);
             }
         };
         
@@ -839,48 +824,7 @@
         };
     }
     
-    // 初始化搜索事件
-    function initSearchEvents() {
-        // 搜索按钮点击事件
-        document.getElementById('searchBtn').onclick = function() {
-            performSearch();
-        };
-        
-        // 清除搜索按钮
-        document.getElementById('clearSearchBtn').onclick = function() {
-            clearSearch();
-        };
-        
-        // 搜索框回车事件
-        document.getElementById('searchInput').onkeypress = function(e) {
-            if (e.key === 'Enter') {
-                performSearch();
-            }
-        };
-        
-        // 搜索框输入事件（实时搜索，防抖处理）
-        let searchTimeout;
-        document.getElementById('searchInput').oninput = function() {
-            clearTimeout(searchTimeout);
-            const keyword = this.value.trim();
-            
-            // 如果搜索框为空，自动清除搜索
-            if (keyword === '') {
-                clearSearch();
-                return;
-            }
-            
-            // 防抖：延迟500ms执行搜索
-            searchTimeout = setTimeout(() => {
-                if (keyword.length >= 1) { // 至少输入1个字符才搜索
-                    performSearch();
-                }
-            }, 500);
-        };
-    }
-    
-    // 执行搜索
-    function performSearch() {
+    function exportToCSV() {
         const keyword = document.getElementById('searchInput').value.trim();
         if (keyword === '') {
             clearSearch();
@@ -1073,12 +1017,7 @@
             const startRecord = (currentPage - 1) * pageSize + 1;
             const endRecord = Math.min(startRecord + visibleRecords - 1, totalRecords);
             
-            let statusText = '';
-            if (isSearching) {
-                statusText = `<i class="fa fa-search"></i> 搜索"<b>${searchKeyword}</b>"结果：`;
-            } else {
-                statusText = `<i class="fa fa-info-circle"></i>`;
-            }
+            let statusText = `<i class="fa fa-info-circle"></i>`;
             
             if (totalPages > 1) {
                 statusText += ` 显示第 <b>${startRecord}-${endRecord}</b> 条，共 <b>${totalRecords}</b> 条记录`;

@@ -390,6 +390,44 @@
     let currentDate = "{{ date_now }}";
     let searchResults = [];
     let selectedRowData = null;
+    
+    // 处理URL参数（从主页面跳转时）
+    $(document).ready(function() {
+        // 获取URL参数
+        const urlParams = new URLSearchParams(window.location.search);
+        const tableName = urlParams.get('table_name');
+        const date = urlParams.get('date');
+        
+        // 如果有表名参数，更新当前表名
+        if (tableName) {
+            currentTable = tableName;
+            console.log('从主页面跳转，表名:', tableName);
+        }
+        
+        // 如果有日期参数，更新当前日期
+        if (date) {
+            currentDate = date;
+            console.log('从主页面跳转，日期:', date);
+        }
+        
+        // 更新页面显示信息
+        updatePageInfo();
+    });
+    
+    // 更新页面信息显示
+    function updatePageInfo() {
+        const infoElement = document.querySelector('.search-subtitle');
+        if (infoElement) {
+            let infoText = '智能搜索股票数据，支持股票代码、名称模糊查询';
+            if (currentTable !== 'cn_stock_selection') {
+                infoText += ` | 当前表: ${currentTable}`;
+            }
+            if (currentDate !== "{{ date_now }}") {
+                infoText += ` | 日期: ${currentDate}`;
+            }
+            infoElement.textContent = infoText;
+        }
+    }
 
     $(document).ready(function() {
         console.log('股票搜索页面初始化...');
