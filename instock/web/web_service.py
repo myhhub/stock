@@ -23,6 +23,7 @@ logging.basicConfig(format='%(asctime)s %(message)s', filename=os.path.join(log_
 logging.getLogger().setLevel(logging.ERROR)
 import instock.lib.torndb as torndb
 import instock.lib.database as mdb
+from instock.lib.database_factory import get_database, db_config, DatabaseType
 import instock.lib.version as version
 import instock.web.dataTableHandler as dataTableHandler
 import instock.web.dataIndicatorsHandler as dataIndicatorsHandler
