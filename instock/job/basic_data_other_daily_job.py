@@ -13,6 +13,7 @@ sys.path.append(cpath)
 import instock.lib.run_template as runt
 import instock.core.tablestructure as tbs
 import instock.lib.database as mdb
+from instock.lib.database_factory import get_database, execute_sql, insert_db_from_df, read_sql_to_df
 import instock.core.stockfetch as stf
 from instock.lib.common_check import check_and_delete_old_data_for_realtime_data
 
@@ -133,12 +134,12 @@ def stock_sector_fund_flow_data(date, index_sector):
         # 删除老数据。
         if mdb.checkTableIsExist(table_name):
             del_sql = f"DELETE FROM `{table_name}` where `date` = '{date}'"
-            mdb.executeSql(del_sql)
+            execute_sql(del_sql)
             cols_type = None
         else:
             cols_type = tbs.get_field_types(tbs_table['columns'])
 
-        mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`name`")
+        insert_db_from_df(data, table_name, cols_type, False, "`date`,`name`")
     except Exception as e:
         logging.error(f"basic_data_other_daily_job.stock_sector_fund_flow_data处理异常：{e}")
 
@@ -173,16 +174,16 @@ def save_nph_stock_bonus(date, before=True):
         data = stf.fetch_stocks_bonus(date)
         if data is None or len(data.index) == 0:
             return
-
+        
         table_name = tbs.TABLE_CN_STOCK_BONUS['name']
         # 删除老数据。
         if mdb.checkTableIsExist(table_name):
             del_sql = f"DELETE FROM `{table_name}` where `date` = '{date}'"
-            mdb.executeSql(del_sql)
+            execute_sql(del_sql)
             cols_type = None
         else:
             cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_BONUS['columns'])
-        mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
+        insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
     except Exception as e:
         logging.error(f"basic_data_other_daily_job.save_nph_stock_bonus处理异常：{e}")
 
@@ -196,7 +197,7 @@ def stock_spot_buy(date):
 
         sql = f'''SELECT * FROM `{_table_name}` WHERE `date` = '{date}' and 
                 `pe9` > 0 and `pe9` <= 20 and `pbnewmrq` <= 10 and `roe_weight` >= 15'''
-        data = pd.read_sql(sql=sql, con=mdb.engine())
+        data = read_sql_to_df(sql)
         data = data.drop_duplicates(subset="code", keep="last")
         if len(data.index) == 0:
             return
@@ -205,12 +206,12 @@ def stock_spot_buy(date):
         # 删除老数据。
         if mdb.checkTableIsExist(table_name):
             del_sql = f"DELETE FROM `{table_name}` where `date` = '{date}'"
-            mdb.executeSql(del_sql)
+            execute_sql(del_sql)
             cols_type = None
         else:
             cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_SPOT_BUY['columns'])
 
-        mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
+        insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
     except Exception as e:
         logging.error(f"basic_data_other_daily_job.stock_spot_buy处理异常：{e}")
 
@@ -226,12 +227,12 @@ def stock_chip_race_open_data(date):
         # 删除老数据。
         if mdb.checkTableIsExist(table_name):
             del_sql = f"DELETE FROM `{table_name}` where `date` = '{date}'"
-            mdb.executeSql(del_sql)
+            execute_sql(del_sql)
             cols_type = None
         else:
             cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_CHIP_RACE_OPEN['columns'])
 
-        mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
+        insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
     except Exception as e:
         logging.error(f"basic_data_other_daily_job.stock_chip_race_open_data：{e}")
 
@@ -247,12 +248,12 @@ def stock_imitup_reason_data(date):
         # 删除老数据。
         if mdb.checkTableIsExist(table_name):
             del_sql = f"DELETE FROM `{table_name}` where `date` = '{date}'"
-            mdb.executeSql(del_sql)
+            execute_sql(del_sql)
             cols_type = None
         else:
             cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_LIMITUP_REASON['columns'])
 
-        mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
+        insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
     except Exception as e:
         logging.error(f"basic_data_other_daily_job.stock_imitup_reason_data：{e}")
 

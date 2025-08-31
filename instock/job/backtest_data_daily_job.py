@@ -14,6 +14,7 @@ cpath = os.path.abspath(os.path.join(cpath_current, os.pardir))
 sys.path.append(cpath)
 import instock.core.tablestructure as tbs
 import instock.lib.database as mdb
+from instock.lib.database_factory import get_database, execute_sql, insert_db_from_df, read_sql_to_df
 import instock.core.backtest.rate_stats as rate
 from instock.core.singleton_stock import stock_hist_data
 
@@ -51,7 +52,7 @@ def process(table, data_all, date, backtest_column):
     now_date = datetime.datetime.now().date()
     sql = f"SELECT * FROM `{table_name}` WHERE `date` < '{now_date}' AND `{column_tail}` is NULL"
     try:
-        data = pd.read_sql(sql=sql, con=mdb.engine())
+        data = read_sql_to_df(sql)
         if data is None or len(data.index) == 0:
             return
 

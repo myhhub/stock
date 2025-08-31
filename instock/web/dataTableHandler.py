@@ -3,6 +3,7 @@
 
 
 import json
+import traceback
 from abc import ABC
 from tornado import gen
 # import logging
@@ -10,6 +11,7 @@ import datetime
 import instock.lib.trade_time as trd
 import instock.core.singleton_stock_web_module_data as sswmd
 import instock.web.base as webBase
+import pandas as pd
 # 引入数据库工厂
 from instock.lib.database_factory import get_database, DatabaseType, db_config
 
@@ -23,10 +25,16 @@ class MyEncoder(json.JSONEncoder):
         if isinstance(obj, bytes):
             return "✅" if ord(obj) == 1 else "❌"
         elif isinstance(obj, (datetime.date, datetime.datetime)):
-            # 返回标准的ISO日期格式 YYYY-MM-DD
+            # 返回标准的ISO日期格式 YYYY-MM-DD 或 YYYY-MM-DD HH:MM:SS
             return obj.isoformat()
-        else:
-            return json.JSONEncoder.default(self, obj)
+        elif isinstance(obj, (int, float)) and obj > 1e10:  # 可能是纳秒级时间戳
+            try:
+                # 尝试转换为datetime
+                dt = pd.to_datetime(obj, unit='ns')
+                return dt.isoformat()
+            except:
+                pass
+        return json.JSONEncoder.default(self, obj)
 
 
 # 获得页面数据。
@@ -148,7 +156,6 @@ class GetStockDataHandler(webBase.BaseHandler, ABC):
                     total_result = db.query(count_sql)
                 total = total_result[0]['total'] if total_result else 0
             except Exception as e:
-                import traceback
                 traceback.print_exc()
                 total = 0
 
@@ -163,13 +170,12 @@ class GetStockDataHandler(webBase.BaseHandler, ABC):
                     query_params = params + [page_size, offset]
                     data = db.query(sql, *query_params)
                 except Exception as e:
-                    import traceback
                     traceback.print_exc()
                     print(f"数据查询错误: {e}")
                     data = []
             else:
                 data = []
-
+            
             # 返回分页数据
             result = {
                 'data': data,
@@ -208,5 +214,4 @@ class GetStockDataHandler(webBase.BaseHandler, ABC):
                 if original_db_type != db_config.db_type:
                     from instock.lib.database_factory import switch_database_type
                     switch_database_type(original_db_type)
-
         self.write(json.dumps(result, cls=MyEncoder))

@@ -13,6 +13,7 @@ sys.path.append(cpath)
 import instock.lib.run_template as runt
 import instock.core.tablestructure as tbs
 import instock.lib.database as mdb
+from instock.lib.database_factory import get_database, execute_sql, insert_db_from_df
 from instock.core.singleton_stock import stock_hist_data
 from instock.core.stockfetch import fetch_stock_top_entity_data
 from instock.lib.common_check import check_and_delete_old_data_for_realtime_data
@@ -89,8 +90,10 @@ def main():
     #     for strategy in tbs.TABLE_CN_STOCK_STRATEGIES:
     #         executor.submit(runt.run_with_args, prepare, strategy)
     stocks_data = stock_hist_data().get_data()
-    for strategy in tbs.TABLE_CN_STOCK_STRATEGIES:
+    for strategy in tbs.TABLE_CN_STOCK_STRATEGIES[1:]:
         runt.run_with_args(prepare, strategy, stocks_data)
+        import pdb; pdb.set_trace()
+        print("debug")
     # runt.run_with_args(prepare, tbs.TABLE_CN_STOCK_STRATEGIES[2], stocks_data)
     # runt.run_with_args(prepare, tbs.TABLE_CN_STOCK_STRATEGIES[3], stocks_data)
     # runt.run_with_args(prepare, tbs.TABLE_CN_STOCK_STRATEGIES[1])

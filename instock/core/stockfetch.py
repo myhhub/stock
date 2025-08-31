@@ -433,7 +433,7 @@ def get_stock_hist_from_db(date_start, date_end=None, code=None):
     columns = ["code","date","open","high","low","close","preclose","volume","amount","turn","p_change"]
     
     with create_clickhouse_client() as client:
-        stock = client.get_stock_data(code, date_start, date_end, order_by="date ASC")
+        stock = client.get_stock_data(code, date_start, date_end, order_by="date ASC", columns=columns)
         if stock is not None and not stock.empty:
             stock = stock[columns]
             
@@ -487,10 +487,7 @@ def get_stock_code_name(date=None):
         sql = f"SELECT `date`,`code`,`name` FROM `{TABLE_CN_STOCK_SPOT['name']}` WHERE `date` = (SELECT MAX(`date`) FROM `{TABLE_CN_STOCK_SPOT['name']}`)"
         data = read_sql_to_df(sql)
         if data is not None and len(data.index) > 0:
-            # 数据已经包含date列，直接设置列名
-            data.columns = ['date', 'code', 'name']
             # 元组需要是date, code, name的顺序并且date是字符串
-
             data = [(x[0].strftime('%Y-%m-%d'), x[1], x[2]) for x in data.values]
             return data
     except Exception as e:

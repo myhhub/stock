@@ -232,6 +232,94 @@
         }
     }
     
+    // 处理数据中的时间戳
+    function processTimestampData(data) {
+        if (!data || !Array.isArray(data)) return data;
+        
+        return data.map(record => {
+            const processedRecord = {};
+            for (const [key, value] of Object.entries(record)) {
+                // 更严格的时间戳检测：
+                // 1. 必须是数字
+                // 2. 字段名包含时间相关关键字
+                // 3. 数值在合理的时间戳范围内
+                const isTimestampField = key && (
+                    key.toLowerCase().includes('time') ||
+                    key.toLowerCase().includes('date') ||
+                    key.toLowerCase().includes('created') ||
+                    key.toLowerCase().includes('updated') ||
+                    key.toLowerCase().includes('timestamp') ||
+                    key.toLowerCase().includes('_at') ||
+                    key.endsWith('_time') ||
+                    key.endsWith('_date')
+                );
+                
+                if (typeof value === 'number' && isTimestampField) {
+                    try {
+                        let date;
+                        // 根据数值大小判断时间戳精度
+                        if (value > 1e18) {
+                            // 纳秒级时间戳 (19位数字)
+                            date = new Date(value / 1e6);
+                        } else if (value > 1e15) {
+                            // 微秒级时间戳 (16-18位数字)
+                            date = new Date(value / 1e3);
+                        } else if (value > 1e12) {
+                            // 毫秒级时间戳 (13-15位数字)
+                            date = new Date(value);
+                        } else if (value > 1e9) {
+                            // 秒级时间戳 (10-12位数字)
+                            date = new Date(value * 1000);
+                        } else if (value > 100 && value < 1e8) {
+                            // 可能是从某个基准日期开始的天数，比如Excel日期序列号
+                            // Excel日期从1900-01-01开始，但要注意闰年bug
+                            // 通用做法：从1970-01-01开始的天数
+                            const baseDate = new Date('1970-01-01T00:00:00Z');
+                            date = new Date(baseDate.getTime() + (value) * 24 * 60 * 60 * 1000);
+                        } else {
+                            // 数值太小或太大，不是时间戳，保持原值
+                            processedRecord[key] = value;
+                            continue;
+                        }
+                        
+                        // 检查转换后的日期是否在合理范围内 (1970-2100年)
+                        const year = date.getFullYear();
+                        if (!isNaN(date.getTime()) && year >= 1970 && year <= 2100) {
+                            // 根据字段名决定格式，避免时区问题
+                            if (key.toLowerCase().includes('date') && 
+                                date.getUTCHours() === 0 && date.getUTCMinutes() === 0 && date.getUTCSeconds() === 0) {
+                                // 如果字段名包含date且时间部分为00:00:00，只显示日期
+                                // 直接使用UTC日期避免时区偏移
+                                const year = date.getUTCFullYear();
+                                const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+                                const day = String(date.getUTCDate()).padStart(2, '0');
+                                processedRecord[key] = `${year}-${month}-${day}`;
+                            } else {
+                                // 显示完整的日期时间，使用本地时区
+                                const year = date.getFullYear();
+                                const month = String(date.getMonth() + 1).padStart(2, '0');
+                                const day = String(date.getDate()).padStart(2, '0');
+                                const hours = String(date.getHours()).padStart(2, '0');
+                                const minutes = String(date.getMinutes()).padStart(2, '0');
+                                const seconds = String(date.getSeconds()).padStart(2, '0');
+                                processedRecord[key] = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+                            }
+                        } else {
+                            // 转换后的日期不合理，保持原值
+                            processedRecord[key] = value;
+                        }
+                    } catch (e) {
+                        // 转换失败，保持原值
+                        processedRecord[key] = value;
+                    }
+                } else {
+                    processedRecord[key] = value;
+                }
+            }
+            return processedRecord;
+        });
+    }
+    
     function loadData(page = 1) {
         const dateParam_old = document.getElementById("dateid_old").value;
         dateParam = document.getElementById('dateid').value;
@@ -312,8 +400,10 @@
                                 dateParam = '2025-08-22';
                                 updateStatusBar(`使用最新可用数据 (2025-08-22)`);
                             }
+                            
                             currentData = fallbackData;
                             filteredData = fallbackData.slice();
+                            
                             displayDataInLuckysheet(fallbackData);
                             updatePaginationControls();
                         });
@@ -356,21 +446,28 @@
             return;
         }
         
-        console.log('显示数据，记录数:', data.length);
+        // 处理时间戳数据
+        const processedData = processTimestampData(data);
+        
+        // 更新全局数据变量
+        currentData = processedData;
+        filteredData = processedData.slice();
+        
+        console.log('显示数据，记录数:', processedData.length);
         console.log('列信息:', colInfos);
         
         // 检查 colInfos 是否有效
         if (!colInfos || !Array.isArray(colInfos) || colInfos.length === 0) {
             console.error('列信息无效:', colInfos);
             updateStatusBar("列配置错误");
-            showFallbackTable(data);
+            showFallbackTable(processedData);
             return;
         }
         
         // 检查数据样本
-        if (data.length > 0) {
-            console.log('数据样本:', data[0]);
-            console.log('数据字段:', Object.keys(data[0]));
+        if (processedData.length > 0) {
+            console.log('数据样本:', processedData[0]);
+            console.log('数据字段:', Object.keys(processedData[0]));
         }
         
         // 转换 colInfos 格式（适配后端返回的格式）
@@ -424,7 +521,7 @@
             });
             
             // 添加数据行
-            const displayData = data;
+            const displayData = processedData;
             displayData.forEach((row, rowIndex) => {
                 if (!row || typeof row !== 'object') {
                     console.warn('无效的行数据:', rowIndex, row);
@@ -519,7 +616,7 @@
             if (typeof luckysheet === 'undefined') {
                 console.error('Luckysheet 库未加载');
                 updateStatusBar("Luckysheet 库未加载");
-                showFallbackTable(data);
+                showFallbackTable(processedData);
                 return;
             }
             
@@ -598,14 +695,14 @@
                     
                     if (!sheets || sheets.length === 0) {
                         console.warn('Luckysheet 可能未正确渲染，使用备用方案');
-                        showFallbackTable(data);
+                        showFallbackTable(processedData);
                     }
                 }, 2000);
                 
             } catch (createError) {
                 console.error('创建 Luckysheet 实例失败:', createError);
                 updateStatusBar("Luckysheet 创建失败: " + createError.message);
-                showFallbackTable(data);
+                showFallbackTable(processedData);
             }
             
         } catch (error) {
@@ -613,7 +710,7 @@
             updateStatusBar("数据显示失败: " + error.message);
             
             // 尝试显示一个简单的表格作为备用方案
-            showFallbackTable(data);
+            showFallbackTable(processedData);
         }
     }
     

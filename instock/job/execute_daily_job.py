@@ -52,11 +52,11 @@ def main():
         # # # # 第5步创建股票策略数据表
         executor.submit(sdj.main)
 
-    # # # # 第6步创建股票回测
-    bdj.main()
+    # # # # # 第6步创建股票回测
+    # bdj.main()
 
-    # # # # 第7步创建股票闭盘后才有的数据
-    acdj.main()
+    # # # # # 第7步创建股票闭盘后才有的数据
+    # acdj.main()
 
     logging.info("######## 完成任务, 使用时间: %s 秒 #######" % (time.time() - start))
 

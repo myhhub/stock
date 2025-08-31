@@ -35,7 +35,6 @@ class stock_hist_data(metaclass=singleton_type):
             self.data = None
             return
         date_start, is_cache = trd.get_trade_hist_interval(stocks[0][0])  # 提高运行效率，只运行一次
-        _data = {}
         stock_codes = [stock[1] for stock in stocks]
         try:
             # DEBUG BELOW
@@ -47,6 +46,7 @@ class stock_hist_data(metaclass=singleton_type):
            
             # max_workers是None还是没有给出，将默认为机器cup个数*5
             #print(f"stock_hist_data: 开始多线程获取股票历史数据，线程数{workers}，股票数{len(stocks)}")
+            #_data = {}
             #with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
             #    future_to_stock = {executor.submit(stf.fetch_stock_hist, stock, date_start, is_cache, db_data): stock for stock
             #                       in stocks}

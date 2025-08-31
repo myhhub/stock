@@ -7,7 +7,6 @@ import pandas as pd
 from typing import Optional, Dict, Any, List, Union
 from datetime import datetime, date
 import logging
-
 # 配置日志
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -100,6 +99,7 @@ class ClickHouseClient:
         Returns:
             pandas DataFrame或None
         """
+        
         result = self.execute_query(sql, parameters)
         if result is None:
             return None
@@ -145,7 +145,7 @@ class ClickHouseClient:
             
             # 直接使用df_clean插入
             result = self.client.insert_df(table_name, df_clean)
-            print("Insert Result:\n",result)
+            logger.info(f"成功插入 {len(df_clean)} 行数据到表 {table_name}")
             return True
             
         except Exception as e:
@@ -171,29 +171,22 @@ class ClickHouseClient:
             
             # 根据列名和数据类型进行转换
             if 'date' in col.lower():
-                # 处理日期列
+                # 处理日期列 - 对于策略表，date列通常是DateTime类型
                 try:
                     if series.dtype == 'object':
                         # 对于object类型，需要特殊处理NaT字符串
                         temp_series = series.copy()
                         # 替换各种NULL值表示
                         temp_series = temp_series.replace({'NaT': None, 'nat': None, 'None': None, '': None})
-                        # 转换为datetime，然后提取date
+                        # 转换为datetime
                         date_series = pd.to_datetime(temp_series, errors='coerce')
-                        # 将NaT替换为None（ClickHouse中的NULL）
-                        converted_dates = []
-                        for dt in date_series:
-                            if pd.isna(dt) or pd.isnull(dt):
-                                converted_dates.append(None)  # 使用None，让ClickHouse处理NULL
-                            else:
-                                converted_dates.append(dt.date())
-                        df_clean[col] = converted_dates
+                        df_clean[col] = [dt if pd.notna(dt) else None for dt in date_series]
                     else:
-                        # 对于其他类型，直接转换
+                        # 对于其他类型，直接转换为datetime对象
                         date_series = pd.to_datetime(series, errors='coerce')
-                        df_clean[col] = [dt.date() if pd.notna(dt) else None for dt in date_series]
+                        df_clean[col] = [dt if pd.notna(dt) else None for dt in date_series]
                     
-                    logger.info(f"日期列 {col} 转换完成")
+                    logger.info(f"日期列 {col} 转换完成，保持为datetime类型")
                     
                 except Exception as e:
                     logger.error(f"日期转换失败 {col}: {e}")

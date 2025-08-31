@@ -6,6 +6,7 @@ import logging
 from enum import Enum
 from typing import Optional, Dict, Any, Union, List, Tuple
 import pandas as pd
+from datetime import datetime, time
 try:
     import pymysql
     from sqlalchemy import create_engine, inspect
@@ -44,6 +45,7 @@ class DatabaseConfig:
         self.clickhouse_config = {
             'host': os.environ.get('CLICKHOUSE_HOST', '192.168.1.6'),
             'port': int(os.environ.get('CLICKHOUSE_PORT', '8123')),
+            'tcp': os.environ.get('CLICKHOUSE_TCP', '9000'),
             'username': os.environ.get('CLICKHOUSE_USER', 'root'),
             'password': os.environ.get('CLICKHOUSE_PASSWORD', '123456'),
             'database': os.environ.get('CLICKHOUSE_DATABASE', 'instockdb')
@@ -86,6 +88,33 @@ class DatabaseInterface:
     def execute(self, sql: str, *params) -> bool:
         """执行SQL语句"""
         raise NotImplementedError
+    
+    def _convert_dataframe_to_records(self, df: pd.DataFrame) -> List[Dict]:
+        """将DataFrame转换为记录列表，处理datetime对象"""
+        if df.empty:
+            return []
+        
+        # 创建DataFrame副本以避免修改原始数据
+        df_copy = df.copy()
+        
+        # 处理datetime列，将其转换为字符串格式
+        for col in df_copy.columns:
+            if df_copy[col].dtype.name.startswith('datetime'):
+                # 检查是否包含时间信息
+                sample_non_null = df_copy[col].dropna()
+                if not sample_non_null.empty:
+                    sample_value = sample_non_null.iloc[0]
+                    if hasattr(sample_value, 'time') and sample_value.time() != time(0):
+                        # 包含时间信息，使用完整的datetime格式
+                        df_copy[col] = df_copy[col].dt.strftime('%Y-%m-%d %H:%M:%S')
+                    else:
+                        # 只有日期信息，使用日期格式
+                        df_copy[col] = df_copy[col].dt.strftime('%Y-%m-%d')
+            elif hasattr(df_copy[col].dtype, 'type') and issubclass(df_copy[col].dtype.type, pd.Timestamp):
+                # 处理Timestamp类型
+                df_copy[col] = df_copy[col].dt.strftime('%Y-%m-%d %H:%M:%S')
+        
+        return df_copy.to_dict('records')
     
     def close(self):
         """关闭连接"""
@@ -143,12 +172,6 @@ class MySQLDatabase(DatabaseInterface):
     
     def query(self, sql: str, *params) -> List[Dict]:
         """执行查询并返回结果"""
-        try:
-            # 检查连接
-            self._torndb_connection.query("SELECT 1")
-        except:
-            self._torndb_connection.reconnect()
-        
         try:
             if params:
                 return self._torndb_connection.query(sql, *params)
@@ -252,64 +275,141 @@ class ClickHouseDatabase(DatabaseInterface):
             logging.error(f"ClickHouse连接初始化失败: {e}")
             raise
     
-    def query(self, sql: str, *params) -> List[Dict]:
-        """执行查询并返回结果"""
+    def _execute_chdb_query(self, sql: str, params: Optional[Union[Tuple, Dict]] = None, return_type: str = "DataFrame") -> Union[pd.DataFrame, List[Dict]]:
+        """
+        使用chdb执行查询的通用方法
+        
+        Args:
+            sql: SQL查询语句
+            params: 查询参数
+            return_type: 返回类型，"DataFrame" 或 "records"
+            
+        Returns:
+            根据return_type返回DataFrame或字典列表
+        """
         try:
-            # 将位置参数转换为命名参数
-            parameters = {}
+            import chdb
+            
+            # 构建远程查询SQL，如果SQL中没有remote函数则包装一下
+            if 'remote(' not in sql.lower():
+                sql = self._wrap_sql_with_remote(sql)
+            
+            # 处理参数替换
             if params:
-                for i, param in enumerate(params):
-                    parameters[f'param_{i}'] = param
-                # 替换SQL中的%s为命名参数
-                for i in range(len(params)):
-                    sql = sql.replace('%s', f'%(param_{i})s', 1)
+                if isinstance(params, tuple):
+                    # 处理位置参数
+                    for param in params:
+                        if isinstance(param, str):
+                            sql = sql.replace('%s', f"'{param}'", 1)
+                        else:
+                            sql = sql.replace('%s', str(param), 1)
+                elif isinstance(params, dict):
+                    # 处理命名参数
+                    for key, value in params.items():
+                        placeholder = f'%({key})s'
+                        if isinstance(value, str):
+                            sql = sql.replace(placeholder, f"'{value}'")
+                        else:
+                            sql = sql.replace(placeholder, str(value))
             
-            result = self._client.execute_query(sql, parameters)
-            if result:
-                # 转换为字典列表格式
-                columns = result.column_names
-                rows = result.result_rows
-                return [dict(zip(columns, row)) for row in rows]
-            return []
-            
+            # 执行查询
+            result_df = chdb.query(sql, "DataFrame")
+            # 如果存在date列且为uint16类型，转换为日期格式
+            if 'date' in result_df.columns and pd.api.types.is_integer_dtype(result_df['date']):
+                try:
+                    result_df["date"] = pd.to_datetime(
+                        result_df["date"],  # 待转换的 uint16 列
+                        origin="1970-01-01",  # 基准日期（ClickHouse Date 类型的起始点）
+                        unit="D"  # 单位：天数（对应 ClickHouse 的存储逻辑）
+                    ).dt.date  # 可选：若只需日期（无时间），加 .dt.date 转为 Python date 类型
+                except Exception as e:
+                    logging.warning(f"日期转换失败: {e}")
+            if return_type == "DataFrame":
+                return result_df if not result_df.empty else pd.DataFrame()
+            elif return_type == "records":
+                if result_df.empty:
+                    return []
+                # 使用通用的DataFrame到记录转换方法
+                return self._convert_dataframe_to_records(result_df)
+            else:
+                raise ValueError(f"不支持的返回类型: {return_type}")
+                
         except Exception as e:
             logging.error(f"ClickHouse查询错误: {e}, SQL: {sql}")
-            raise
+            if return_type == "DataFrame":
+                return pd.DataFrame()
+            else:
+                raise
+
+    def query(self, sql: str, *params) -> List[Dict]:
+        """执行查询并返回结果"""
+        return self._execute_chdb_query(sql, params, "records")
     
     def query_to_dataframe(self, sql: str, params: Optional[Union[Tuple, Dict]] = None) -> pd.DataFrame:
         """执行查询并返回DataFrame"""
+        return self._execute_chdb_query(sql, params, "DataFrame")
+    
+    def _wrap_sql_with_remote(self, sql: str) -> str:
+        """将普通SQL包装为remote查询格式"""
         try:
-            # 转换参数格式
-            if isinstance(params, tuple):
-                parameters = {}
-                for i, param in enumerate(params):
-                    parameters[f'param_{i}'] = param
-                # 替换SQL中的%s为命名参数
-                for i in range(len(params)):
-                    sql = sql.replace('%s', f'%(param_{i})s', 1)
-            else:
-                parameters = params
+            # 提取表名（简单匹配，假设SQL格式标准）
+            import re
             
-            return self._client.query_to_dataframe(sql, parameters) or pd.DataFrame()
+            # 匹配 FROM table_name 或 FROM `table_name`
+            from_match = re.search(r'FROM\s+`?(\w+)`?', sql, re.IGNORECASE)
+            if not from_match:
+                # 如果找不到FROM，直接返回原SQL
+                return sql
+            
+            table_name = from_match.group(1)
+            
+            # 构建remote函数调用
+            remote_call = f"remote('{self.config['host']}:{self.config.get('tcp', 9000)}', '{self.config['database']}', '{table_name}', '{self.config['username']}', '{self.config['password']}')"
+            
+            # 替换原表名为remote调用
+            wrapped_sql = re.sub(r'FROM\s+`?' + table_name + r'`?', f'FROM {remote_call}', sql, flags=re.IGNORECASE)
+            
+            return wrapped_sql
             
         except Exception as e:
-            logging.error(f"ClickHouse DataFrame查询错误: {e}, SQL: {sql}")
-            return pd.DataFrame()
+            logging.warning(f"包装SQL为remote格式失败: {e}，使用原SQL")
+            return sql
     
     def execute(self, sql: str, *params) -> bool:
         """执行SQL语句"""
         try:
-            # ClickHouse主要用于查询，大部分INSERT通过专门的方法处理
-            parameters = {}
-            if params:
-                for i, param in enumerate(params):
-                    parameters[f'param_{i}'] = param
-                # 替换SQL中的%s为命名参数
-                for i in range(len(params)):
-                    sql = sql.replace('%s', f'%(param_{i})s', 1)
-            
-            result = self._client.execute_query(sql, parameters)
-            return result is not None
+            # 对于INSERT、CREATE等操作，仍然使用原来的客户端
+            if any(keyword in sql.upper() for keyword in ['INSERT', 'CREATE', 'ALTER', 'DROP', 'UPDATE', 'DELETE']):
+                # 使用原来的客户端执行写操作
+                parameters = {}
+                if params:
+                    for i, param in enumerate(params):
+                        parameters[f'param_{i}'] = param
+                    # 替换SQL中的%s为命名参数
+                    for i in range(len(params)):
+                        sql = sql.replace('%s', f'%(param_{i})s', 1)
+                
+                result = self._client.execute_query(sql, parameters)
+                return result is not None
+            else:
+                # 对于SELECT等查询操作，使用chdb
+                import chdb
+                
+                # 构建远程查询SQL
+                if 'remote(' not in sql.lower():
+                    sql = self._wrap_sql_with_remote(sql)
+                
+                # 处理参数替换
+                if params:
+                    for param in params:
+                        if isinstance(param, str):
+                            sql = sql.replace('%s', f"'{param}'", 1)
+                        else:
+                            sql = sql.replace('%s', str(param), 1)
+                
+                # 执行查询
+                result = chdb.query(sql, "DataFrame")
+                return True  # chdb查询成功即返回True
             
         except Exception as e:
             logging.error(f"ClickHouse执行错误: {e}, SQL: {sql}")
