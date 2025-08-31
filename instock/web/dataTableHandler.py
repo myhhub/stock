@@ -54,6 +54,9 @@ class GetStockDataHandler(webBase.BaseHandler, ABC):
     def get(self):
         name = self.get_argument("name", default=None, strip=False)
         date = self.get_argument("date", default=None, strip=False)
+        if date is None:
+            run_date, run_date_nph = trd.get_trade_date_last()
+            date = run_date_nph.strftime("%Y-%m-%d")
         # 分页参数
         page = int(self.get_argument("page", default=1, strip=False))
         page_size = int(self.get_argument("page_size", default=100, strip=False))
@@ -128,12 +131,7 @@ class GetStockDataHandler(webBase.BaseHandler, ABC):
             # 构建ORDER BY子句
             order_by = ""
             if web_module_data.order_by is not None:
-                if db_config.db_type == DatabaseType.CLICKHOUSE:
-                    # ClickHouse可能需要调整ORDER BY语法
-                    order_by_clause = web_module_data.order_by.replace('`', '')
-                    order_by = f" ORDER BY {order_by_clause}"
-                else:
-                    order_by = f" ORDER BY {web_module_data.order_by}"
+                order_by = f" ORDER BY {web_module_data.order_by}"
 
             # 构建额外列
             order_columns = ""
@@ -142,11 +140,7 @@ class GetStockDataHandler(webBase.BaseHandler, ABC):
                 order_columns = f",{web_module_data.order_columns}"
 
             # 先查询总数
-            if db_config.db_type == DatabaseType.CLICKHOUSE:
-                count_sql = f"SELECT COUNT(*) as total FROM {web_module_data.table_name}{where}"
-            else:
-                count_sql = f"SELECT COUNT(*) as total FROM `{web_module_data.table_name}`{where}"
-                
+            count_sql = f"SELECT COUNT(*) as total FROM {web_module_data.table_name}{where}"
             try:
                 if params:
                     total_result = db.query(count_sql, *params)
@@ -154,8 +148,8 @@ class GetStockDataHandler(webBase.BaseHandler, ABC):
                     total_result = db.query(count_sql)
                 total = total_result[0]['total'] if total_result else 0
             except Exception as e:
-                # 如果搜索字段不存在，返回空结果
-                print(f"搜索查询错误: {e}")
+                import traceback
+                traceback.print_exc()
                 total = 0
 
             # 计算偏移量
@@ -163,17 +157,14 @@ class GetStockDataHandler(webBase.BaseHandler, ABC):
             
             # 分页查询
             if total > 0:
-                if db_config.db_type == DatabaseType.CLICKHOUSE:
-                    # ClickHouse使用LIMIT OFFSET语法
-                    sql = f"SELECT *{order_columns} FROM {web_module_data.table_name}{where}{order_by} LIMIT %s OFFSET %s"
-                else:
-                    # MySQL使用LIMIT OFFSET语法
-                    sql = f"SELECT *{order_columns} FROM `{web_module_data.table_name}`{where}{order_by} LIMIT %s OFFSET %s"
-                
+                sql = f"SELECT *{order_columns} FROM {web_module_data.table_name}{where}{order_by} LIMIT %s OFFSET %s"
+                print(sql, params + [page_size, offset])
                 try:
                     query_params = params + [page_size, offset]
                     data = db.query(sql, *query_params)
                 except Exception as e:
+                    import traceback
+                    traceback.print_exc()
                     print(f"数据查询错误: {e}")
                     data = []
             else:

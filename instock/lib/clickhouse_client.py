@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import traceback
 import pandas as pd
 from typing import Optional, Dict, Any, List, Union
 from datetime import datetime, date
@@ -117,10 +118,152 @@ class ClickHouseClient:
             logger.error(f"转换为DataFrame失败: {str(e)}")
             return None
     
+    def insert_dataframe(self, table_name: str, df: pd.DataFrame, table_definition: dict = None) -> bool:
+        """
+        将DataFrame插入到ClickHouse表中
+        
+        Args:
+            table_name: 目标表名
+            df: 要插入的DataFrame
+            table_definition: 表结构定义（来自tablestructure）
+            
+        Returns:
+            bool: 插入是否成功
+        """
+        if df.empty:
+            logger.warning(f"DataFrame为空，跳过插入到表 {table_name}")
+            return True
+            
+        try:
+            # 确保DataFrame类型兼容ClickHouse，传递表定义
+            df_clean = self._prepare_dataframe_for_insert(df, table_definition)
+            
+            # 添加调试信息
+            logger.info(f"准备插入数据到表 {table_name}")
+            logger.info(f"DataFrame形状: {df.shape}")
+            logger.info(f"DataFrame列: {df.columns.tolist()}")
+            
+            # 直接使用df_clean插入
+            result = self.client.insert_df(table_name, df_clean)
+            return True
+            
+        except Exception as e:
+            logger.error(f"插入DataFrame到ClickHouse失败: {str(e)}")
+            logger.error(f"表名: {table_name}, DataFrame形状: {df.shape}")
+            logger.error(f"DataFrame列: {list(df.columns)}")
+            logger.error(f"DataFrame类型: {df.dtypes.to_dict()}")
+            logger.error(f"DataFrame前几行:\n{df.head()}")
+            logger.error(f"详细错误: {traceback.format_exc()}")
+            return False
+    
+    def _prepare_dataframe_for_insert(self, df: pd.DataFrame, table_definition: dict = None) -> pd.DataFrame:
+        """准备DataFrame以便插入ClickHouse"""
+        import numpy as np
+        
+        # 创建DataFrame副本
+        df_clean = df.copy()
+        
+        # 处理每一列，确保数据类型兼容ClickHouse
+        for col in df_clean.columns:
+            series = df_clean[col]
+            logger.info(f"处理列 {col}, 数据类型: {series.dtype}")
+            
+            # 根据列名和数据类型进行转换
+            if 'date' in col.lower():
+                # 处理日期列
+                try:
+                    if series.dtype == 'object':
+                        # 对于object类型，需要特殊处理NaT字符串
+                        temp_series = series.copy()
+                        # 替换各种NULL值表示
+                        temp_series = temp_series.replace({'NaT': None, 'nat': None, 'None': None, '': None})
+                        # 转换为datetime，然后提取date
+                        date_series = pd.to_datetime(temp_series, errors='coerce')
+                        # 将NaT替换为None（ClickHouse中的NULL）
+                        converted_dates = []
+                        for dt in date_series:
+                            if pd.isna(dt) or pd.isnull(dt):
+                                converted_dates.append(None)  # 使用None，让ClickHouse处理NULL
+                            else:
+                                converted_dates.append(dt.date())
+                        df_clean[col] = converted_dates
+                    else:
+                        # 对于其他类型，直接转换
+                        date_series = pd.to_datetime(series, errors='coerce')
+                        df_clean[col] = [dt.date() if pd.notna(dt) else None for dt in date_series]
+                    
+                    logger.info(f"日期列 {col} 转换完成")
+                    
+                except Exception as e:
+                    logger.error(f"日期转换失败 {col}: {e}")
+                    # 如果转换失败，将所有值设为None
+                    df_clean[col] = [None] * len(series)
+                    
+            elif series.dtype.name.startswith('int'):
+                # 整数类型处理
+                df_clean[col] = series.where(pd.notna(series), None).astype('Int64')
+                
+            elif series.dtype.name.startswith('float'):
+                # 浮点类型处理
+                df_clean[col] = series.where(pd.notna(series), None)
+                
+            elif series.dtype == 'bool':
+                # 布尔类型转换为整数
+                df_clean[col] = series.astype('Int64')
+                
+            elif series.dtype == 'object':
+                # 字符串类型处理
+                df_clean[col] = series.where(pd.notna(series) & (series != ''), None)
+                
+            else:
+                # 其他类型转换为字符串
+                df_clean[col] = series.astype(str).where(pd.notna(series), None)
+        
+        return df_clean
+    
+    def batch_insert_dataframe(self, table_name: str, df: pd.DataFrame, batch_size: int = 10000) -> bool:
+        """
+        批量插入DataFrame到ClickHouse表中
+        
+        Args:
+            table_name: 目标表名
+            df: 要插入的DataFrame
+            batch_size: 每批插入的记录数
+            
+        Returns:
+            bool: 插入是否成功
+        """
+        if df.empty:
+            logger.warning(f"DataFrame为空，跳过插入到表 {table_name}")
+            return True
+            
+        try:
+            total_rows = len(df)
+            successful_batches = 0
+            
+            # 分批插入
+            for i in range(0, total_rows, batch_size):
+                batch_df = df.iloc[i:i + batch_size]
+                
+                if self.insert_dataframe(table_name, batch_df):
+                    successful_batches += 1
+                    logger.info(f"批次 {successful_batches}: 插入 {len(batch_df)} 条记录")
+                else:
+                    logger.error(f"批次插入失败: 第 {i} 到 {i + len(batch_df)} 行")
+                    return False
+            
+            logger.info(f"批量插入完成: 总计 {total_rows} 条记录，{successful_batches} 个批次")
+            return True
+            
+        except Exception as e:
+            logger.error(f"批量插入DataFrame失败: {str(e)}")
+            return False
+    
     def get_stock_data(self, 
                       code: Optional[str] = None,
                       start_date: Optional[Union[str, date, datetime]] = None,
                       end_date: Optional[Union[str, date, datetime]] = None,
+                      columns: Optional[List[str]] = None,
                       limit: Optional[int] = None,
                       order_by: str = "date DESC") -> Optional[pd.DataFrame]:
         """
@@ -137,7 +280,7 @@ class ClickHouseClient:
             包含股票数据的DataFrame
         """
         # 构建基础SQL
-        sql = "SELECT * FROM cn_stock_history WHERE 1=1"
+        sql = f"SELECT {','.join(columns) if columns else '*'} FROM cn_stock_history WHERE 1=1"
         parameters = {}
         
         # 添加股票代码条件
@@ -160,7 +303,7 @@ class ClickHouseClient:
         # 添加限制
         if limit:
             sql += f" LIMIT {limit}"
-        
+        print(sql)
         logger.info(f"查询股票数据: code={code}, 日期范围={start_date}~{end_date}")
         return self.query_to_dataframe(sql, parameters)
     

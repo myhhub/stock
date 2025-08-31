@@ -283,7 +283,7 @@
                     showLoadingIndicator("当前日期无数据，尝试加载最新数据...");
                     
                     // 如果当前日期没有数据，尝试使用最新可用日期
-                    return fetch(`/instock/api_data?name=${nameParam}&date=2025-08-22&page=1&page_size=${pageSize}`)
+                    return fetch(`/instock/api_data?name=${nameParam}&page=1&page_size=${pageSize}`)
                         .then(response => {
                             if (!response.ok) {
                                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);

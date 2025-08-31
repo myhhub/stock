@@ -2,6 +2,7 @@ import datetime
 import instock.lib.trade_time as trd
 import instock.core.tablestructure as tbs
 import instock.lib.database as mdb
+from instock.lib.database_factory import execute_sql, insert_db_from_df
 
 def get_stock_exchange(code):
     """
@@ -74,7 +75,7 @@ def check_and_delete_old_data_for_realtime_data(table_object, data, date, cols_t
     now = datetime.datetime.now()
     if trd.is_tradetime(now) and mdb.checkTableIsExist(table_name):
         del_sql = f"DELETE FROM `{table_name}` where `date` = '{date}'"
-        mdb.executeSql(del_sql)
+        execute_sql(del_sql)
         cols_type = None
     else:
         cols_type = tbs.get_field_types(table_object['columns'])
@@ -83,7 +84,7 @@ def check_and_delete_old_data_for_realtime_data(table_object, data, date, cols_t
         return cols_type
     
     # 插入到实时表
-    mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
+    insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
     
     # 保存到历史数据库
     if save_to_history and 'columns_to_history_db' in table_object:

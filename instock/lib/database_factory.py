@@ -6,6 +6,13 @@ import logging
 from enum import Enum
 from typing import Optional, Dict, Any, Union, List, Tuple
 import pandas as pd
+try:
+    import pymysql
+    from sqlalchemy import create_engine, inspect
+    from sqlalchemy.types import NVARCHAR
+except ImportError:
+    logging.warning("MySQL dependencies not installed")
+    pymysql = None
 
 __author__ = 'myh '
 __date__ = '2023/3/10 '
@@ -82,6 +89,10 @@ class DatabaseInterface:
     
     def close(self):
         """关闭连接"""
+        raise NotImplementedError
+    
+    def insert_from_dataframe(self, df: pd.DataFrame, table_name: str, cols_type=None, write_index=False, primary_keys=None):
+        """从DataFrame插入数据"""
         raise NotImplementedError
 
 # MySQL实现
@@ -193,6 +204,33 @@ class MySQLDatabase(DatabaseInterface):
             self._torndb_connection.close()
         if self._connection and self._connection.open:
             self._connection.close()
+    
+    def insert_from_dataframe(self, df: pd.DataFrame, table_name: str, cols_type=None, write_index=False, primary_keys=None):
+        """从DataFrame插入数据到MySQL"""
+        try:
+            # 构建SQLAlchemy引擎
+            url = f"mysql+pymysql://{self.config['user']}:{self.config['password']}@{self.config['host']}:{self.config['port']}/{self.config['database']}?charset={self.config['charset']}"
+            engine = create_engine(url)
+            
+            col_name_list = df.columns.tolist()
+            if write_index:
+                col_name_list.insert(0, df.index.name)
+            
+            if cols_type is None:
+                df.to_sql(name=table_name, con=engine, if_exists='append', index=write_index)
+            elif not cols_type:
+                df.to_sql(name=table_name, con=engine, if_exists='append',
+                         dtype={col_name: NVARCHAR(255) for col_name in col_name_list}, index=write_index)
+            else:
+                df.to_sql(name=table_name, con=engine, if_exists='append',
+                         dtype=cols_type, index=write_index)
+            
+            logging.info(f"成功插入 {len(df)} 条记录到 MySQL 表 {table_name}")
+            return True
+            
+        except Exception as e:
+            logging.error(f"MySQL DataFrame插入错误: {e}, 表: {table_name}")
+            return False
 
 # ClickHouse实现
 class ClickHouseDatabase(DatabaseInterface):
@@ -281,6 +319,254 @@ class ClickHouseDatabase(DatabaseInterface):
         """关闭连接"""
         if self._client:
             self._client.close()
+    
+    def insert_from_dataframe(self, df: pd.DataFrame, table_name: str, cols_type=None, write_index=False, primary_keys=None):
+        """从DataFrame插入数据到ClickHouse"""
+        try:
+            if write_index:
+                # ClickHouse通常不需要索引，但如果需要可以将索引作为一列
+                df = df.reset_index()
+            
+            # 创建DataFrame副本以避免修改原始数据
+            df_copy = df.copy()
+            
+            # 获取表定义
+            table_definition = self._get_table_definition(table_name)
+            
+            # 检查表是否存在，如果不存在则创建
+            # 对于ClickHouse，我们忽略传入的cols_type，自己推断类型并应用Nullable规则
+            if not self._table_exists(table_name):
+                self._create_table_from_dataframe(table_name, df_copy, None)  # 传递None忽略cols_type
+            
+            # 转换数据类型以适配ClickHouse，同样忽略cols_type
+            df_copy = self._convert_dataframe_for_clickhouse(df_copy, None)  # 传递None忽略cols_type
+            
+            # 使用ClickHouse客户端的DataFrame插入方法，传递表定义
+            result = self._client.insert_dataframe(table_name, df_copy, table_definition)
+            
+            logging.info(f"成功插入 {len(df_copy)} 条记录到 ClickHouse 表 {table_name}")
+            return result
+            
+        except Exception as e:
+            logging.error(f"ClickHouse DataFrame插入错误: {e}, 表: {table_name}")
+            return False
+    
+    def _convert_dataframe_for_clickhouse(self, df: pd.DataFrame, cols_type=None):
+        """转换DataFrame数据类型以适配ClickHouse，保持原始格式"""
+        try:
+            df_converted = df.copy()
+            
+            # 遍历所有列，进行必要的类型转换
+            for col in df_converted.columns:
+                col_data = df_converted[col]
+                
+                # 处理日期相关的列
+                if 'date' in col.lower() and col_data.dtype == 'object':
+                    try:
+                        # 尝试转换日期字符串为pandas datetime，然后转为date
+                        df_converted[col] = pd.to_datetime(col_data, errors='coerce').dt.date
+                    except Exception as e:
+                        logging.warning(f"日期转换失败 {col}: {e}")
+                        # 保持原格式
+                        pass
+                
+                # 处理datetime类型
+                elif col_data.dtype.name.startswith('datetime'):
+                    try:
+                        # 保持datetime格式，ClickHouse可以处理
+                        df_converted[col] = pd.to_datetime(col_data)
+                    except:
+                        pass
+                
+                # 处理数值类型 - 保持pandas的原始推断
+                elif pd.api.types.is_numeric_dtype(col_data):
+                    # 如果已经是数值类型，保持不变
+                    pass
+                
+                # 处理字符串类型
+                elif col_data.dtype == 'object':
+                    # 对于object类型，尝试转换为数值，如果失败则保持字符串
+                    try:
+                        # 检查是否所有值都能转换为数值
+                        numeric_col = pd.to_numeric(col_data, errors='coerce')
+                        if not numeric_col.isna().all():
+                            df_converted[col] = numeric_col
+                    except:
+                        # 保持为字符串
+                        pass
+            
+            return df_converted
+            
+        except Exception as e:
+            logging.error(f"DataFrame类型转换失败: {e}")
+            # 如果转换失败，返回原始DataFrame
+            return df
+    
+    def _table_exists(self, table_name: str) -> bool:
+        """检查表是否存在"""
+        try:
+            result = self.query(f"EXISTS TABLE {table_name}")
+            return result and len(result) > 0 and result[0].get('result', 0) == 1
+        except:
+            return False
+    
+    def _create_table_from_dataframe(self, table_name: str, df: pd.DataFrame, cols_type=None):
+        """根据DataFrame和列类型创建ClickHouse表"""
+        try:
+            # 构建列定义
+            column_defs = []
+            
+            for col in df.columns:
+                if cols_type and col in cols_type:
+                    # 使用指定的类型，需要转换为ClickHouse类型
+                    clickhouse_type = self._convert_sqlalchemy_to_clickhouse_type(cols_type[col])
+                else:
+                    # 根据DataFrame数据类型推断ClickHouse类型
+                    clickhouse_type = self._infer_clickhouse_type(df[col])
+                
+                # 判断是否允许NULL值：除了date和code，其他字段都允许NULL
+                # 无论是从cols_type还是推断得到的类型，都要应用这个规则
+                if col.lower() in ['date', 'code']:
+                    # 关键字段不允许NULL
+                    column_defs.append(f"`{col}` {clickhouse_type}")
+                else:
+                    # 其他字段允许NULL
+                    column_defs.append(f"`{col}` Nullable({clickhouse_type})")
+            
+            # 确定主键，用于ORDER BY
+            if 'date' in df.columns and 'code' in df.columns:
+                order_by = "ORDER BY (date, code)"
+            elif 'date' in df.columns:
+                order_by = "ORDER BY date"
+            elif 'code' in df.columns:
+                order_by = "ORDER BY code"
+            else:
+                # 使用第一列作为排序键
+                first_col = df.columns[0]
+                order_by = f"ORDER BY {first_col}"
+            
+            # 创建表SQL
+            create_sql = f"""
+                CREATE TABLE IF NOT EXISTS {table_name} (
+                    {', '.join(column_defs)}
+                ) ENGINE = MergeTree()
+                {order_by}
+                SETTINGS index_granularity = 8192
+            """
+            print(create_sql)
+            logging.info(f"准备创建ClickHouse表 {table_name}，SQL: {create_sql}")
+            
+            success = self.execute(create_sql)
+            if success:
+                logging.info(f"ClickHouse表 {table_name} 创建成功")
+            else:
+                logging.error(f"ClickHouse表 {table_name} 创建失败")
+                
+        except Exception as e:
+            logging.error(f"创建ClickHouse表 {table_name} 异常: {e}")
+    
+    def _convert_sqlalchemy_to_clickhouse_type(self, sqlalchemy_type):
+        """将SQLAlchemy类型转换为ClickHouse类型"""
+        type_str = str(sqlalchemy_type).upper()
+        
+        if 'VARCHAR' in type_str or 'TEXT' in type_str:
+            return 'String'
+        elif 'FLOAT' in type_str or 'DOUBLE' in type_str:
+            return 'Float64'
+        elif 'BIGINT' in type_str:
+            return 'Int64'  # 使用有符号整数支持负数
+        elif 'INT' in type_str:
+            return 'Int32'  # 使用有符号整数支持负数
+        elif 'DATE' in type_str:
+            return 'Date'
+        elif 'DATETIME' in type_str or 'TIMESTAMP' in type_str:
+            return 'DateTime'
+        elif 'BIT' in type_str:
+            return 'UInt8'
+        else:
+            return 'String'  # 默认使用String类型
+    
+    def _infer_clickhouse_type(self, series):
+        """根据pandas Series推断ClickHouse类型，优先保持原始格式兼容性"""
+        dtype = str(series.dtype)
+        series_name = series.name.lower() if series.name else ''
+        
+        # 首先检查列名中的日期指示器
+        if 'date' in series_name and dtype == 'object':
+            return 'Date'
+        elif 'time' in series_name or 'datetime' in series_name:
+            return 'DateTime'
+        
+        # 根据pandas数据类型推断
+        if dtype == 'object':
+            # 对于object类型，尝试判断是字符串还是数值
+            try:
+                # 尝试转换为数值
+                numeric_series = pd.to_numeric(series.dropna(), errors='coerce')
+                if not numeric_series.isna().all():
+                    # 可以转换为数值，检查是否有小数
+                    if (numeric_series % 1 == 0).all():
+                        # 都是整数，检查是否有负数
+                        if (numeric_series < 0).any():
+                            return 'Int64'
+                        else:
+                            return 'Int64'  # 统一使用Int64避免负数问题
+                    else:
+                        return 'Float64'
+                else:
+                    return 'String'
+            except:
+                return 'String'
+        
+        elif dtype.startswith('int'):
+            return 'Int64'  # 统一使用有符号整数
+        elif dtype.startswith('float'):
+            return 'Float64'
+        elif dtype == 'bool':
+            return 'UInt8'
+        elif dtype.startswith('datetime'):
+            return 'DateTime'
+        else:
+            return 'String'  # 默认字符串类型
+    
+    def _get_table_definition(self, table_name: str):
+        """从tablestructure获取表定义"""
+        try:
+            import instock.core.tablestructure as tbs
+            
+            # 映射表名到tablestructure中的定义
+            table_mapping = {
+                'cn_stock_spot': tbs.TABLE_CN_STOCK_SPOT,
+                'cn_etf_spot': tbs.TABLE_CN_ETF_SPOT,
+                'cn_stock_fund_flow': tbs.TABLE_CN_STOCK_FUND_FLOW,
+                'cn_stock_fund_flow_industry': tbs.TABLE_CN_STOCK_FUND_FLOW_INDUSTRY,
+                'cn_stock_fund_flow_concept': tbs.TABLE_CN_STOCK_FUND_FLOW_CONCEPT,
+                'cn_stock_bonus': tbs.TABLE_CN_STOCK_BONUS,
+                'cn_stock_top': tbs.TABLE_CN_STOCK_TOP,
+                'cn_stock_blocktrade': tbs.TABLE_CN_STOCK_BLOCKTRADE,
+                'cn_stock_foreign_key': tbs.TABLE_CN_STOCK_FOREIGN_KEY,
+                'cn_stock_backtest_data': tbs.TABLE_CN_STOCK_BACKTEST_DATA,
+                'cn_stock_indicators': tbs.TABLE_CN_STOCK_INDICATORS,
+                'cn_stock_indicators_buy': tbs.TABLE_CN_STOCK_INDICATORS_BUY,
+                'cn_stock_indicators_sell': tbs.TABLE_CN_STOCK_INDICATORS_SELL,
+                'cn_stock_pattern': tbs.TABLE_CN_STOCK_KLINE_PATTERN,
+                'cn_stock_selection': tbs.TABLE_CN_STOCK_SELECTION,
+                'cn_stock_attention': tbs.TABLE_CN_STOCK_ATTENTION,
+                'cn_stock_spot_buy': tbs.TABLE_CN_STOCK_SPOT_BUY,
+                'cn_stock_chip_race_open': tbs.TABLE_CN_STOCK_CHIP_RACE_OPEN,
+                'cn_stock_chip_race_end': tbs.TABLE_CN_STOCK_CHIP_RACE_END,
+                'cn_stock_limitup_reason': tbs.TABLE_CN_STOCK_LIMITUP_REASON
+            }
+            
+            # 动态添加策略表定义
+            for strategy_table in tbs.TABLE_CN_STOCK_STRATEGIES:
+                table_mapping[strategy_table['name']] = strategy_table
+            
+            return table_mapping.get(table_name)
+            
+        except Exception as e:
+            logging.warning(f"无法获取表 {table_name} 的定义: {e}")
+            return None
 
 # 数据库工厂类
 class DatabaseFactory:
@@ -343,6 +629,7 @@ def execute_sql(sql: str, params: Tuple = ()) -> bool:
     """执行SQL语句"""
     return get_database().execute(sql, *params)
 
+
 def execute_sql_fetch(sql: str, params: Tuple = ()) -> List[Dict]:
     """执行查询并返回结果"""
     return get_database().query(sql, *params)
@@ -357,3 +644,7 @@ def execute_sql_count(sql: str, params: Tuple = ()) -> int:
 def read_sql_to_df(sql: str, params: Optional[Union[Tuple, Dict]] = None) -> pd.DataFrame:
     """执行查询并返回DataFrame"""
     return get_database().query_to_dataframe(sql, params)
+
+def insert_db_from_df(data: pd.DataFrame, table_name: str, cols_type=None, write_index=False, primary_keys=None, indexs=None):
+    """从DataFrame插入数据（兼容性函数）"""
+    return get_database().insert_from_dataframe(data, table_name, cols_type, write_index, primary_keys)

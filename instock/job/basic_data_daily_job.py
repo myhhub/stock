@@ -13,6 +13,7 @@ import instock.lib.trade_time as trd
 import instock.lib.run_template as runt
 import instock.core.tablestructure as tbs
 import instock.lib.database as mdb
+from instock.lib.database_factory import get_database, execute_sql, insert_db_from_df
 from instock.lib.common_check import check_and_delete_old_data_for_realtime_data
 import instock.core.stockfetch as stf
 from instock.core.singleton_stock import stock_data
@@ -51,8 +52,9 @@ def save_nph_etf_spot_data(date, before=True):
 
 
 def main():
-    runt.run_with_args(save_nph_stock_spot_data)
-    runt.run_with_args(save_nph_etf_spot_data)
+    if not trd.is_market_close:
+        runt.run_with_args(save_nph_stock_spot_data)
+        runt.run_with_args(save_nph_etf_spot_data)
 
 
 # main函数入口

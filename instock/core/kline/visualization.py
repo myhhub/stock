@@ -285,11 +285,11 @@ def get_plot_kline(code, stock, date, stock_name):
         if code.startswith(('1', '5')):
             div_attention = Div()
         else:
-            import instock.lib.database as mdb
+            from instock.lib.database_factory import execute_sql_count
             table_name = tbs.TABLE_CN_STOCK_ATTENTION['name']
             _sql = f"SELECT EXISTS(SELECT 1 FROM `{table_name}` WHERE `code` = '{code}')"
             try:
-                rc = mdb.executeSqlCount(_sql)
+                rc = execute_sql_count(_sql)
             except Exception as e:
                 rc = 0
             if rc == 0:
