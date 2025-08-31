@@ -459,112 +459,9 @@ def query_history_data_by_date_range(date_start, date_end=None, base_name="cn_st
         return pd.DataFrame()
 
 
-def save_realtime_data_to_history(data, table_object):
-    """
-    将实时数据保存到历史数据库，支持字段重命名和计算字段
-    
-    Args:
-        data: pandas.DataFrame - 实时数据（必须包含date字段）
-        table_object: dict - 表结构对象，包含columns_to_history_db和db_description
-    
-    Returns:
-        bool: 操作是否成功
-    """
-    import pandas as pd
-    from instock.lib.common_check import get_history_table_name_by_code
-    
-    if data is None or len(data) == 0:
-        logging.warning("没有数据需要保存到历史数据库")
-        return False
-    
-    # 检查数据是否包含date字段
-    if 'date' not in data.columns:
-        logging.error("数据中缺少date字段，无法保存到历史数据库")
-        return False
-    
-    # 检查表对象是否包含必要的映射信息
-    if 'columns_to_history_db' not in table_object:
-        logging.error("表对象缺少columns_to_history_db映射信息")
-        return False
-    
-    try:
-        columns_mapping = table_object['columns_to_history_db']
-        db_description = table_object.get('db_description', {})
-        
-        # 按股票代码分组处理，确保每个代码都能找到对应的历史表
-        for code in data['code'].unique():
-            stock_data = data[data['code'] == code].copy()
-            
-            # 使用API返回的date字段来确定历史表名
-            api_date_str = stock_data.iloc[0]['date']  # 获取第一条记录的date
-            if isinstance(api_date_str, str):
-                api_date = datetime.datetime.strptime(api_date_str, "%Y-%m-%d")
-            else:
-                api_date = api_date_str
-            
-            # 获取历史表名
-            table_name = get_history_table_name_by_code(api_date, code)
-            if table_name is None:
-                logging.warning(f"无法确定股票代码 {code} 的历史表名，跳过")
-                continue
-            
-            # 字段重命名和映射
-            mapped_data = pd.DataFrame()
-            for api_field, db_field in columns_mapping.items():
-                if api_field in stock_data.columns:
-                    mapped_data[db_field] = stock_data[api_field]
-                else:
-                    logging.warning(f"API数据中缺少字段: {api_field}")
-            
-            # 添加必要的字段（使用API的date字段）
-            mapped_data['code'] = code
-            if 'date' not in mapped_data.columns:
-                mapped_data['date'] = stock_data['date']
-            
-            # 处理需要计算的字段
-            if 'amount' in db_description:
-                # 成交额(元) = 成交量 * 最新价 (如果API没有直接返回)
-                if 'amount' not in mapped_data.columns and 'volume' in mapped_data.columns and 'close' in mapped_data.columns:
-                    mapped_data['amount'] = mapped_data['volume'] * mapped_data['close']
-            
-            if 'isST' in db_description:
-                # 判断是否ST股
-                if 'name' in stock_data.columns:
-                    mapped_data['isST'] = stock_data['name'].str.startswith(('*ST', 'ST')).astype(int)
-                else:
-                    mapped_data['isST'] = 0
-            
-            if 'tradestatus' in db_description:
-                # 能查到的股票都是交易中的
-                mapped_data['tradestatus'] = 1
-            
-            if 'adjustflag' in db_description:
-                # 默认不复权
-                mapped_data['adjustflag'] = 3
-            
-            # 处理成交量单位转换（从手转换为股）
-            if 'volume' in mapped_data.columns:
-                # API返回的是手，数据库存储的是股（1手=100股）
-                mapped_data['volume'] = mapped_data['volume'] * 100
-            
-            # 批量保存到对应的历史表
-            if not mapped_data.empty:
-                success = _upsert_history_data(mapped_data, table_name)
-                if success:
-                    logging.info(f"成功保存股票 {code} 的数据到历史表 {table_name}")
-                else:
-                    logging.error(f"保存股票 {code} 的数据到历史表 {table_name} 失败")
-        
-        return True
-        
-    except Exception as e:
-        logging.error(f"保存实时数据到历史数据库时发生异常：{e}")
-        return False
-
-
 def save_batch_realtime_data_to_history(data, table_object):
     """
-    批量将实时数据保存到历史数据库（性能优化版本）
+    批量将实时数据保存到ClickHouse历史数据库
     
     Args:
         data: pandas.DataFrame - 实时数据（必须包含date字段）
@@ -574,7 +471,7 @@ def save_batch_realtime_data_to_history(data, table_object):
         bool: 操作是否成功
     """
     import pandas as pd
-    from instock.lib.common_check import get_stock_exchange
+    from instock.lib.database_factory import get_database
     
     if data is None or len(data) == 0:
         logging.warning("没有数据需要保存到历史数据库")
@@ -589,77 +486,55 @@ def save_batch_realtime_data_to_history(data, table_object):
         columns_mapping = table_object.get('columns_to_history_db', {})
         db_description = table_object.get('db_description', {})
         
-        # 获取API数据中的日期（假设所有记录的日期相同）
-        api_date_str = data.iloc[0]['date']
-        if isinstance(api_date_str, str):
-            api_date = datetime.datetime.strptime(api_date_str, "%Y-%m-%d")
-        else:
-            api_date = api_date_str
+        # 统一表名，不再分表
+        table_name = "cn_stock_history"
         
-        # 按市场分组批量处理
-        market_groups = {}
+        # 字段重命名和映射
+        mapped_data = pd.DataFrame()
+        for api_field, db_field in columns_mapping.items():
+            if api_field in data.columns:
+                mapped_data[db_field] = data[api_field]
         
-        for _, row in data.iterrows():
-            code = row['code']
-            market = get_stock_exchange(code)
-            if market is None:
-                continue
-                
-            if market not in market_groups:
-                market_groups[market] = []
-            market_groups[market].append(row)
+        # 添加必要字段
+        mapped_data['code'] = data['code']
+        if 'date' not in mapped_data.columns:
+            mapped_data['date'] = data['date']
         
-        # 为每个市场批量处理数据
-        for market, rows in market_groups.items():
-            market_data = pd.DataFrame(rows)
+        # 处理计算字段（批量）
+        if 'amount' in db_description and 'amount' not in mapped_data.columns:
+            if 'volume' in mapped_data.columns and 'close' in mapped_data.columns:
+                mapped_data['amount'] = mapped_data['volume'] * mapped_data['close']
+        
+        if 'isST' in db_description:
+            if 'name' in data.columns:
+                mapped_data['isST'] = data['name'].str.startswith(('*ST', 'ST')).astype(int)
+            else:
+                mapped_data['isST'] = 0
+        
+        if 'tradestatus' in db_description:
+            mapped_data['tradestatus'] = 1
             
-            # 获取历史表名
-            table_name = f"cn_stock_history_{market}_{(api_date.year // 5) * 5}_{(api_date.year // 5) * 5 + 4}"
-            
-            # 字段重命名和映射
-            mapped_data = pd.DataFrame()
-            for api_field, db_field in columns_mapping.items():
-                if api_field in market_data.columns:
-                    mapped_data[db_field] = market_data[api_field]
-            
-            # 添加必要字段（使用API的date字段）
-            mapped_data['code'] = market_data['code']
-            if 'date' not in mapped_data.columns:
-                mapped_data['date'] = market_data['date']
-            
-            # 处理计算字段（批量）
-            if 'amount' in db_description and 'amount' not in mapped_data.columns:
-                if 'volume' in mapped_data.columns and 'close' in mapped_data.columns:
-                    mapped_data['amount'] = mapped_data['volume'] * mapped_data['close']
-            
-            if 'isST' in db_description:
-                if 'name' in market_data.columns:
-                    mapped_data['isST'] = market_data['name'].str.startswith(('*ST', 'ST')).astype(int)
-                else:
-                    mapped_data['isST'] = 0
-            
-            if 'tradestatus' in db_description:
-                mapped_data['tradestatus'] = 1
-                
-            if 'adjustflag' in db_description:
-                mapped_data['adjustflag'] = 3
-            
-            # 成交量单位转换
-            if 'volume' in mapped_data.columns:
-                mapped_data['volume'] = mapped_data['volume'] * 100
-            
-            # 批量保存
-            if not mapped_data.empty:
-                success = _upsert_history_data(mapped_data, table_name)
-                if success:
-                    logging.info(f"成功批量保存 {market} 市场 {len(mapped_data)} 条数据到表 {table_name}")
-                else:
-                    logging.error(f"批量保存 {market} 市场数据到表 {table_name} 失败")
+        if 'adjustflag' in db_description:
+            mapped_data['adjustflag'] = 3
+        
+        # 成交量单位转换
+        if 'volume' in mapped_data.columns:
+            mapped_data['volume'] = mapped_data['volume'] * 100
+        
+        # 批量保存到ClickHouse
+        if not mapped_data.empty:
+            db = get_database()
+            success = db.insert_from_dataframe(mapped_data, table_name)
+            if success:
+                logging.info(f"成功批量保存 {len(mapped_data)} 条数据到ClickHouse表 {table_name}")
+            else:
+                logging.error(f"批量保存数据到ClickHouse表 {table_name} 失败")
+            return success
         
         return True
         
     except Exception as e:
-        logging.error(f"批量保存实时数据到历史数据库时发生异常：{e}")
+        logging.error(f"批量保存实时数据到ClickHouse历史数据库时发生异常：{e}")
         return False
 
 

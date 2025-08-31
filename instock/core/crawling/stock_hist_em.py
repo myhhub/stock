@@ -19,7 +19,7 @@ def stock_zh_a_spot_em(proxy=None) -> pd.DataFrame:
     :rtype: pandas.DataFrame
     """
     url = "http://82.push2.eastmoney.com/api/qt/clist/get"
-    page_size = 300
+    page_size = 150
     page_current = 1
     params = {
         "pn": page_current,

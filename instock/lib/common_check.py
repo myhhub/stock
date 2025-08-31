@@ -73,7 +73,7 @@ def check_and_delete_old_data_for_realtime_data(table_object, data, date, cols_t
     table_name = table_object['name']
     # 删除老数据(仅实时)
     now = datetime.datetime.now()
-    if trd.is_tradetime(now) and mdb.checkTableIsExist(table_name):
+    if trd.is_trade_date(now) and mdb.checkTableIsExist(table_name):
         del_sql = f"DELETE FROM `{table_name}` where `date` = '{date}'"
         execute_sql(del_sql)
         cols_type = None
@@ -89,12 +89,7 @@ def check_and_delete_old_data_for_realtime_data(table_object, data, date, cols_t
     # 保存到历史数据库
     if save_to_history and 'columns_to_history_db' in table_object:
         try:
-            if use_batch:
-                # 使用批量处理（推荐）
-                mdb.save_batch_realtime_data_to_history(data, table_object)
-            else:
-                # 使用单条处理
-                mdb.save_realtime_data_to_history(data, table_object)
+            mdb.save_batch_realtime_data_to_history(data, table_object)
         except Exception as e:
             import logging
             logging.error(f"保存到历史数据库失败：{e}")

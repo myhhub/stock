@@ -394,6 +394,7 @@ class ClickHouseDatabase(DatabaseInterface):
                     except:
                         # 保持为字符串
                         pass
+            df_converted['code'] = df_converted['code'].astype(str).str.zfill(6)
             
             return df_converted
             

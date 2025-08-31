@@ -145,6 +145,7 @@ class ClickHouseClient:
             
             # 直接使用df_clean插入
             result = self.client.insert_df(table_name, df_clean)
+            print("Insert Result:\n",result)
             return True
             
         except Exception as e:
