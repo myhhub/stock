@@ -171,6 +171,126 @@ def process_all_data_to_clickhouse():
         client.close()
         print("ClickHouse连接已关闭")
 
+def find_missing_stock_data():
+    """
+    查询出还未处理的历史股票数据
+    对比ClickHouse中的code与code_map.csv中的数据，输出缺失股票的csv文件
+    """
+    try:
+        print("=== 查询未处理的历史股票数据 ===")
+        
+        # 1. 读取code_map.csv文件
+        code_map_file = os.path.join(os.path.dirname(__file__), 'code_map.csv')
+        if not os.path.exists(code_map_file):
+            print(f"错误: code_map.csv文件不存在: {code_map_file}")
+            return False
+        
+        print(f"读取股票代码映射文件: {code_map_file}")
+        code_map_df = pd.read_csv(code_map_file)
+        
+        if code_map_df.empty:
+            print("错误: code_map.csv文件为空")
+            return False
+        
+        # 检查必需的列
+        if 'code' not in code_map_df.columns:
+            print("错误: code_map.csv文件缺少必需的列(code)")
+            print(f"实际列: {list(code_map_df.columns)}")
+            return False
+        
+        print(f"code_map.csv中股票总数: {len(code_map_df)}")
+        
+        # 处理股票代码，确保格式一致（6位数字，左补零）
+        code_map_df['clean_code'] = code_map_df['code'].astype(str).str.zfill(6)
+        all_stocks = set(code_map_df['clean_code'].unique())
+        
+        print(f"待检查的股票数量: {len(all_stocks)}")
+        
+        # 2. 连接ClickHouse查询已有数据的股票代码
+        client = create_clickhouse_client()
+        if client is None:
+            print("无法连接到ClickHouse，请检查配置")
+            return False
+        
+        try:
+            print("查询ClickHouse中已有的股票代码...")
+            result = client.query("SELECT DISTINCT code FROM cn_stock_history")
+            
+            if not result.result_rows:
+                print("ClickHouse中没有找到任何股票数据")
+                existing_stocks = set()
+            else:
+                existing_stocks = set(row[0] for row in result.result_rows)
+            
+            print(f"ClickHouse中已有 {len(existing_stocks)} 只股票的历史数据")
+            
+        finally:
+            client.close()
+        
+        # 3. 找出缺失的股票
+        missing_stocks = all_stocks - existing_stocks
+        
+        if not missing_stocks:
+            print("所有股票都已有历史数据，无缺失")
+            return True
+        
+        print(f"发现 {len(missing_stocks)} 只股票缺少历史数据")
+        
+        # 4. 创建缺失股票的详细信息
+        missing_data = []
+        for code in missing_stocks:
+            # 从code_map中找到对应的股票信息
+            stock_info = code_map_df[code_map_df['clean_code'] == code]
+            if not stock_info.empty:
+                original_code = stock_info.iloc[0]['code']
+                
+                # 如果有market列就使用，否则设为unknown
+                if 'market' in code_map_df.columns:
+                    market = stock_info.iloc[0]['market']
+                else:
+                    market = 'unknown'
+                
+                missing_data.append({
+                    'original_code': str(original_code).zfill(6),
+                    'clean_code': code,
+                    'market': market,
+                    'market_name': MARKET_PREFIXES.get(market.lower(), market)
+                })
+        
+        # 5. 转换为DataFrame并按市场和代码排序
+        missing_df = pd.DataFrame(missing_data)
+        missing_df = missing_df.sort_values(['market', 'clean_code'])
+        
+        # 6. 输出到CSV文件
+        output_file = os.path.join(os.path.dirname(__file__), 'missing_stock_data.csv')
+        missing_df.to_csv(output_file, index=False, encoding='utf-8-sig')
+        
+        print(f"\n缺失股票数据已保存到: {output_file}")
+        
+        # 7. 显示统计信息
+        print(f"\n=== 缺失股票统计 ===")
+        market_stats = missing_df.groupby('market_name').size()
+        for market, count in market_stats.items():
+            print(f"{market}: {count} 只股票")
+        
+        # 8. 显示前10个缺失的股票作为示例
+        print(f"\n=== 前10个缺失的股票示例 ===")
+        print(f"{'股票代码':<10} {'市场':<8} {'市场名称':<10}")
+        print("-" * 35)
+        
+        for _, row in missing_df.head(10).iterrows():
+            print(f"{row['clean_code']:<10} {row['market']:<8} {row['market_name']:<10}")
+        
+        if len(missing_df) > 10:
+            print(f"... 还有 {len(missing_df) - 10} 只股票，详见CSV文件")
+        
+        return True
+        
+    except Exception as e:
+        print(f"查询缺失股票数据时发生错误: {str(e)}")
+        traceback.print_exc()
+        return False
+
 def check_clickhouse_data_stats(client):
     """检查ClickHouse中的数据统计"""
     try:
@@ -304,9 +424,14 @@ if __name__ == "__main__":
     print("4. 支持复杂分析查询")
     print()
     
-    choice = input("是否开始处理数据? (y/n): ").strip().lower()
+    print("请选择操作:")
+    print("1. 处理所有数据并导入ClickHouse")
+    print("2. 查询缺失的股票历史数据（用于导入后的检查）")
+    print("3. 退出")
     
-    if choice == 'y':
+    choice = input("请输入选项 (1/2/3): ").strip()
+    
+    if choice == '1':
         # 检查数据目录是否存在
         if not os.path.exists(AGG_DATA_DIR):
             print(f"错误: 数据目录 {AGG_DATA_DIR} 不存在")
@@ -320,5 +445,13 @@ if __name__ == "__main__":
         if client:
             query_stock_data_examples(client)
             client.close()
-    else:
+    
+    elif choice == '2':
+        print("开始查询缺失的股票历史数据...")
+        find_missing_stock_data()
+    
+    elif choice == '3':
         print("程序退出")
+    
+    else:
+        print("无效的选项，程序退出")
