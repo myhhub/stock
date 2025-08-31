@@ -20,14 +20,12 @@ def stock_selection(proxy=None) -> pd.DataFrame:
     :rtype: pandas.DataFrame
     """
     cols = tbs.TABLE_CN_STOCK_SELECTION['columns']
-    page_size = 50
+    page_size = 300
     page_current = 1
-    sty = ""  # 初始值 "SECUCODE,SECURITY_CODE,SECURITY_NAME_ABBR,CHANGE_RATE"
-    for k in cols:
-        sty = f"{sty},{cols[k]['map']}"
+    sty = ",".join([cols[k]['map'] for k in cols])
     url = "https://data.eastmoney.com/dataapi/xuangu/list"
     params = {
-        "sty": sty[1:],
+        "sty": sty,
         "filter": "(MARKET+in+(\"上交所主板\",\"深交所主板\",\"深交所创业板\"))(NEW_PRICE>0)",
         "p": page_current,
         "ps": page_size,
@@ -44,6 +42,7 @@ def stock_selection(proxy=None) -> pd.DataFrame:
     page_count = math.ceil(data_count/page_size)
     while page_count > 1:
         page_current = page_current + 1
+        print(f"正在获取第 {page_current} 页数据...")
         params["p"] = page_current
         r = requests.get(url, params=params, proxies=proxy)
         data_json = r.json()
@@ -64,7 +63,9 @@ def stock_selection(proxy=None) -> pd.DataFrame:
             temp_df[cols[k]["map"]] = pd.to_numeric(temp_df[cols[k]["map"]], errors="coerce")
         elif t == 'datetime':
             temp_df[cols[k]["map"]] = pd.to_datetime(temp_df[cols[k]["map"]], errors="coerce").dt.date
-
+    # 删除SECURITY_CODE列如果存在
+    if 'SECURITY_CODE' in temp_df.columns:
+        temp_df.drop(columns=['SECURITY_CODE'], inplace=True)
     return temp_df
 
 

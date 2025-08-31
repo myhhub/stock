@@ -19,7 +19,7 @@ def stock_zh_a_spot_em(proxy=None) -> pd.DataFrame:
     :rtype: pandas.DataFrame
     """
     url = "http://82.push2.eastmoney.com/api/qt/clist/get"
-    page_size = 100
+    page_size = 300
     page_current = 1
     params = {
         "pn": page_current,
@@ -192,7 +192,7 @@ def code_id_map_em(store_file='/tmp/code_id_map_em.csv',proxy=None) -> dict:
         return dict(zip(df["code"], df["id"]))
 
     url = "http://80.push2.eastmoney.com/api/qt/clist/get"
-    page_size = 50
+    page_size = 300
     page_current = 1
     params = {
         "pn": page_current,

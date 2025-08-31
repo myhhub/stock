@@ -4,6 +4,7 @@
 import logging
 import os.path
 import datetime
+import traceback
 import numpy as np
 import pandas as pd
 import talib as tl
@@ -147,14 +148,15 @@ def fetch_stocks(date, save_to_db=True):
 
 def fetch_stock_selection():
     try:
-        data = sst.stock_selection(get_proxy())
+        data = sst.stock_selection(proxy=get_proxy())
         if data is None or len(data.index) == 0:
             return None
         data.columns = list(tbs.TABLE_CN_STOCK_SELECTION['columns'])
-        data.drop_duplicates('code', keep='last', inplace=True)
+        data.drop_duplicates('secucode', keep='last', inplace=True)
         return data
     except Exception as e:
-        logging.error(f"stockfetch.fetch_stocks_selection处理异常：{e}")
+        traceback.print_exc()
+        logging.exception(f"stockfetch.fetch_stocks_selection处理异常：{e}")
     return None
 
 
@@ -426,8 +428,8 @@ def stock_hist_cache(code, date_start, date_end=None, is_cache=True, adjust='', 
 
 def get_stock_hist_from_db(date_start, date_end=None, code=None):
     from instock.lib.clickhouse_client import create_clickhouse_client
-    date_start = convert_date_format(date_start)
-    date_end = convert_date_format(date_end)
+    # date_start = convert_date_format(date_start)
+    # date_end = convert_date_format(date_end)
     columns = ["code","date","open","high","low","close","preclose","volume","amount","turn","p_change"]
     
     with create_clickhouse_client() as client:
@@ -480,7 +482,7 @@ def get_stock_hist_from_db(date_start, date_end=None, code=None):
     return result_stock
 def get_stock_code_name(date=None):
     try:
-        from instock.lib.database import read_sql_to_df
+        from instock.lib.database_factory import read_sql_to_df
         # 查询最大的date作为时间，获取最新的股票代码和名称
         sql = f"SELECT `date`,`code`,`name` FROM `{TABLE_CN_STOCK_SPOT['name']}` WHERE `date` = (SELECT MAX(`date`) FROM `{TABLE_CN_STOCK_SPOT['name']}`)"
         data = read_sql_to_df(sql)
