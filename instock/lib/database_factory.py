@@ -494,12 +494,13 @@ class ClickHouseDatabase(DatabaseInterface):
                     except:
                         # 保持为字符串
                         pass
-            df_converted['code'] = df_converted['code'].astype(str).str.zfill(6)
+            if "code" in df_converted.columns:
+                df_converted['code'] = df_converted['code'].astype(str).str.zfill(6)
             
             return df_converted
             
         except Exception as e:
-            logging.error(f"DataFrame类型转换失败: {e}")
+            logging.exception(f"DataFrame类型转换失败: {e}")
             # 如果转换失败，返回原始DataFrame
             return df
     

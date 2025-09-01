@@ -52,9 +52,8 @@ def save_nph_etf_spot_data(date, before=True):
 
 
 def main():
-    if not trd.is_market_close():
-        runt.run_with_args(save_nph_stock_spot_data)
-        runt.run_with_args(save_nph_etf_spot_data)
+    runt.run_with_args(save_nph_stock_spot_data)
+    runt.run_with_args(save_nph_etf_spot_data)
 
 
 # main函数入口

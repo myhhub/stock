@@ -5,9 +5,7 @@ import math
 import pandas as pd
 import requests
 import instock.core.tablestructure as tbs
-
-__author__ = 'myh '
-__date__ = '2023/5/9 '
+from instock.core.proxy_pool import get_proxy
 
 
 def stock_selection(proxy=None) -> pd.DataFrame:
@@ -44,7 +42,14 @@ def stock_selection(proxy=None) -> pd.DataFrame:
         page_current = page_current + 1
         print(f"正在获取第 {page_current} 页数据...")
         params["p"] = page_current
-        r = requests.get(url, params=params, proxies=proxy)
+        try:
+            r = requests.get(url, params=params, proxies=proxy)
+        except Exception as e:
+            print(f"获取第 {page_current} 页数据异常：{e},重新获取代理")
+            proxy = get_proxy()
+            print(f"重新获取代理：{proxy}")
+            page_current = page_current - 1
+            continue
         data_json = r.json()
         _data = data_json["result"]["data"]
         data.extend(_data)
