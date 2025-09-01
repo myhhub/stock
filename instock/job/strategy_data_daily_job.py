@@ -90,9 +90,8 @@ def main():
     #     for strategy in tbs.TABLE_CN_STOCK_STRATEGIES:
     #         executor.submit(runt.run_with_args, prepare, strategy)
     stocks_data = stock_hist_data().get_data()
-    for strategy in tbs.TABLE_CN_STOCK_STRATEGIES[1:]:
+    for strategy in tbs.TABLE_CN_STOCK_STRATEGIES:
         runt.run_with_args(prepare, strategy, stocks_data)
-        import pdb; pdb.set_trace()
         print("debug")
     # runt.run_with_args(prepare, tbs.TABLE_CN_STOCK_STRATEGIES[2], stocks_data)
     # runt.run_with_args(prepare, tbs.TABLE_CN_STOCK_STRATEGIES[3], stocks_data)
