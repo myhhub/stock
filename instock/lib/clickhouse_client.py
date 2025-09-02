@@ -4,6 +4,7 @@
 import os
 import traceback
 import pandas as pd
+import numpy as np
 from typing import Optional, Dict, Any, List, Union
 from datetime import datetime, date
 import logging
@@ -158,9 +159,7 @@ class ClickHouseClient:
             return False
     
     def _prepare_dataframe_for_insert(self, df: pd.DataFrame, table_definition: dict = None) -> pd.DataFrame:
-        """准备DataFrame以便插入ClickHouse"""
-        import numpy as np
-        
+        """准备DataFrame以便插入ClickHouse"""        
         # 创建DataFrame副本
         df_clean = df.copy()
         
@@ -171,49 +170,134 @@ class ClickHouseClient:
             
             # 根据列名和数据类型进行转换
             if 'date' in col.lower():
-                # 处理日期列 - 对于策略表，date列通常是DateTime类型
                 try:
-                    if series.dtype == 'object':
-                        # 对于object类型，需要特殊处理NaT字符串
-                        temp_series = series.copy()
-                        # 替换各种NULL值表示
-                        temp_series = temp_series.replace({'NaT': None, 'nat': None, 'None': None, '': None})
-                        # 转换为datetime
-                        date_series = pd.to_datetime(temp_series, errors='coerce')
-                        df_clean[col] = [dt if pd.notna(dt) else None for dt in date_series]
+                    # 检查表定义中该字段的类型
+                    field_is_string = self._is_string_field(col, table_definition)
+                    
+                    if field_is_string or col.lower() in ['report_date', 'listing_date']:
+                        logger.info(f"日期列 {col} 转换为字符串格式")
+                        df_clean[col] = self._convert_series_to_date_string(series)
                     else:
-                        # 对于其他类型，直接转换为datetime对象
-                        date_series = pd.to_datetime(series, errors='coerce')
-                        df_clean[col] = [dt if pd.notna(dt) else None for dt in date_series]
-                    
-                    logger.info(f"日期列 {col} 转换完成，保持为datetime类型")
-                    
+                        logger.info(f"日期列 {col} 转换为datetime类型")
+                        df_clean[col] = self._convert_series_to_datetime(series)
+                        
                 except Exception as e:
                     logger.error(f"日期转换失败 {col}: {e}")
-                    # 如果转换失败，将所有值设为None
                     df_clean[col] = [None] * len(series)
                     
             elif series.dtype.name.startswith('int'):
-                # 整数类型处理
                 df_clean[col] = series.where(pd.notna(series), None).astype('Int64')
                 
             elif series.dtype.name.startswith('float'):
-                # 浮点类型处理
                 df_clean[col] = series.where(pd.notna(series), None)
                 
             elif series.dtype == 'bool':
-                # 布尔类型转换为整数
                 df_clean[col] = series.astype('Int64')
                 
             elif series.dtype == 'object':
-                # 字符串类型处理
                 df_clean[col] = series.where(pd.notna(series) & (series != ''), None)
                 
             else:
-                # 其他类型转换为字符串
                 df_clean[col] = series.astype(str).where(pd.notna(series), None)
         
         return df_clean
+    
+    def _is_string_field(self, col: str, table_definition: dict = None) -> bool:
+        """检查字段是否为String类型"""
+        if not table_definition:
+            return False
+            
+        columns = table_definition.get('columns', [])
+        for column_def in columns:
+            if isinstance(column_def, dict) and column_def.get('name') == col:
+                field_type = column_def.get('type', '')
+                return 'String' in field_type
+        return False
+    
+    def _is_null_value(self, val) -> bool:
+        """检查值是否为空值"""
+        return (pd.isna(val) or 
+                val in ['NaT', 'nat', 'None', '', 'nan', 'NaN'] or
+                (isinstance(val, str) and val.strip() == ''))
+    
+    def _convert_single_value_to_date_string(self, val) -> str:
+        """将单个值转换为日期字符串"""
+        if self._is_null_value(val):
+            return None
+            
+        # datetime对象直接格式化
+        if hasattr(val, 'strftime'):
+            return val.strftime('%Y-%m-%d')
+            
+        # numpy datetime64 和 pandas Timestamp
+        if isinstance(val, (np.datetime64, pd.Timestamp)):
+            try:
+                ts = pd.to_datetime(val)
+                return None if pd.isna(ts) else ts.strftime('%Y-%m-%d')
+            except:
+                return None
+                
+        # 整数类型处理
+        if isinstance(val, (int, np.integer)):
+            if 1900 <= val <= 2100:  # 年份
+                return str(val)
+            elif val > 1e9:  # 秒级时间戳
+                try:
+                    return pd.to_datetime(val, unit='s').strftime('%Y-%m-%d')
+                except:
+                    return None
+            elif val > 100000:  # 天数序列号
+                try:
+                    dt = pd.to_datetime('1900-01-01') + pd.Timedelta(days=val)
+                    return dt.strftime('%Y-%m-%d')
+                except:
+                    return None
+            return None
+            
+        # 浮点数类型处理
+        if isinstance(val, (float, np.floating)):
+            if np.isnan(val):
+                return None
+            try:
+                if val > 1e9:  # 秒级时间戳
+                    return pd.to_datetime(val, unit='s').strftime('%Y-%m-%d')
+                elif val > 100000:  # 天数序列号
+                    dt = pd.to_datetime('1900-01-01') + pd.Timedelta(days=val)
+                    return dt.strftime('%Y-%m-%d')
+                return None
+            except:
+                return None
+                
+        # 字符串或其他类型
+        try:
+            str_val = str(val).strip()
+            if str_val in ['', 'NaT', 'None', 'nan', 'NaN']:
+                return None
+            # 尝试解析为日期
+            dt = pd.to_datetime(str_val)
+            return None if pd.isna(dt) else dt.strftime('%Y-%m-%d')
+        except:
+            try:
+                # 如果无法解析为日期，保持原字符串
+                return str_val if str_val else None
+            except:
+                return None
+    
+    def _convert_series_to_date_string(self, series: pd.Series) -> list:
+        """将Series转换为日期字符串列表"""
+        return [self._convert_single_value_to_date_string(val) for val in series]
+    
+    def _convert_series_to_datetime(self, series: pd.Series) -> list:
+        """将Series转换为datetime对象列表"""
+        if series.dtype == 'object':
+            # 对于object类型，需要特殊处理NaT字符串
+            temp_series = series.copy()
+            temp_series = temp_series.replace({'NaT': None, 'nat': None, 'None': None, '': None})
+            date_series = pd.to_datetime(temp_series, errors='coerce')
+        else:
+            date_series = pd.to_datetime(series, errors='coerce')
+            
+        return [dt if pd.notna(dt) else None for dt in date_series]
     
     def batch_insert_dataframe(self, table_name: str, df: pd.DataFrame, batch_size: int = 10000) -> bool:
         """

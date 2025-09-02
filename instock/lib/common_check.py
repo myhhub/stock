@@ -73,7 +73,7 @@ def check_and_delete_old_data_for_realtime_data(table_object, data, date, cols_t
     table_name = table_object['name']
     # 删除老数据(仅实时)
     now = datetime.datetime.now()
-    if trd.is_trade_date(now) and mdb.checkTableIsExist(table_name):
+    if mdb.checkTableIsExist(table_name):
         del_sql = f"DELETE FROM `{table_name}` where `date` = '{date}'"
         execute_sql(del_sql)
         cols_type = None
