@@ -11,7 +11,7 @@ cpath_current = os.path.dirname(os.path.dirname(__file__))
 cpath = os.path.abspath(os.path.join(cpath_current, os.pardir))
 sys.path.append(cpath)
 import instock.lib.database as mdb
-from instock.lib.database_factory import get_database, execute_sql, insert_db_from_df, db_config, DatabaseType
+from instock.lib.database_factory import get_database, db_config, DatabaseType
 
 __author__ = 'myh '
 __date__ = '2023/3/10 '

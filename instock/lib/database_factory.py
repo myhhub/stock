@@ -343,7 +343,14 @@ class ClickHouseDatabase(DatabaseInterface):
 
     def query(self, sql: str, *params) -> List[Dict]:
         """执行查询并返回结果"""
-        return self._execute_chdb_query(sql, params, "records")
+        result = self._client.execute_query(sql, params)
+        if result is not None:
+            columns = result.column_names
+            rows = result.result_rows
+            return [dict(zip(columns, row)) for row in rows]
+        else:
+            return None
+
     
     def query_to_dataframe(self, sql: str, params: Optional[Union[Tuple, Dict]] = None) -> pd.DataFrame:
         """执行查询并返回DataFrame"""
@@ -356,7 +363,7 @@ class ClickHouseDatabase(DatabaseInterface):
             import re
             
             # 匹配 FROM table_name 或 FROM `table_name`
-            from_match = re.search(r'FROM\s+`?(\w+)`?', sql, re.IGNORECASE)
+            from_match = re.search(r'FROM\s+`?([\w.]+)`?', sql, re.IGNORECASE)
             if not from_match:
                 # 如果找不到FROM，直接返回原SQL
                 return sql
@@ -375,7 +382,7 @@ class ClickHouseDatabase(DatabaseInterface):
             logging.warning(f"包装SQL为remote格式失败: {e}，使用原SQL")
             return sql
     
-    def execute(self, sql: str, *params) -> bool:
+    def execute(self, sql: str, *params, dataformat=None) -> bool:
         """执行SQL语句"""
         try:
             # 对于INSERT、CREATE等操作，仍然使用原来的客户端
@@ -409,7 +416,7 @@ class ClickHouseDatabase(DatabaseInterface):
                 
                 # 执行查询
                 result = chdb.query(sql, "DataFrame")
-                return True  # chdb查询成功即返回True
+                return result
             
         except Exception as e:
             logging.error(f"ClickHouse执行错误: {e}, SQL: {sql}")

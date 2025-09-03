@@ -138,58 +138,14 @@ def insert_other_db_from_df(to_db, data, table_name, cols_type, write_index, pri
             logging.error(f"database.insert_other_db_from_df处理异常：{table_name}表{e}")
 
 
-# 更新数据
-def update_db_from_df(data, table_name, where):
-    data = data.where(data.notnull(), None)
-    update_string = f'UPDATE `{table_name}` set '
-    where_string = ' where '
-    cols = tuple(data.columns)
-    with get_connection() as conn:
-        with conn.cursor() as db:
-            try:
-                for row in data.values:
-                    sql = update_string
-                    sql_where = where_string
-                    for index, col in enumerate(cols):
-                        if col in where:
-                            if len(sql_where) == len(where_string):
-                                if type(row[index]) == str:
-                                    sql_where = f'''{sql_where}`{col}` = '{row[index]}' '''
-                                else:
-                                    sql_where = f'''{sql_where}`{col}` = {row[index]} '''
-                            else:
-                                if type(row[index]) == str:
-                                    sql_where = f'''{sql_where} and `{col}` = '{row[index]}' '''
-                                else:
-                                    sql_where = f'''{sql_where} and `{col}` = {row[index]} '''
-                        else:
-                            if type(row[index]) == str:
-                                if row[index] is None or row[index] != row[index]:
-                                    sql = f'''{sql}`{col}` = NULL, '''
-                                else:
-                                    sql = f'''{sql}`{col}` = '{row[index]}', '''
-                            else:
-                                if row[index] is None or row[index] != row[index]:
-                                    sql = f'''{sql}`{col}` = NULL, '''
-                                else:
-                                    sql = f'''{sql}`{col}` = {row[index]}, '''
-                    sql = f'{sql[:-2]}{sql_where}'
-                    db.execute(sql)
-            except Exception as e:
-                logging.error(f"database.update_db_from_df处理异常：{sql}{e}")
-
-
 # 检查表是否存在
 def checkTableIsExist(tableName):
-    with get_connection() as conn:
-        with conn.cursor() as db:
-            db.execute("""
-                SELECT COUNT(*)
-                FROM information_schema.tables
-                WHERE table_name = '{0}'
-                """.format(tableName.replace('\'', '\'\'')))
-            if db.fetchone()[0] == 1:
-                return True
+    from instock.lib.database_factory import get_database
+    db = get_database()
+    sql = f"SELECT COUNT(*) as count FROM information_schema.tables WHERE table_name = '{tableName}'"
+    res = db.query(sql)
+    if res and int(res[0]['count']) > 0:
+        return True
     return False
 
 

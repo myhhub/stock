@@ -6,7 +6,7 @@ import time
 import datetime
 import concurrent.futures
 import logging
-import os.path
+import os
 import sys
 
 # 在项目运行时，临时将项目路径添加到环境变量
@@ -36,6 +36,7 @@ def main():
     start = time.time()
     _start = datetime.datetime.now()
     logging.info("######## 任务执行时间: %s #######" % _start.strftime("%Y-%m-%d %H:%M:%S.%f"))
+    os.system("source ~/.bashrc")
     # 第1步创建数据库
     bj.main()
     # 第2.1步创建股票基础数据表
@@ -53,10 +54,10 @@ def main():
         executor.submit(sdj.main)
 
     # # # # # 第6步创建股票回测
-    # bdj.main()
+    bdj.main()
 
     # # # # # 第7步创建股票闭盘后才有的数据
-    # acdj.main()
+    acdj.main()
 
     logging.info("######## 完成任务, 使用时间: %s 秒 #######" % (time.time() - start))
 
