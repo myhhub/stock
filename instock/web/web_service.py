@@ -27,6 +27,7 @@ from instock.lib.database_factory import get_database, db_config, DatabaseType
 import instock.lib.version as version
 import instock.web.dataTableHandler as dataTableHandler
 import instock.web.dataIndicatorsHandler as dataIndicatorsHandler
+import instock.web.dataDownloadHandler as dataDownloadHandler
 import instock.web.base as webBase
 
 __author__ = 'myh '
@@ -48,6 +49,12 @@ class Application(tornado.web.Application):
             (r"/instock/data/indicators", dataIndicatorsHandler.GetDataIndicatorsHandler),
             # 加入关注
             (r"/instock/control/attention", dataIndicatorsHandler.SaveCollectHandler),
+            # 数据下载页面
+            (r"/instock/data_download", dataDownloadHandler.DataDownloadPageHandler),
+            # 数据下载API
+            (r"/instock/data_download_api", dataDownloadHandler.DataDownloadApiHandler),
+            # 文件下载
+            (r"/instock/download/(.*)", dataDownloadHandler.FileDownloadHandler),
         ]
         settings = dict(  # 配置
             template_path=os.path.join(os.path.dirname(__file__), "templates"),

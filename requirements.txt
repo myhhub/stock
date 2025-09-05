@@ -14,3 +14,5 @@ easytrader>=0.23.7
 beautifulsoup4>=4.13.4
 pycryptodome>=3.23.0
 python_dateutil>=2.9.0.post0
+tushare>=1.4.24
+akshare>=1.17.39

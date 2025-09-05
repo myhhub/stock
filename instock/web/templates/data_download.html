@@ -1,0 +1,912 @@
+{% extends "layout/default.html" %}
+
+{% block main_content %}
+<div class="page-content">
+    <h3 class="header smaller lighter">
+        <i class="fa fa-download"></i> 股票数据下载
+    </h3>
+    
+    <div class="row">
+        <!-- 左侧：下载配置 -->
+        <div class="col-md-6">
+            <div class="widget-box widget-color-blue">
+                <div class="widget-header">
+                    <h4 class="widget-title">
+                        <i class="fa fa-cog"></i> 下载配置
+                    </h4>
+                </div>
+                
+                <div class="widget-body">
+                    <div class="widget-main">
+                        <form id="downloadForm" class="form-horizontal">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">检查范围</label>
+                                <div class="col-sm-9">
+                                    <div class="radio">
+                                        <label>
+                                            <input type="radio" name="checkScope" value="single" checked>
+                                            单个股票检查
+                                        </label>
+                                    </div>
+                                    <div class="radio">
+                                        <label>
+                                            <input type="radio" name="checkScope" value="all">
+                                            全量数据检查
+                                        </label>
+                                    </div>
+                                    <div class="radio">
+                                        <label>
+                                            <input type="radio" name="checkScope" value="market">
+                                            按市场检查 (沪深/北京)
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group" id="stockCodeGroup">
+                                <label class="col-sm-3 control-label">股票代码</label>
+                                <div class="col-sm-9">
+                                    <input type="text" id="stockCode" class="form-control" 
+                                           placeholder="请输入6位股票代码，如：600000" maxlength="6">
+                                    <span class="help-block">支持沪深交易所股票代码</span>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group" id="marketGroup" style="display: none;">
+                                <label class="col-sm-3 control-label">市场选择</label>
+                                <div class="col-sm-9">
+                                    <select id="marketSelect" class="form-control">
+                                        <option value="SH">上海交易所 (SH)</option>
+                                        <option value="SZ">深圳交易所 (SZ)</option>
+                                        <option value="BJ">北京交易所 (BJ)</option>
+                                        <option value="ALL">全部市场</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">开始日期</label>
+                                <div class="col-sm-9">
+                                    <input type="date" id="startDate" class="form-control">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">结束日期</label>
+                                <div class="col-sm-9">
+                                    <input type="date" id="endDate" class="form-control" value="{{date_now}}">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">数据库写入</label>
+                                <div class="col-sm-9">
+                                    <label class="checkbox-inline">
+                                        <input type="checkbox" id="writeToDb"> 
+                                        下载后写入数据库（可选）
+                                    </label>
+                                    <span class="help-block">勾选后将自动去重并写入ClickHouse数据库</span>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <div class="col-sm-offset-3 col-sm-9">
+                                    <button type="button" class="btn btn-info btn-sm" id="checkDataBtn">
+                                        <i class="fa fa-search"></i> 检查数据完整性
+                                    </button>
+                                    <button type="button" class="btn btn-success" id="downloadBtn" disabled>
+                                        <i class="fa fa-download"></i> 开始下载
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 快速示例 -->
+            <div class="widget-box widget-color-green">
+                <div class="widget-header">
+                    <h4 class="widget-title">
+                        <i class="fa fa-lightbulb-o"></i> 快速示例
+                    </h4>
+                </div>
+                
+                <div class="widget-body">
+                    <div class="widget-main">
+                        <p><strong>热门股票代码：</strong></p>
+                        <div class="btn-group-vertical" style="width: 100%;">
+                            <button type="button" class="btn btn-xs btn-default" onclick="fillExample('600000', '浦发银行')">
+                                600000 - 浦发银行
+                            </button>
+                            <button type="button" class="btn btn-xs btn-default" onclick="fillExample('000001', '平安银行')">
+                                000001 - 平安银行
+                            </button>
+                            <button type="button" class="btn btn-xs btn-default" onclick="fillExample('600036', '招商银行')">
+                                600036 - 招商银行
+                            </button>
+                            <button type="button" class="btn btn-xs btn-default" onclick="fillExample('600519', '贵州茅台')">
+                                600519 - 贵州茅台
+                            </button>
+                            <button type="button" class="btn btn-xs btn-default" onclick="fillExample('000002', '万科A')">
+                                000002 - 万科A
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 右侧：数据状态和下载进度 -->
+        <div class="col-md-6">
+            <!-- 数据完整性检查结果 -->
+            <div class="widget-box widget-color-orange" id="checkResultBox" style="display: none;">
+                <div class="widget-header">
+                    <h4 class="widget-title">
+                        <i class="fa fa-chart-pie"></i> 数据完整性检查
+                    </h4>
+                </div>
+                
+                <div class="widget-body">
+                    <div class="widget-main" id="checkResult">
+                        <!-- 检查结果将在这里显示 -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 下载进度 -->
+            <div class="widget-box widget-color-purple" id="progressBox" style="display: none;">
+                <div class="widget-header">
+                    <h4 class="widget-title">
+                        <i class="fa fa-tasks"></i> 下载进度
+                    </h4>
+                </div>
+                
+                <div class="widget-body">
+                    <div class="widget-main">
+                        <div class="progress progress-striped active">
+                            <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+                        </div>
+                        <p id="progressMessage">等待开始...</p>
+                        <div id="downloadResult" style="display: none;">
+                            <!-- 下载结果将在这里显示 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 操作历史 -->
+            <div class="widget-box widget-color-grey">
+                <div class="widget-header">
+                    <h4 class="widget-title">
+                        <i class="fa fa-history"></i> 操作说明
+                    </h4>
+                </div>
+                
+                <div class="widget-body">
+                    <div class="widget-main">
+                        <div class="alert alert-info">
+                            <h5><i class="fa fa-info-circle"></i> 使用说明：</h5>
+                            <ol>
+                                <li>输入6位股票代码和时间范围</li>
+                                <li>点击"检查数据完整性"查看现有数据情况</li>
+                                <li>如有缺失数据，可选择先补齐再下载</li>
+                                <li>点击"开始下载"生成CSV文件</li>
+                                <li>可选择是否同时写入数据库</li>
+                            </ol>
+                        </div>
+                        
+                        <div class="alert alert-warning">
+                            <h5><i class="fa fa-exclamation-triangle"></i> 注意事项：</h5>
+                            <ul>
+                                <li>数据量较大时请耐心等待</li>
+                                <li>北京交易所股票使用tushare数据源</li>
+                                <li>沪深股票使用baostock数据源</li>
+                                <li>下载的CSV文件包含完整的OHLC数据</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 数据补齐确认对话框 -->
+<div class="modal fade" id="supplementModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">
+                    <i class="fa fa-plus-circle"></i> 数据补齐确认
+                </h4>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>检测到您要下载的数据存在缺失，是否需要先补齐缺失的数据？</p>
+                <div id="missingDataDetails">
+                    <!-- 缺失数据详情将在这里显示 -->
+                </div>
+                <div class="alert alert-info">
+                    <strong>补齐说明：</strong>
+                    <ul>
+                        <li>沪深股票将使用baostock数据源补齐</li>
+                        <li>其他股票将使用akshare/tushare数据源补齐</li>
+                        <li>补齐完成后可继续下载操作</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">跳过补齐</button>
+                <button type="button" class="btn btn-primary" id="confirmSupplementBtn">确认补齐</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 全局变量
+let currentTaskId = null;
+let checkResultData = null;
+
+// 页面加载完成后初始化
+$(document).ready(function() {
+    // 设置默认开始日期为一年前
+    const oneYearAgo = new Date();
+    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+    document.getElementById('startDate').valueAsDate = oneYearAgo;
+    
+    // 绑定事件
+    $('#checkDataBtn').click(checkDataCompleteness);
+    $('#downloadBtn').click(startDownload);
+    $('#confirmSupplementBtn').click(confirmSupplement);
+    
+    // 检查范围变化处理
+    $('input[name="checkScope"]').change(function() {
+        const scope = $(this).val();
+        if (scope === 'single') {
+            $('#stockCodeGroup').show();
+            $('#marketGroup').hide();
+            $('#stockCode').prop('required', true);
+        } else if (scope === 'market') {
+            $('#stockCodeGroup').hide();
+            $('#marketGroup').show();
+            $('#stockCode').prop('required', false);
+        } else { // all
+            $('#stockCodeGroup').hide();
+            $('#marketGroup').hide();
+            $('#stockCode').prop('required', false);
+        }
+        
+        // 重置按钮状态
+        updateCheckButtonState();
+    });
+    
+    // 股票代码输入验证
+    $('#stockCode').on('input', function() {
+        updateCheckButtonState();
+    });
+});
+
+// 更新检查按钮状态
+function updateCheckButtonState() {
+    const scope = $('input[name="checkScope"]:checked').val();
+    let canCheck = false;
+    
+    if (scope === 'single') {
+        const code = $('#stockCode').val();
+        canCheck = code.length === 6 && /^\d{6}$/.test(code);
+        
+        if (canCheck) {
+            $('#stockCode').removeClass('has-error').addClass('has-success');
+        } else {
+            $('#stockCode').removeClass('has-success').addClass('has-error');
+        }
+    } else {
+        // 全量或市场检查不需要验证股票代码
+        canCheck = true;
+        $('#stockCode').removeClass('has-error has-success');
+    }
+    
+    $('#checkDataBtn').prop('disabled', !canCheck);
+    if (!canCheck) {
+        $('#downloadBtn').prop('disabled', true);
+    }
+}
+
+// 填充示例数据
+function fillExample(code, name) {
+    $('#stockCode').val(code).trigger('input');
+    
+    // 设置时间范围为最近一年
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setFullYear(startDate.getFullYear() - 1);
+    
+    document.getElementById('startDate').valueAsDate = startDate;
+    document.getElementById('endDate').valueAsDate = endDate;
+}
+
+// 检查数据完整性
+function checkDataCompleteness() {
+    const scope = $('input[name="checkScope"]:checked').val();
+    const startDate = $('#startDate').val();
+    const endDate = $('#endDate').val();
+    
+    if (!startDate || !endDate) {
+        showAlert('请填写完整的时间范围', 'warning');
+        return;
+    }
+    
+    if (new Date(startDate) >= new Date(endDate)) {
+        showAlert('开始日期必须早于结束日期', 'warning');
+        return;
+    }
+    
+    let requestData = {
+        action: 'check_data',
+        check_scope: scope,
+        start_date: startDate,
+        end_date: endDate
+    };
+    
+    if (scope === 'single') {
+        const stockCode = $('#stockCode').val().trim();
+        if (!stockCode || !/^\d{6}$/.test(stockCode)) {
+            showAlert('请输入正确的6位股票代码', 'warning');
+            return;
+        }
+        requestData.stock_code = stockCode;
+    } else if (scope === 'market') {
+        requestData.market = $('#marketSelect').val();
+    }
+    
+    // 显示loading
+    $('#checkDataBtn').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> 检查中...');
+    
+    // 发送检查请求
+    $.post('/instock/data_download_api', requestData, function(response) {
+        if (response.success) {
+            checkResultData = response;
+            if (scope === 'single') {
+                showCheckResult(response);
+            } else {
+                showBatchCheckResult(response);
+            }
+            $('#downloadBtn').prop('disabled', false);
+        } else {
+            showAlert(response.message, 'danger');
+        }
+    }).fail(function() {
+        showAlert('检查请求失败，请稍后重试', 'danger');
+    }).always(function() {
+        $('#checkDataBtn').prop('disabled', false).html('<i class="fa fa-search"></i> 检查数据完整性');
+    });
+}
+
+// 显示检查结果
+function showCheckResult(data) {
+    const completeness = data.completeness;
+    const hasLoss = data.has_missing;
+    
+    let statusClass = 'success';
+    let statusIcon = 'check-circle';
+    let statusText = '完整';
+    
+    if (completeness < 50) {
+        statusClass = 'danger';
+        statusIcon = 'times-circle';
+        statusText = '严重缺失';
+    } else if (completeness < 90) {
+        statusClass = 'warning';
+        statusIcon = 'exclamation-circle';
+        statusText = '部分缺失';
+    }
+    
+    const resultHtml = `
+        <div class="row">
+            <div class="col-md-6">
+                <div class="info-box">
+                    <div class="info-box-icon bg-${statusClass}">
+                        <i class="fa fa-${statusIcon}"></i>
+                    </div>
+                    <div class="info-box-content">
+                        <span class="info-box-text">数据完整性</span>
+                        <span class="info-box-number">${completeness}%</span>
+                        <span class="info-box-more">${statusText}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <table class="table table-condensed">
+                    <tr>
+                        <td>股票代码:</td>
+                        <td><strong>${data.stock_code} (${data.market})</strong></td>
+                    </tr>
+                    <tr>
+                        <td>时间范围:</td>
+                        <td>${data.start_date} ~ ${data.end_date}</td>
+                    </tr>
+                    <tr>
+                        <td>应有数据:</td>
+                        <td>${data.total_expected} 条</td>
+                    </tr>
+                    <tr>
+                        <td>现有数据:</td>
+                        <td>${data.existing_count} 条</td>
+                    </tr>
+                    <tr>
+                        <td>缺失数据:</td>
+                        <td class="text-${statusClass}"><strong>${data.missing_count} 条</strong></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        ${hasLoss ? `
+        <div class="alert alert-warning">
+            <h5><i class="fa fa-exclamation-triangle"></i> 检测到缺失数据</h5>
+            <p>建议先补齐缺失数据后再下载，以确保数据完整性。</p>
+            <button type="button" class="btn btn-warning btn-sm" onclick="showSupplementModal()">
+                <i class="fa fa-plus-circle"></i> 补齐缺失数据
+            </button>
+        </div>
+        ` : `
+        <div class="alert alert-success">
+            <i class="fa fa-check"></i> 数据完整，可以直接下载
+        </div>
+        `}
+    `;
+    
+    $('#checkResult').html(resultHtml);
+    $('#checkResultBox').show();
+}
+
+// 显示详细结果
+function showDetailedResults() {
+    $('#detailedResults').toggle();
+}
+
+// 显示批量数据补齐对话框
+function showBatchSupplementModal() {
+    if (!checkResultData || !checkResultData.summary) {
+        return;
+    }
+    
+    const summary = checkResultData.summary;
+    const totalMissing = summary.partial_missing + summary.severe_missing;
+    
+    const detailsHtml = `
+        <div class="alert alert-info">
+            <strong>批量补齐统计：</strong><br>
+            共有 <strong>${totalMissing}</strong> 只股票需要补齐数据<br>
+            部分缺失: <strong>${summary.partial_missing}</strong> 只 &nbsp; 
+            严重缺失: <strong>${summary.severe_missing}</strong> 只
+        </div>
+        
+        <div class="well">
+            <strong>补齐策略：</strong><br>
+            <ul>
+                <li>优先补齐严重缺失的股票（完整性&lt;50%）</li>
+                <li>沪深股票使用baostock数据源</li>
+                <li>北京股票使用akshare/tushare数据源</li>
+                <li>支持批量并发处理，提高效率</li>
+            </ul>
+        </div>
+        
+        <div class="alert alert-warning">
+            <strong>注意：</strong>批量补齐可能需要较长时间，请耐心等待。
+        </div>
+    `;
+    
+    $('#missingDataDetails').html(detailsHtml);
+    $('#supplementModal').modal('show');
+}
+
+// 显示批量检查结果
+function showBatchCheckResult(data) {
+    const scope = data.check_scope;
+    const summary = data.summary;
+    const details = data.details || [];
+    
+    let scopeText = '';
+    if (scope === 'all') {
+        scopeText = '全量数据';
+    } else if (scope === 'market') {
+        scopeText = `${data.market}市场`;
+    }
+    
+    const resultHtml = `
+        <div class="row">
+            <div class="col-md-12">
+                <div class="alert alert-info">
+                    <h5><i class="fa fa-database"></i> ${scopeText}完整性检查结果</h5>
+                    <p><strong>检查范围:</strong> ${data.start_date} ~ ${data.end_date}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-3">
+                <div class="info-box">
+                    <div class="info-box-icon bg-primary">
+                        <i class="fa fa-list"></i>
+                    </div>
+                    <div class="info-box-content">
+                        <span class="info-box-text">总股票数</span>
+                        <span class="info-box-number">${summary.total_stocks}</span>
+                        <span class="info-box-more">个股票</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="info-box">
+                    <div class="info-box-icon bg-success">
+                        <i class="fa fa-check"></i>
+                    </div>
+                    <div class="info-box-content">
+                        <span class="info-box-text">完整股票</span>
+                        <span class="info-box-number">${summary.complete_stocks}</span>
+                        <span class="info-box-more">100%完整</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="info-box">
+                    <div class="info-box-icon bg-warning">
+                        <i class="fa fa-exclamation"></i>
+                    </div>
+                    <div class="info-box-content">
+                        <span class="info-box-text">部分缺失</span>
+                        <span class="info-box-number">${summary.partial_missing}</span>
+                        <span class="info-box-more">50%-99%</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="info-box">
+                    <div class="info-box-icon bg-danger">
+                        <i class="fa fa-times"></i>
+                    </div>
+                    <div class="info-box-content">
+                        <span class="info-box-text">严重缺失</span>
+                        <span class="info-box-number">${summary.severe_missing}</span>
+                        <span class="info-box-more">&lt;50%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-12">
+                <div class="well">
+                    <h6><strong>整体统计:</strong></h6>
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-success" style="width: ${(summary.complete_stocks/summary.total_stocks*100).toFixed(1)}%"></div>
+                        <div class="progress-bar progress-bar-warning" style="width: ${(summary.partial_missing/summary.total_stocks*100).toFixed(1)}%"></div>
+                        <div class="progress-bar progress-bar-danger" style="width: ${(summary.severe_missing/summary.total_stocks*100).toFixed(1)}%"></div>
+                    </div>
+                    <p class="small">
+                        <span class="text-success">■ 完整 ${(summary.complete_stocks/summary.total_stocks*100).toFixed(1)}%</span> &nbsp;
+                        <span class="text-warning">■ 部分缺失 ${(summary.partial_missing/summary.total_stocks*100).toFixed(1)}%</span> &nbsp;
+                        <span class="text-danger">■ 严重缺失 ${(summary.severe_missing/summary.total_stocks*100).toFixed(1)}%</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        ${(summary.partial_missing > 0 || summary.severe_missing > 0) ? `
+        <div class="alert alert-warning">
+            <h5><i class="fa fa-exclamation-triangle"></i> 检测到数据缺失</h5>
+            <p>共有 <strong>${summary.partial_missing + summary.severe_missing}</strong> 只股票存在数据缺失。</p>
+            <button type="button" class="btn btn-warning btn-sm" onclick="showBatchSupplementModal()">
+                <i class="fa fa-plus-circle"></i> 批量补齐缺失数据
+            </button>
+            <button type="button" class="btn btn-info btn-sm" onclick="showDetailedResults()">
+                <i class="fa fa-list"></i> 查看详细结果
+            </button>
+        </div>
+        ` : `
+        <div class="alert alert-success">
+            <i class="fa fa-check"></i> 所有股票数据完整，可以直接下载
+        </div>
+        `}
+        
+        ${details.length > 0 ? `
+        <div id="detailedResults" style="display: none;">
+            <h6><strong>详细结果 (显示前20个缺失严重的股票):</strong></h6>
+            <div class="table-responsive">
+                <table class="table table-condensed table-striped">
+                    <thead>
+                        <tr>
+                            <th>股票代码</th>
+                            <th>市场</th>
+                            <th>完整性</th>
+                            <th>应有数据</th>
+                            <th>现有数据</th>
+                            <th>缺失数据</th>
+                            <th>状态</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${details.slice(0, 20).map(stock => `
+                        <tr>
+                            <td><strong>${stock.code}</strong></td>
+                            <td>${stock.market}</td>
+                            <td>
+                                <div class="progress" style="height: 20px; margin-bottom: 0;">
+                                    <div class="progress-bar ${stock.completeness >= 90 ? 'progress-bar-success' : stock.completeness >= 50 ? 'progress-bar-warning' : 'progress-bar-danger'}" 
+                                         style="width: ${stock.completeness}%">
+                                        ${stock.completeness}%
+                                    </div>
+                                </div>
+                            </td>
+                            <td>${stock.total_expected}</td>
+                            <td>${stock.existing_count}</td>
+                            <td class="text-danger"><strong>${stock.missing_count}</strong></td>
+                            <td>
+                                ${stock.completeness >= 90 ? '<span class="label label-success">完整</span>' : 
+                                  stock.completeness >= 50 ? '<span class="label label-warning">部分缺失</span>' : 
+                                  '<span class="label label-danger">严重缺失</span>'}
+                            </td>
+                        </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        ` : ''}
+    `;
+    
+    $('#checkResult').html(resultHtml);
+    $('#checkResultBox').show();
+}
+
+// 显示数据补齐对话框
+function showSupplementModal() {
+    if (!checkResultData || !checkResultData.has_missing) {
+        return;
+    }
+    
+    const missingCount = checkResultData.missing_count;
+    const sampleDates = checkResultData.missing_dates.slice(0, 5); // 显示前5个日期作为示例
+    
+    const detailsHtml = `
+        <div class="alert alert-info">
+            <strong>缺失数据统计：</strong><br>
+            总计缺失 <strong>${missingCount}</strong> 个交易日的数据
+        </div>
+        
+        <div class="well">
+            <strong>缺失日期示例（前5个）：</strong><br>
+            ${sampleDates.map(date => `<span class="label label-warning">${date}</span>`).join(' ')}
+            ${missingCount > 5 ? `<br><small class="text-muted">... 还有 ${missingCount - 5} 个日期</small>` : ''}
+        </div>
+    `;
+    
+    $('#missingDataDetails').html(detailsHtml);
+    $('#supplementModal').modal('show');
+}
+
+// 确认补齐数据
+function confirmSupplement() {
+    if (!checkResultData) {
+        return;
+    }
+    
+    $('#supplementModal').modal('hide');
+    
+    // 开始补齐任务
+    $.post('/instock/data_download_api', {
+        action: 'supplement_data',
+        stock_code: checkResultData.stock_code,
+        missing_dates: JSON.stringify(checkResultData.missing_dates)
+    }, function(response) {
+        if (response.success) {
+            showAlert('数据补齐任务已启动，请稍后重新检查数据完整性', 'info');
+            // 可以实现任务状态跟踪
+            trackTaskProgress(response.task_id, 'supplement');
+        } else {
+            showAlert(response.message, 'danger');
+        }
+    }).fail(function() {
+        showAlert('补齐请求失败，请稍后重试', 'danger');
+    });
+}
+
+// 开始下载
+function startDownload() {
+    const stockCode = $('#stockCode').val().trim();
+    const startDate = $('#startDate').val();
+    const endDate = $('#endDate').val();
+    const writeToDb = $('#writeToDb').is(':checked');
+    
+    if (!stockCode || !startDate || !endDate) {
+        showAlert('请填写完整的下载参数', 'warning');
+        return;
+    }
+    
+    // 禁用下载按钮
+    $('#downloadBtn').prop('disabled', true);
+    
+    // 显示进度框
+    $('#progressBox').show();
+    updateProgress(0, '正在创建下载任务...');
+    
+    // 发送下载请求
+    $.post('/instock/data_download_api', {
+        action: 'download_data',
+        stock_code: stockCode,
+        start_date: startDate,
+        end_date: endDate,
+        write_to_db: writeToDb
+    }, function(response) {
+        if (response.success) {
+            currentTaskId = response.task_id;
+            showAlert(response.message, 'info');
+            // 开始跟踪任务进度
+            trackTaskProgress(response.task_id, 'download');
+        } else {
+            showAlert(response.message, 'danger');
+            $('#downloadBtn').prop('disabled', false);
+            $('#progressBox').hide();
+        }
+    }).fail(function() {
+        showAlert('下载请求失败，请稍后重试', 'danger');
+        $('#downloadBtn').prop('disabled', false);
+        $('#progressBox').hide();
+    });
+}
+
+// 跟踪任务进度
+function trackTaskProgress(taskId, taskType) {
+    const checkProgress = function() {
+        $.post('/instock/data_download_api', {
+            action: 'get_task_status',
+            task_id: taskId
+        }, function(response) {
+            if (response.success) {
+                const task = response.task;
+                updateProgress(task.progress, task.message);
+                
+                if (task.status === 'completed') {
+                    if (taskType === 'download') {
+                        showDownloadResult(task);
+                    } else {
+                        showAlert('任务完成：' + task.message, 'success');
+                    }
+                    $('#downloadBtn').prop('disabled', false);
+                } else if (task.status === 'failed') {
+                    showAlert('任务失败：' + task.message, 'danger');
+                    $('#downloadBtn').prop('disabled', false);
+                } else {
+                    // 继续检查进度
+                    setTimeout(checkProgress, 2000);
+                }
+            } else {
+                showAlert('获取任务状态失败', 'danger');
+                $('#downloadBtn').prop('disabled', false);
+            }
+        }).fail(function() {
+            showAlert('任务状态查询失败', 'danger');
+            $('#downloadBtn').prop('disabled', false);
+        });
+    };
+    
+    checkProgress();
+}
+
+// 更新进度
+function updateProgress(progress, message) {
+    $('#progressBar').css('width', progress + '%').attr('aria-valuenow', progress);
+    $('#progressMessage').text(message);
+}
+
+// 显示下载结果
+function showDownloadResult(task) {
+    const resultHtml = `
+        <div class="alert alert-success">
+            <h5><i class="fa fa-check-circle"></i> 下载完成</h5>
+            <p><strong>数据记录：</strong> ${task.record_count} 条</p>
+            <p><strong>文件名：</strong> ${task.filename}</p>
+            <a href="${task.download_url}" class="btn btn-success" download>
+                <i class="fa fa-download"></i> 下载文件
+            </a>
+        </div>
+    `;
+    
+    $('#downloadResult').html(resultHtml).show();
+    updateProgress(100, task.message);
+    
+    showAlert('数据下载完成，点击下载按钮保存文件', 'success');
+}
+
+// 显示消息提醒
+function showAlert(message, type) {
+    const alertHtml = `
+        <div class="alert alert-${type} alert-dismissible fade in">
+            <button type="button" class="close" data-dismiss="alert">
+                <span>&times;</span>
+            </button>
+            ${message}
+        </div>
+    `;
+    
+    // 移除现有的alert
+    $('.page-content .alert-dismissible').remove();
+    
+    // 添加新的alert
+    $('.page-content').prepend(alertHtml);
+    
+    // 自动消失
+    setTimeout(function() {
+        $('.page-content .alert-dismissible').fadeOut();
+    }, 5000);
+}
+
+// 信息框样式
+const infoBoxStyle = `
+<style>
+.info-box {
+    display: block;
+    min-height: 90px;
+    background: #fff;
+    width: 100%;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+    border-radius: 2px;
+    margin-bottom: 15px;
+}
+
+.info-box-icon {
+    border-radius: 2px 0 0 2px;
+    display: block;
+    float: left;
+    height: 90px;
+    width: 90px;
+    text-align: center;
+    font-size: 45px;
+    line-height: 90px;
+    background: rgba(0,0,0,0.2);
+    color: #fff;
+}
+
+.bg-success { background-color: #5cb85c !important; }
+.bg-warning { background-color: #f0ad4e !important; }
+.bg-danger { background-color: #d9534f !important; }
+
+.info-box-content {
+    padding: 5px 10px;
+    margin-left: 90px;
+}
+
+.info-box-text {
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.info-box-number {
+    display: block;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.info-box-more {
+    display: block;
+    font-size: 13px;
+    color: #999;
+}
+</style>
+`;
+
+// 添加样式到页面
+$('head').append(infoBoxStyle);
+</script>
+
+{% end %}

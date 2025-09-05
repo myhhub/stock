@@ -213,6 +213,22 @@ class stock_web_module_data(metaclass=singleton_type):
             order_columns=f"(SELECT `datetime` FROM `{tbs.TABLE_CN_STOCK_ATTENTION['name']}` WHERE `code`=`{tbs.TABLE_CN_STOCK_SPOT_BUY['name']}`.`code`) AS `cdatetime`",
             order_by=" code"
         )]
+        
+        # 添加数据下载页面到菜单
+        self.data_list.append(
+            wmd.web_module_data(
+                mode="page",
+                type="数据管理", 
+                ico="fa fa-download",
+                name="数据下载",
+                table_name="data_download",
+                columns=(),
+                column_names=(),
+                primary_key=[],
+                is_realtime=False,
+                url="/instock/data_download"
+            )
+        )
 
         for table in tbs.TABLE_CN_STOCK_STRATEGIES:
             self.data_list.append(
