@@ -52,4 +52,4 @@ jobs:
             -t ${{ env.IMAGE_NAME }}:${{ inputs.image_tag }} \
             -t ${{ env.IMAGE_NAME }}:latest \
             --push \
-            -f ./Dockerfile .
+            -f ./docker/Dockerfile .
