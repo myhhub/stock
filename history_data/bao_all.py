@@ -6,6 +6,20 @@ import sys
 from typing import Optional
 from db_engine import CODE_MAP_CSV
 
+def normalize_stock_code(market, code):
+    """标准化股票代码格式为9位 (market.code)"""
+    # 确保市场代码是小写
+    market = market.strip().lower()
+    
+    # 处理代码部分
+    code_str = str(code).strip()
+    
+    # 如果是数字，补零到6位
+    if code_str.isdigit():
+        code_str = code_str.zfill(6)
+    
+    return f"{market}.{code_str}"
+
 def parse_args() -> Optional[int]:
     """解析命令行参数"""
     parser = argparse.ArgumentParser(description='分布式处理code_map.csv')
@@ -18,7 +32,6 @@ def parse_args() -> Optional[int]:
 
     args = parser.parse_args()
     return args.shard
-
 
 def main():
     shard = parse_args()
@@ -50,9 +63,14 @@ def main():
     for index, (_, row) in enumerate(pending_df.iterrows(), 1):
         code = row['code']
         market = str(row['market']).strip().lower()
-        cmd = f"python bao.py {market}.{code}"
+        
+        # 标准化股票代码格式
+        normalized_code = normalize_stock_code(market, code)
+        
+        cmd = f"python bao.py {normalized_code}"
         percentage = (index / total) * 100
         print(f"[{index:>{len(str(total))}}/{total}] ({percentage:5.1f}%) {cmd}")
+        
         # 执行命令
         success = subprocess.run(cmd, shell=True).returncode == 0
 
@@ -63,9 +81,9 @@ def main():
             df.loc[mask, 'flag'] = True
             df.to_csv(CODE_MAP_CSV, index=False)
             success_count += 1
-            print(f"    ✓ {code} 成功并更新flag")
+            print(f"    ✓ {normalized_code} 成功并更新flag")
         else:
-            print(f"    ✗ {code} 执行失败")
+            print(f"    ✗ {normalized_code} 执行失败")
 
     # 显示总结
     print(f"\n任务完成: {success_count}/{total} ({(success_count / total) * 100:.1f}%)")
@@ -81,4 +99,3 @@ if __name__ == "__main__":
     except Exception as e:
         import traceback
         traceback.print_exc()
-
