@@ -1,6 +1,8 @@
 name: Build Multi-Arch Docker Image
 
 on:
+  push:
+    branches: [dev]
   workflow_dispatch:
 
     inputs:
