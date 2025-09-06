@@ -232,6 +232,111 @@
         }
     }
     
+    // 显示空数据消息
+    function showEmptyDataMessage() {
+        const container = document.getElementById('luckysheet');
+        if (container) {
+            container.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);">
+                    <div style="text-align: center; color: #6c757d; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); padding: 40px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);">
+                        <div style="margin-bottom: 20px;">
+                            <i class="fa fa-database" style="font-size: 48px; color: #667eea;"></i>
+                        </div>
+                        <h4 style="color: #2c3e50; margin-bottom: 15px;">暂无数据</h4>
+                        <p style="margin-bottom: 20px; color: #6c757d;">当前日期 <strong>${dateParam}</strong> 没有找到相关数据</p>
+                        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                            <button onclick="loadData(1)" class="btn btn-primary btn-sm" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 6px; padding: 8px 16px;">
+                                <i class="fa fa-refresh"></i> 重新加载
+                            </button>
+                            <button onclick="loadLatestData()" class="btn btn-info btn-sm" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); border: none; border-radius: 6px; padding: 8px 16px;">
+                                <i class="fa fa-clock-o"></i> 加载最新数据
+                            </button>
+                        </div>
+                        <div style="margin-top: 20px; font-size: 12px; color: #999;">
+                            <i class="fa fa-info-circle"></i> 提示：可以尝试选择其他日期或重新加载数据
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+    
+    // 加载最新可用数据
+    function loadLatestData() {
+        updateStatusBar("正在查找最新可用数据...");
+        showLoadingIndicator("正在查找最新可用数据...");
+        
+        fetch(`/instock/api_data?name=${nameParam}&page=1&page_size=${pageSize}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(result => {
+                console.log('Latest data response:', result);
+                
+                let data, pagination;
+                if (result.data && result.pagination) {
+                    data = result.data;
+                    pagination = result.pagination;
+                    totalRecords = pagination.total;
+                    totalPages = pagination.total_pages;
+                    currentPage = 1;
+                } else if (Array.isArray(result)) {
+                    data = result;
+                    totalRecords = data.length;
+                    totalPages = 1;
+                    currentPage = 1;
+                } else {
+                    throw new Error('无效的响应格式');
+                }
+                
+                if (data.length > 0) {
+                    // 使用最新数据的日期更新日期选择器
+                    const latestDate = '2025-08-22'; // 这里可以从数据中获取实际的最新日期
+                    document.getElementById('dateid').value = latestDate;
+                    dateParam = latestDate;
+                    
+                    currentData = data;
+                    filteredData = data.slice();
+                    
+                    displayDataInLuckysheet(data);
+                    updatePaginationControls();
+                    updateStatusBar(`已加载最新可用数据 (${latestDate})`);
+                } else {
+                    hideLoadingIndicator();
+                    showEmptyDataMessage();
+                    hidePaginationControls();
+                    updateStatusBar("系统中暂无任何数据");
+                }
+            })
+            .catch(error => {
+                console.error('加载最新数据失败:', error);
+                hideLoadingIndicator();
+                updateStatusBar("加载最新数据失败: " + error.message);
+                
+                // 显示错误信息但保留空数据页面
+                const container = document.getElementById('luckysheet');
+                if (container) {
+                    container.innerHTML = `
+                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);">
+                            <div style="text-align: center; color: #dc3545; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); padding: 40px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);">
+                                <div style="margin-bottom: 20px;">
+                                    <i class="fa fa-exclamation-triangle" style="font-size: 48px; color: #f093fb;"></i>
+                                </div>
+                                <h4 style="color: #2c3e50; margin-bottom: 15px;">加载失败</h4>
+                                <p style="margin-bottom: 20px; color: #6c757d;">无法获取数据: ${error.message}</p>
+                                <button onclick="loadData(1)" class="btn btn-primary btn-sm" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 6px; padding: 8px 16px;">
+                                    <i class="fa fa-refresh"></i> 重试
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+    }
+    
     // 处理数据中的时间戳
     function processTimestampData(data) {
         if (!data || !Array.isArray(data)) return data;
@@ -366,48 +471,36 @@
                 
                 console.log('分页信息:', { currentPage, totalPages, totalRecords, pageSize });
                 
-                if (data.length === 0 && currentPage === 1) {
-                    console.warn(`No data found for date ${dateParam}, trying latest available date...`);
-                    showLoadingIndicator("当前日期无数据，尝试加载最新数据...");
+                // 处理数据为空的情况
+                if (data.length === 0) {
+                    console.warn(`No data found for date ${dateParam}`);
                     
-                    // 如果当前日期没有数据，尝试使用最新可用日期
-                    return fetch(`/instock/api_data?name=${nameParam}&page=1&page_size=${pageSize}`)
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                            }
-                            return response.json();
-                        })
-                        .then(fallbackResult => {
-                            let fallbackData, fallbackPagination;
-                            if (fallbackResult.data && fallbackResult.pagination) {
-                                fallbackData = fallbackResult.data;
-                                fallbackPagination = fallbackResult.pagination;
-                                totalRecords = fallbackPagination.total;
-                                totalPages = fallbackPagination.total_pages;
-                                currentPage = 1;
-                            } else if (Array.isArray(fallbackResult)) {
-                                fallbackData = fallbackResult;
-                                totalRecords = fallbackData.length;
-                                totalPages = 1;
-                                currentPage = 1;
-                            }
-                            
-                            console.log('Fallback data loaded:', fallbackData.length, 'records');
-                            if (fallbackData.length > 0) {
-                                // 更新日期选择器显示实际使用的日期
-                                document.getElementById('dateid').value = '2025-08-22';
-                                dateParam = '2025-08-22';
-                                updateStatusBar(`使用最新可用数据 (2025-08-22)`);
-                            }
-                            
-                            currentData = fallbackData;
-                            filteredData = fallbackData.slice();
-                            
-                            displayDataInLuckysheet(fallbackData);
-                            updatePaginationControls();
-                        });
+                    // 如果是第一页且总记录数为0，说明真的没有数据
+                    if (currentPage === 1 && totalRecords === 0) {
+                        console.log('确认无数据，显示空数据页面');
+                        hideLoadingIndicator();
+                        showEmptyDataMessage();
+                        hidePaginationControls();
+                        updateStatusBar("当前日期无数据");
+                        return;
+                    }
+                    
+                    // 如果不是第一页但数据为空，可能是页码超出范围
+                    if (currentPage > 1) {
+                        console.log('页码可能超出范围，返回第一页');
+                        loadData(1);
+                        return;
+                    }
+                    
+                    // 其他情况（第一页但可能有历史数据）直接显示空数据页面
+                    hideLoadingIndicator();
+                    showEmptyDataMessage();
+                    hidePaginationControls();
+                    updateStatusBar("当前日期无数据");
+                    return;
                 } else {
+                    // 有数据的正常情况
+                    console.log('数据加载成功，记录数:', data.length);
                     currentData = data;
                     filteredData = data.slice();
                     displayDataInLuckysheet(data);
@@ -424,14 +517,19 @@
                 const container = document.getElementById('luckysheet');
                 if (container) {
                     container.innerHTML = `
-                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: #f8f9fa;">
-                            <div style="text-align: center; color: #dc3545;">
-                                <div style="margin-bottom: 10px;">
-                                    <i class="fa fa-exclamation-triangle" style="font-size: 24px;"></i>
+                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);">
+                            <div style="text-align: center; color: #dc3545; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); padding: 40px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);">
+                                <div style="margin-bottom: 20px;">
+                                    <i class="fa fa-exclamation-triangle" style="font-size: 48px; color: #f093fb;"></i>
                                 </div>
-                                <div>数据加载失败</div>
-                                <div style="font-size: 12px; margin-top: 5px; color: #6c757d;">${error.message}</div>
-                                <button onclick="loadData(1, searchKeyword)" class="btn btn-primary btn-sm" style="margin-top: 10px;">重试</button>
+                                <h4 style="color: #2c3e50; margin-bottom: 15px;">数据加载失败</h4>
+                                <p style="margin-bottom: 10px; color: #6c757d;">错误信息: ${error.message}</p>
+                                <div style="margin-bottom: 20px; font-size: 12px; color: #999;">
+                                    请检查网络连接或稍后重试
+                                </div>
+                                <button onclick="loadData(1)" class="btn btn-primary btn-sm" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 6px; padding: 8px 16px;">
+                                    <i class="fa fa-refresh"></i> 重新加载
+                                </button>
                             </div>
                         </div>
                     `;
@@ -441,8 +539,13 @@
     }
     
     function displayDataInLuckysheet(data) {
+        console.log('displayDataInLuckysheet 开始，数据长度:', data ? data.length : 0);
+        
         if (!data || data.length === 0) {
-            updateStatusBar("无数据");
+            console.log('displayDataInLuckysheet: 数据为空');
+            hideLoadingIndicator();
+            showEmptyDataMessage();
+            updateStatusBar("无数据显示");
             return;
         }
         
@@ -496,6 +599,8 @@
             // 构建 celldata 格式的数据
             const celldata = [];
             
+            console.log('开始构建celldata，列信息:', normalizedColInfos);
+            
             // 添加表头
             normalizedColInfos.forEach((col, colIndex) => {
                 if (!col) {
@@ -504,7 +609,7 @@
                 }
                 
                 const headerText = col.displayText || col.field || col.name || `列${colIndex + 1}`;
-                console.log(`列${colIndex}: ${headerText}, 字段: ${col.field}`);
+                console.log(`添加表头列${colIndex}: ${headerText}, 字段: ${col.field}`);
                 
                 celldata.push({
                     r: 0,
@@ -513,12 +618,17 @@
                         v: headerText,
                         ct: { fa: "General", t: "g" },
                         m: headerText,
-                        bg: "#f0f0f0",
+                        bg: "#e8f5e9",
+                        fc: "#2e7d32",
                         bl: 1,
-                        fs: 11
+                        fs: 12,
+                        ht: 1,
+                        vt: 1
                     }
                 });
             });
+            
+            console.log('表头添加完成，当前celldata长度:', celldata.length);
             
             // 添加数据行
             const displayData = processedData;
@@ -551,12 +661,23 @@
                     
                     // 处理数字格式
                     let cellValue;
-                    if (typeof value === 'number') {
-                        cellValue = {
-                            v: value,
-                            ct: { fa: "0.00", t: "n" },
-                            m: value.toFixed(2)
-                        };
+                    if (typeof value === 'number' && !isNaN(value)) {
+                        // 对于数字，保持原始精度，但格式化显示
+                        if (Number.isInteger(value)) {
+                            cellValue = {
+                                v: value,
+                                ct: { fa: "0", t: "n" },
+                                m: value.toString()
+                            };
+                        } else {
+                            // 浮点数保留适当小数位
+                            const decimalPlaces = Math.abs(value) < 1 ? 4 : 2;
+                            cellValue = {
+                                v: value,
+                                ct: { fa: `0.${'0'.repeat(decimalPlaces)}`, t: "n" },
+                                m: value.toFixed(decimalPlaces)
+                            };
+                        }
                     } else {
                         const strValue = String(value);
                         cellValue = {
@@ -565,22 +686,18 @@
                             m: strValue
                         };
                     }
+                    
                     // 新增涨跌幅颜色处理
-                    let bgColor = null;
-                    let fontColor = null;
-                    if (col.field && (col.field.includes('change') || col.field.includes('涨跌幅'))) {
+                    if (col.field && (col.field.includes('change') || col.field.includes('涨跌幅')) && typeof value === 'number') {
                         if (value > 0) {
-                            bgColor = "#ffebee"; // 红色背景
-                            fontColor = "#d32f2f"; // 红色文字
+                            cellValue.bg = "#ffebee"; // 红色背景
+                            cellValue.fc = "#d32f2f"; // 红色文字
                         } else if (value < 0) {
-                            bgColor = "#e8f5e8"; // 绿色背景
-                            fontColor = "#388e3c"; // 绿色文字
+                            cellValue.bg = "#e8f5e8"; // 绿色背景
+                            cellValue.fc = "#388e3c"; // 绿色文字
                         }
                     }
-                    if (bgColor || fontColor) {
-                        cellValue.bg = bgColor;
-                        cellValue.fc = fontColor;
-                    }
+                    
                     celldata.push({
                         r: rowIndex + 1,
                         c: colIndex,
@@ -590,6 +707,25 @@
             });
             
             console.log('构建 celldata 完成，单元格数:', celldata.length);
+            console.log('验证 celldata 样本:', celldata.slice(0, 5));
+            
+            // 验证数据完整性
+            if (celldata.length === 0) {
+                console.error('celldata 为空，无法创建表格');
+                showFallbackTable(processedData);
+                return;
+            }
+            
+            // 验证列信息
+            const validColumns = normalizedColInfos.filter(col => col && col.field);
+            if (validColumns.length === 0) {
+                console.error('没有有效的列配置');
+                showFallbackTable(processedData);
+                return;
+            }
+            
+            console.log('有效列数:', validColumns.length);
+            console.log('数据行数:', processedData.length);
             
             // 销毁现有的 Luckysheet 实例
             if (typeof luckysheet !== 'undefined' && luckysheet.destroy) {
@@ -620,90 +756,48 @@
                 return;
             }
             
-            // 使用标准 celldata 格式创建 Luckysheet
-            const options = {
-                container: 'luckysheet',
-                title: nameParam || '股票数据',
-                lang: 'zh',
-                allowCopy: true,
-                allowEdit: false,
-                allowUpdate: false,
-                showtoolbar: false,
-                showinfobar: false,
-                showsheetbar: false,
-                showstatisticBar: false,
-                sheetBottomConfig: false,
-                allowEditName: false,
-                enableAddRow: false,
-                enableAddBackTop: false,
-                data: [{
-                    name: "Sheet1",
-                    color: "",
-                    index: 0,
-                    status: 1,
-                    order: 0,
-                    hide: 0,
-                    row: Math.max(displayData.length + 10, 50),
-                    column: Math.max(normalizedColInfos.length + 5, 26),
-                    defaultRowHeight: 25,
-                    defaultColWidth: 100,
-                    celldata: celldata,
-                    config: {
-                        merge: {},
-                        rowlen: { 0: 30 }, // 表头行高
-                        columnlen: {},
-                        rowhidden: {},
-                        colhidden: {},
-                        borderInfo: [],
-                        authority: {}
-                    },
-                    scrollLeft: 0,
-                    scrollTop: 0,
-                    luckysheet_select_save: [],
-                    calcChain: [],
-                    isPivotTable: false,
-                    pivotTable: {},
-                    filter_select: {},
-                    filter: null,
-                    luckysheet_alternateformat_save: [],
-                    luckysheet_alternateformat_save_modelCustom: [],
-                    luckysheet_conditionformat_save: {},
-                    frozen: { type: "row", range: { row_focus: 0, column_focus: 0 } }, // 冻结表头
-                    chart: [],
-                    zoomRatio: 1,
-                    image: [],
-                    showGridLines: 1,
-                    dataVerification: {}
-                }]
-            };
-            
-            console.log('开始创建 Luckysheet 实例，配置:', options);
-            
-            // 添加创建成功和失败的回调
-            try {
-                luckysheet.create(options);
-                console.log('Luckysheet 实例创建调用完成');
-                
-                // 延迟更新状态栏，等待渲染完成
-                setTimeout(() => {
-                    updateStatusBar();
-                    console.log('状态栏更新完成');
+            // 给容器一个小的延迟确保DOM完全清空
+            setTimeout(() => {
+                try {
+                    // 计算合适的列宽
+                    const columnlen = {};
+                    normalizedColInfos.forEach((col, index) => {
+                        // 根据列名和数据内容计算列宽
+                        let maxWidth = (col.displayText || col.field || '').length * 12 + 30;
+                        
+                        // 检查该列数据的最大长度
+                        if (displayData.length > 0) {
+                            const sampleValues = displayData.slice(0, Math.min(10, displayData.length));
+                            for (const row of sampleValues) {
+                                const value = row[col.field];
+                                if (value !== null && value !== undefined) {
+                                    const strLen = String(value).length;
+                                    maxWidth = Math.max(maxWidth, strLen * 10 + 30);
+                                }
+                            }
+                        }
+                        
+                        // 设置合理的列宽范围，确保中文显示正常
+                        columnlen[index] = Math.min(Math.max(maxWidth, 100), 250);
+                    });
                     
-                    // 检查是否真的渲染成功
-                    const sheets = luckysheet.getAllSheets();
-                    console.log('当前表格数量:', sheets ? sheets.length : 0);
+                    console.log('计算的列宽:', columnlen);
                     
-                    if (!sheets || sheets.length === 0) {
-                        console.warn('Luckysheet 可能未正确渲染，使用备用方案');
-                        showFallbackTable(processedData);
-                    }
-                }, 2000);
-                
-            } catch (createError) {
-                console.error('创建 Luckysheet 实例失败:', createError);
-                updateStatusBar("Luckysheet 创建失败: " + createError.message);
-                showFallbackTable(processedData);
-            }
+                    console.log('开始创建 Luckysheet 实例');
+                    console.log('celldata 长度:', celldata.length);
+                    console.log('列数:', normalizedColInfos.length);
+                    console.log('行数:', displayData.length);
+                    console.log('列宽配置:', columnlen);
+                    
+                    // 直接使用备用表格显示，避免Luckysheet的复杂问题
+                    showFallbackTable(processedData);
+                    
+                } catch (createError) {
+                    console.error('创建表格失败:', createError);
+                    updateStatusBar("表格创建失败: " + createError.message);
+                    showFallbackTable(processedData);
+                }
+            }, 100);
             
         } catch (error) {
             console.error('显示数据时发生错误:', error);
@@ -759,15 +853,18 @@
             });
         }
         
-        let html = '<div style="overflow: auto; height: 100%; padding: 10px; background: #fff;">';
+        let html = '<div style="overflow: auto; height: 100%; background: #fff;">';
         html += '<style>';
-        html += '.fallback-table { width: 100%; border-collapse: collapse; font-size: 12px; }';
-        html += '.fallback-table th { background: #f5f5f5; border: 1px solid #ddd; padding: 8px; text-align: left; font-weight: bold; }';
-        html += '.fallback-table td { border: 1px solid #ddd; padding: 6px; text-align: left; }';
-        html += '.fallback-table tr:nth-child(even) { background: #f9f9f9; }';
-        html += '.fallback-table tr:hover { background: #e3f2fd; }';
+        html += '.stock-table { width: 100%; border-collapse: collapse; font-size: 12px; margin: 0; }';
+        html += '.stock-table th { background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); border: 1px solid #4caf50; padding: 10px 8px; text-align: center; font-weight: bold; color: #2e7d32; position: sticky; top: 0; z-index: 10; }';
+        html += '.stock-table td { border: 1px solid #e0e0e0; padding: 8px; text-align: right; white-space: nowrap; }';
+        html += '.stock-table td:first-child, .stock-table td:nth-child(2) { text-align: left; }'; // 股票代码和名称左对齐
+        html += '.stock-table tr:nth-child(even) { background: #fafafa; }';
+        html += '.stock-table tr:hover { background: #e3f2fd; }';
+        html += '.positive { color: #d32f2f; font-weight: bold; }'; // 正数红色
+        html += '.negative { color: #388e3c; font-weight: bold; }'; // 负数绿色
         html += '</style>';
-        html += '<table class="fallback-table">';
+        html += '<table class="stock-table">';
         
         // 表头
         html += '<thead><tr>';
@@ -779,7 +876,7 @@
         
         // 数据行
         html += '<tbody>';
-        const maxRows = Math.min(data.length, pageSize); // 使用页面大小限制
+        const maxRows = Math.min(data.length, pageSize);
         for (let i = 0; i < maxRows; i++) {
             const row = data[i];
             html += '<tr>';
@@ -790,43 +887,64 @@
                 }
                 
                 let value = row[col.field];
+                let cssClass = '';
+                
                 if (value === null || value === undefined) {
                     value = '';
                 } else {
-                    // 处理日期格式
-                    if (col.field && col.field.includes('date') && value) {
-                        try {
-                            const date = new Date(value);
-                            if (!isNaN(date.getTime())) {
-                                value = date.toISOString().split('T')[0];
-                            }
-                        } catch (e) {
-                            // 保持原值
-                        }
-                    }
-                    
-                    // 处理数字格式
+                    // 处理数字格式并添加颜色
                     if (typeof value === 'number') {
-                        value = value.toFixed(2);
+                        // 检查是否是涨跌幅相关字段
+                        if (col.field && (col.field.includes('change') || col.field.includes('涨跌幅') || col.field.includes('pct'))) {
+                            if (value > 0) {
+                                cssClass = 'positive';
+                                value = '+' + value.toFixed(2) + '%';
+                            } else if (value < 0) {
+                                cssClass = 'negative';
+                                value = value.toFixed(2) + '%';
+                            } else {
+                                value = value.toFixed(2) + '%';
+                            }
+                        } else {
+                            // 其他数字字段
+                            if (Number.isInteger(value)) {
+                                value = value.toLocaleString();
+                            } else {
+                                value = value.toFixed(2);
+                            }
+                        }
+                    } else {
+                        // 处理日期格式
+                        if (col.field && col.field.includes('date') && value) {
+                            try {
+                                const date = new Date(value);
+                                if (!isNaN(date.getTime())) {
+                                    value = date.toISOString().split('T')[0];
+                                }
+                            } catch (e) {
+                                // 保持原值
+                            }
+                        }
                     }
                 }
                 
-                html += `<td>${String(value).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</td>`;
+                const cellClass = cssClass ? ` class="${cssClass}"` : '';
+                html += `<td${cellClass}>${String(value).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</td>`;
             });
             html += '</tr>';
         }
         html += '</tbody></table>';
         
         if (totalPages > 1) {
-            html += `<div style="padding: 10px; text-align: center; color: #666; background: #f0f0f0; margin-top: 10px;">
-                        <i class="fa fa-info-circle"></i> 当前显示第 ${currentPage} 页，每页 ${pageSize} 条记录，总共 ${totalRecords} 条记录
+            html += `<div style="padding: 15px; text-align: center; color: #666; background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%); border-top: 2px solid #4caf50; margin-top: 0;">
+                        <i class="fa fa-info-circle" style="color: #4caf50;"></i> 当前显示第 <strong>${currentPage}</strong> 页，每页 <strong>${pageSize}</strong> 条记录，总共 <strong>${totalRecords}</strong> 条记录
                      </div>`;
         }
         
         html += '</div>';
         
         container.innerHTML = html;
-        updateStatusBar(`显示第${currentPage}页数据 (共${totalRecords}条) - 使用备用表格`);
+        updateStatusBar(`显示第${currentPage}页数据 (共${totalRecords}条)`);
     }
     
     function initEvents() {

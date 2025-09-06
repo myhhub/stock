@@ -6,21 +6,477 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
 		<title>InStock股票系统</title>
 		{% block meta %}{% end %}
+		
+		<!-- 现代化样式定义 -->
+		<style>
+		:root {
+		    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		    --success-gradient: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+		    --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+		    --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+		    --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+		    --sidebar-gradient: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+		    --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+		    --hover-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+		    --border-radius: 12px;
+		    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		}
+
+		html, body {
+		    top: 0;
+		    bottom: 0;
+		    left: 0;
+		    right: 0;
+		    height: 100%;
+		    margin: 0;
+		    padding: 0;
+		    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+		    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+		    overflow-x: hidden;
+		}
+
+		/* 现代化主容器 */
+		.main-container {
+		    height: 100vh !important;
+		    background: transparent;
+		    transition: var(--transition);
+		}
+
+		/* 现代化侧边栏样式 */
+		#sidebar {
+		    background: var(--sidebar-gradient) !important;
+		    border-right: none !important;
+		    box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1);
+		    backdrop-filter: blur(10px);
+		    transition: var(--transition);
+		}
+
+		#sidebar .nav-list > li > a {
+		    background: transparent !important;
+		    color: rgba(255, 255, 255, 0.9) !important;
+		    border: none !important;
+		    padding: 15px 20px !important;
+		    transition: var(--transition);
+		    font-weight: 500;
+		}
+
+		#sidebar .nav-list > li > a:hover {
+		    background: rgba(255, 255, 255, 0.1) !important;
+		    color: white !important;
+		    transform: translateX(5px);
+		}
+
+		#sidebar .nav-list > li.open > a,
+		#sidebar .nav-list > li.active > a {
+		    background: rgba(255, 255, 255, 0.15) !important;
+		    color: white !important;
+		    border-left: 4px solid #4ecdc4 !important;
+		}
+
+		#sidebar .submenu {
+		    background: rgba(0, 0, 0, 0.2) !important;
+		    border-top: none !important;
+		}
+
+		#sidebar .submenu li a {
+		    color: rgba(255, 255, 255, 0.8) !important;
+		    padding: 12px 15px 12px 40px !important;
+		    transition: var(--transition);
+		}
+
+		#sidebar .submenu li a:hover {
+		    background: rgba(255, 255, 255, 0.1) !important;
+		    color: white !important;
+		    transform: translateX(8px);
+		}
+
+		#sidebar .submenu li.active a {
+		    background: rgba(78, 205, 196, 0.3) !important;
+		    color: white !important;
+		    border-left: 3px solid #4ecdc4 !important;
+		}
+
+		/* 侧边栏切换按钮 */
+		.sidebar-toggle {
+		    background: rgba(255, 255, 255, 0.1) !important;
+		    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+		}
+
+		.sidebar-toggle:hover {
+		    background: rgba(255, 255, 255, 0.2) !important;
+		}
+
+		#sidebar-toggle-icon {
+		    color: rgba(255, 255, 255, 0.8) !important;
+		}
+
+		/* 现代化主内容区域 */
+		.main-content {
+		    background: transparent !important;
+		    padding: 20px !important;
+		    height: 100vh !important;
+		    overflow-y: auto;
+		    transition: var(--transition);
+		}
+
+		.main-content-inner {
+		    height: auto !important;
+		    min-height: calc(100vh - 40px);
+		}
+
+		/* 现代化导航栏 */
+		#navbar {
+		    background: var(--primary-gradient) !important;
+		    border: none !important;
+		    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+		    backdrop-filter: blur(10px);
+		}
+
+		#navbar .navbar-container {
+		    background: transparent !important;
+		}
+
+		.menu-toggler {
+		    background: rgba(255, 255, 255, 0.1) !important;
+		    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+		    transition: var(--transition);
+		}
+
+		.menu-toggler:hover {
+		    background: rgba(255, 255, 255, 0.2) !important;
+		}
+
+		.menu-toggler .icon-bar {
+		    background: white !important;
+		}
+
+		/* 现代化卡片样式 */
+		.modern-card {
+		    background: rgba(255, 255, 255, 0.95);
+		    backdrop-filter: blur(10px);
+		    border-radius: var(--border-radius);
+		    box-shadow: var(--card-shadow);
+		    border: 1px solid rgba(255, 255, 255, 0.2);
+		    transition: var(--transition);
+		    margin-bottom: 30px;
+		    overflow: hidden;
+		}
+
+		.modern-card:hover {
+		    box-shadow: var(--hover-shadow);
+		    transform: translateY(-5px);
+		}
+
+		/* 面包屑导航美化 */
+		.breadcrumb {
+		    background: rgba(255, 255, 255, 0.9) !important;
+		    border-radius: 8px !important;
+		    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+		    backdrop-filter: blur(10px);
+		    margin-bottom: 20px;
+		    padding: 12px 20px !important;
+		}
+
+		.breadcrumb > li + li:before {
+		    color: #667eea !important;
+		}
+
+		/* 表格美化 */
+		.table {
+		    background: white;
+		    border-radius: 8px;
+		    overflow: hidden;
+		    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+		}
+
+		.table th {
+		    background: var(--primary-gradient) !important;
+		    color: white !important;
+		    border: none !important;
+		    padding: 15px !important;
+		    font-weight: 600;
+		}
+
+		.table td {
+		    border: none !important;
+		    border-bottom: 1px solid #e9ecef !important;
+		    padding: 12px 15px !important;
+		    transition: var(--transition);
+		}
+
+		.table tbody tr:hover {
+		    background: rgba(102, 126, 234, 0.05) !important;
+		}
+
+		/* 按钮美化 */
+		.btn {
+		    border-radius: 8px !important;
+		    font-weight: 600 !important;
+		    text-transform: uppercase;
+		    letter-spacing: 0.5px;
+		    transition: var(--transition) !important;
+		    border: none !important;
+		    padding: 10px 20px !important;
+		}
+
+		.btn:hover {
+		    transform: translateY(-2px);
+		    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+		}
+
+		.btn-primary {
+		    background: var(--primary-gradient) !important;
+		}
+
+		.btn-success {
+		    background: var(--success-gradient) !important;
+		}
+
+		.btn-warning {
+		    background: var(--warning-gradient) !important;
+		}
+
+		.btn-info {
+		    background: var(--info-gradient) !important;
+		}
+
+		/* 表单美化 */
+		.form-control {
+		    border: 2px solid #e9ecef !important;
+		    border-radius: 8px !important;
+		    padding: 12px 16px !important;
+		    transition: var(--transition) !important;
+		    background: white !important;
+		}
+
+		.form-control:focus {
+		    border-color: #667eea !important;
+		    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+		    transform: translateY(-1px);
+		}
+
+		/* 面板美化 */
+		.panel {
+		    background: rgba(255, 255, 255, 0.95);
+		    backdrop-filter: blur(10px);
+		    border-radius: var(--border-radius) !important;
+		    box-shadow: var(--card-shadow);
+		    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+		    transition: var(--transition);
+		}
+
+		.panel:hover {
+		    box-shadow: var(--hover-shadow);
+		    transform: translateY(-5px);
+		}
+
+		.panel-heading {
+		    background: var(--primary-gradient) !important;
+		    color: white !important;
+		    border: none !important;
+		    border-radius: var(--border-radius) var(--border-radius) 0 0 !important;
+		    padding: 20px 25px !important;
+		}
+
+		.panel-title {
+		    font-weight: 600 !important;
+		    font-size: 1.2rem !important;
+		}
+
+		.panel-body {
+		    padding: 30px 25px !important;
+		}
+
+		/* 警告框美化 */
+		.alert {
+		    border-radius: 8px !important;
+		    border: none !important;
+		    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+		    border-left: 4px solid !important;
+		}
+
+		.alert-info {
+		    background: linear-gradient(90deg, rgba(79, 172, 254, 0.1) 0%, rgba(255, 255, 255, 1) 20%) !important;
+		    border-left-color: #4facfe !important;
+		}
+
+		.alert-success {
+		    background: linear-gradient(90deg, rgba(78, 205, 196, 0.1) 0%, rgba(255, 255, 255, 1) 20%) !important;
+		    border-left-color: #4ecdc4 !important;
+		}
+
+		.alert-warning {
+		    background: linear-gradient(90deg, rgba(240, 147, 251, 0.1) 0%, rgba(255, 255, 255, 1) 20%) !important;
+		    border-left-color: #f093fb !important;
+		}
+
+		/* 加载动画 */
+		.fade-in {
+		    animation: fadeIn 0.6s ease-out;
+		}
+
+		@keyframes fadeIn {
+		    from {
+		        opacity: 0;
+		        transform: translateY(20px);
+		    }
+		    to {
+		        opacity: 1;
+		        transform: translateY(0);
+		    }
+		}
+
+		.slide-up {
+		    animation: slideUp 0.4s ease-out;
+		}
+
+		@keyframes slideUp {
+		    from {
+		        opacity: 0;
+		        transform: translateY(30px);
+		    }
+		    to {
+		        opacity: 1;
+		        transform: translateY(0);
+		    }
+		}
+
+		/* 响应式设计 */
+		@media (max-width: 768px) {
+		    .main-content {
+		        padding: 10px !important;
+		    }
+		    
+		    .panel-body {
+		        padding: 20px 15px !important;
+		    }
+		}
+
+		/* 深色模式支持 */
+		@media (prefers-color-scheme: dark) {
+		    html, body {
+		        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+		    }
+		    
+		    .modern-card, .panel {
+		        background: rgba(45, 45, 45, 0.95);
+		        color: white;
+		    }
+		    
+		    .form-control {
+		        background: #333 !important;
+		        color: white !important;
+		        border-color: #555 !important;
+		    }
+		    
+		    .table {
+		        background: #333;
+		        color: white;
+		    }
+		    
+		    .table td {
+		        border-bottom-color: #555 !important;
+		    }
+		}
+
+		/* 滚动条美化 */
+		::-webkit-scrollbar {
+		    width: 8px;
+		}
+
+		::-webkit-scrollbar-track {
+		    background: rgba(255, 255, 255, 0.1);
+		    border-radius: 4px;
+		}
+
+		::-webkit-scrollbar-thumb {
+		    background: rgba(102, 126, 234, 0.6);
+		    border-radius: 4px;
+		    transition: var(--transition);
+		}
+
+		::-webkit-scrollbar-thumb:hover {
+		    background: rgba(102, 126, 234, 0.8);
+		}
+		</style>
 	</head>
 
 	<body class="skin-1">
-        <div class="main-container ace-save-state" id="main-container" style="height: 100%;">
+        <div class="main-container ace-save-state" id="main-container">
 			<script type="text/javascript">
 				try{ace.settings.loadState('main-container')}catch(e){}
 			</script>
             {% block header %}{% end %}
             {% block left_menu %}{% end %}
-            <div class="main-content" style="height: 100%;">
-                <div class="main-content-inner" style="height: 100%;">
+            <div class="main-content">
+                <div class="main-content-inner fade-in">
                     {% block main_content %}{% end %}
                 </div>
             </div>
             {% block footer %}{% end %}
          </div>
+         
+         <!-- 现代化交互效果 -->
+         <script>
+         $(document).ready(function() {
+             // 添加页面加载动画
+             $('.modern-card, .panel').each(function(index) {
+                 $(this).addClass('fade-in').css('animation-delay', (index * 0.1) + 's');
+             });
+             
+             // 按钮点击波纹效果
+             $('.btn').click(function(e) {
+                 const btn = $(this);
+                 const ripple = $('<span class="ripple"></span>');
+                 const rect = this.getBoundingClientRect();
+                 const size = Math.max(rect.width, rect.height);
+                 const x = e.clientX - rect.left - size / 2;
+                 const y = e.clientY - rect.top - size / 2;
+                 
+                 ripple.css({
+                     width: size,
+                     height: size,
+                     left: x,
+                     top: y
+                 }).appendTo(btn);
+                 
+                 setTimeout(() => ripple.remove(), 600);
+             });
+             
+             // 表格行悬停效果
+             $('.table tbody tr').hover(
+                 function() {
+                     $(this).addClass('slide-up');
+                 },
+                 function() {
+                     $(this).removeClass('slide-up');
+                 }
+             );
+         });
+         
+         // 添加波纹效果样式
+         if (!$('#ripple-style').length) {
+             $('<style id="ripple-style">').text(`
+                 .btn {
+                     position: relative;
+                     overflow: hidden;
+                 }
+                 .ripple {
+                     position: absolute;
+                     border-radius: 50%;
+                     background: rgba(255, 255, 255, 0.6);
+                     transform: scale(0);
+                     animation: ripple-effect 0.6s linear;
+                     pointer-events: none;
+                 }
+                 @keyframes ripple-effect {
+                     to {
+                         transform: scale(4);
+                         opacity: 0;
+                     }
+                 }
+             `).appendTo('head');
+         }
+         </script>
 	</body>
 </html>
