@@ -57,6 +57,7 @@ RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
 WORKDIR /data
 #InStock软件
 COPY instock /data/InStock/instock
+COPY supervisor /data/InStock/supervisor
 COPY history_data /data/InStock/history_data
 COPY cron/cron.hourly /etc/cron.hourly
 COPY cron/cron.workdayly /etc/cron.workdayly
