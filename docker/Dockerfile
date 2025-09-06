@@ -42,6 +42,10 @@ trusted-host = mirrors.aliyun.com" > /etc/pip.conf && \
     pip install tornado && \
     pip install mini-racer && \
     pip install easytrader && \
+    pip install akshare && \
+    pip install tushare && \
+    pip install clickhouse-connect && \
+    pip install pycryptodome && \
     mkdir ta-lib && \
     curl -SL $(curl -s https://api.github.com/repos/ta-lib/ta-lib/releases/latest | grep browser_download_url | cut -d'"' -f4 |grep -E 'tar.gz$') | tar -xz --strip-components=1 -C ./ta-lib && \
     cd ta-lib/ && \
@@ -57,6 +61,7 @@ trusted-host = mirrors.aliyun.com" > /etc/pip.conf && \
 WORKDIR /data
 #InStock软件
 COPY stock /data/InStock
+COPY history_data /data/InStock
 COPY cron/cron.hourly /etc/cron.hourly
 COPY cron/cron.workdayly /etc/cron.workdayly
 COPY cron/cron.monthly /etc/cron.monthly
