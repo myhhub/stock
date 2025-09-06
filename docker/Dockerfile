@@ -17,11 +17,7 @@ EXPOSE 9988
 # 安装依赖库
 # apt-get autoremove -y 删除没有用的依赖lib
 # apt-get --purge remove 软件包名称 , 删除已安装包（不保留配置文件)
-RUN sed -i "s@http://\(deb\|security\).debian.org@https://mirrors.aliyun.com@g" /etc/apt/sources.list && \
-    echo  "[global]\n\
-index-url = https://mirrors.aliyun.com/pypi/simple\n\
-trusted-host = mirrors.aliyun.com" > /etc/pip.conf && \
-    ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
+RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
     echo "Asia/Shanghai" > /etc/timezone && \
     apt-get update && \
     apt-get install -y cron gcc make python3-dev default-libmysqlclient-dev build-essential pkg-config curl && \
