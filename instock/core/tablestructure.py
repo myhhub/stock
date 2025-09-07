@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from sqlalchemy import DATE, VARCHAR, FLOAT, BIGINT, SmallInteger, DATETIME
+from sqlalchemy import DATE, VARCHAR, FLOAT, BIGINT, SmallInteger, DATETIME, INT
 from sqlalchemy.dialects.mysql import BIT
 import talib as tl
 from instock.core.strategy import enter
@@ -102,7 +102,23 @@ TABLE_CN_STOCK_SPOT = {'name': 'cn_stock_spot', 'cn': '每日股票数据',
                                    'free_cap': {'type': BIGINT, 'cn': '流通市值', 'size': 120},
                                    'industry': {'type': VARCHAR(20, _COLLATE), 'cn': '所处行业', 'size': 100},
                                    'listing_date': {'type': DATE, 'cn': '上市时间', 'size': 110}}}
-
+TABLE_CN_STOCK_HISTORY = {'name': 'cn_stock_history', 'cn': '股票历史数据',
+                          'columns': {'date': {'type': DATE, 'cn': '日期', 'size': 110},
+                                      'code': {'type': VARCHAR(6, _COLLATE), 'cn': '代码', 'size': 60},
+                                      'p_change': {'type': FLOAT, 'cn': '涨跌幅', 'size': 80},
+                                      'open': {'type': FLOAT, 'cn': '开盘价', 'size': 80},
+                                      'high': {'type': FLOAT, 'cn': '最高价', 'size': 80},
+                                      'low': {'type': FLOAT, 'cn': '最低价', 'size': 80},
+                                      'close': {'type': FLOAT, 'cn': '收盘价', 'size': 80},
+                                      'preclose': {'type': FLOAT, 'cn': '昨收价', 'size': 80},
+                                      'volume': {'type': BIGINT, 'cn': '成交量', 'size': 100},
+                                      'amount': {'type': BIGINT, 'cn': '成交额', 'size': 100},
+                                      'adjustflag': {'type': VARCHAR(5, _COLLATE), 'cn': '复权标志', 'size': 80},
+                                      'turn': {'type': FLOAT, 'cn': '换手率', 'size': 80},
+                                      'tradestatus': {'type':INT, 'cn': '交易状态', 'size': 80},
+                                      'market': {'type': VARCHAR(10, _COLLATE), 'cn': '市场', 'size': 70},
+                                      'isST': {'type': INT, 'cn': '是否ST', 'size': 70}}
+}
 TABLE_CN_STOCK_SPOT_BUY = {'name': 'cn_stock_spot_buy', 'cn': '基本面选股',
                            'columns': TABLE_CN_STOCK_SPOT['columns'].copy()}
 
