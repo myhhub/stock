@@ -12,6 +12,23 @@ from db_engine import create_mysql_engine, DB_CONFIG, AGG_DATA_DIR
 
 MARKET = ["sh", "sz", "bj"]
 
+def check_index_exists(engine, table_name, index_name):
+    """检查索引是否已存在"""
+    try:
+        with engine.connect() as conn:
+            check_index_sql = f"""
+            SELECT COUNT(*) 
+            FROM information_schema.statistics 
+            WHERE table_schema = '{DB_CONFIG['database']}' 
+            AND table_name = '{table_name}' 
+            AND index_name = '{index_name}'
+            """
+            result = conn.execute(text(check_index_sql)).fetchone()
+            return result[0] > 0
+    except Exception as e:
+        print(f"检查索引存在性时出错: {str(e)}")
+        return False
+
 def create_table_without_indexes(engine, table_name, sample_df):
     """
     创建表但不创建索引（索引将在数据导入后创建）
@@ -65,6 +82,10 @@ def create_table_without_indexes(engine, table_name, sample_df):
                 return True
             else:
                 print(f"表 {table_name} 已存在")
+                # 检查表是否有数据
+                result = conn.execute(text(f"SELECT COUNT(*) FROM `{table_name}`")).fetchone()
+                if result[0] > 0:
+                    print(f"表 {table_name} 已有 {result[0]} 行数据")
                 return False
                 
     except Exception as e:
@@ -73,29 +94,41 @@ def create_table_without_indexes(engine, table_name, sample_df):
 
 def create_indexes(engine, table_name):
     """
-    在数据导入完成后创建索引
+    在数据导入完成后创建索引（如果不存在）
     """
     try:
         with engine.connect() as conn:
             print(f"开始为表 {table_name} 创建索引...")
             
-            # 创建date列索引
-            index_date_sql = f"CREATE INDEX idx_{table_name}_date ON `{table_name}` (`date`)"
-            conn.execute(text(index_date_sql))
-            print(f"已创建date列索引: idx_{table_name}_date")
+            # 创建date列索引（如果不存在）
+            date_index_name = f"idx_{table_name}_date"
+            if not check_index_exists(engine, table_name, date_index_name):
+                index_date_sql = f"CREATE INDEX {date_index_name} ON `{table_name}` (`date`)"
+                conn.execute(text(index_date_sql))
+                print(f"已创建date列索引: {date_index_name}")
+            else:
+                print(f"date列索引已存在: {date_index_name}")
             
-            # 创建code列索引
-            index_code_sql = f"CREATE INDEX idx_{table_name}_code ON `{table_name}` (`code`)"
-            conn.execute(text(index_code_sql))
-            print(f"已创建code列索引: idx_{table_name}_code")
+            # 创建code列索引（如果不存在）
+            code_index_name = f"idx_{table_name}_code"
+            if not check_index_exists(engine, table_name, code_index_name):
+                index_code_sql = f"CREATE INDEX {code_index_name} ON `{table_name}` (`code`)"
+                conn.execute(text(index_code_sql))
+                print(f"已创建code列索引: {code_index_name}")
+            else:
+                print(f"code列索引已存在: {code_index_name}")
             
-            # 创建联合索引
-            index_combined_sql = f"CREATE INDEX idx_{table_name}_date_code ON `{table_name}` (`date`, `code`)"
-            conn.execute(text(index_combined_sql))
-            print(f"已创建date+code联合索引: idx_{table_name}_date_code")
+            # 创建联合索引（如果不存在）
+            combined_index_name = f"idx_{table_name}_date_code"
+            if not check_index_exists(engine, table_name, combined_index_name):
+                index_combined_sql = f"CREATE INDEX {combined_index_name} ON `{table_name}` (`date`, `code`)"
+                conn.execute(text(index_combined_sql))
+                print(f"已创建date+code联合索引: {combined_index_name}")
+            else:
+                print(f"date+code联合索引已存在: {combined_index_name}")
             
             conn.commit()
-            print(f"成功为表 {table_name} 创建所有索引")
+            print(f"成功为表 {table_name} 创建/检查所有索引")
             return True
             
     except Exception as e:
@@ -172,12 +205,15 @@ def load_and_insert_data(file_path, engine, market=""):
             
         # 创建表（如果不存在）
         is_new_table = create_table_without_indexes(engine, table_name, sample_df)
+        
+        # 检查表是否有数据，如果有数据且不是新创建的表，则跳过导入
         if not is_new_table:
-            # 如果表已存在，检查是否有数据
             with engine.connect() as conn:
                 result = conn.execute(text(f"SELECT COUNT(*) FROM `{table_name}`")).fetchone()
                 if result[0] > 0:
-                    print(f"表 {table_name} 已有数据，跳过导入")
+                    print(f"表 {table_name} 已有 {result[0]} 行数据，跳过导入")
+                    # 但仍然检查并创建索引（如果不存在）
+                    create_indexes(engine, table_name)
                     return True
         
         # 分批读取和处理数据
