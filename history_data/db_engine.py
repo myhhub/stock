@@ -3,20 +3,20 @@ import os
 import pandas as pd
 
 DB_CONFIG = {
-    'host': '192.168.1.6',
-    'user': 'root',
+    'host': '192.168.0.88',
+    'user': 'myinstock',
     'password': os.environ.get('MYSQL_PASSWORD','123456'),
-    'database': 'instockdb',
+    'database': 'myinstockdb',
     'port': 3306,
     'charset': 'utf8mb4'
 }
 
 CLICKHOUSE_CONFIG = {
-    'host': '192.168.1.6',
+    'host': '192.168.0.88',
     'port': 8123,
-    'username': 'root',
+    'username': 'myinstock',
     'password': os.environ.get('CLICKHOUSE_PASSWORD','123456'),
-    'database': 'instockdb'
+    'database': 'myinstockdb'
 }
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
