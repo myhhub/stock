@@ -895,7 +895,10 @@
                     // 处理数字格式并添加颜色
                     if (typeof value === 'number') {
                         // 检查是否是涨跌幅相关字段
-                        if (col.field && (col.field.includes('change') || col.field.includes('涨跌幅') || col.field.includes('pct'))) {
+                        if (col.field && (col.field.includes('change') || 
+                                         col.field.includes('涨跌幅') || 
+                                         col.field.includes('pct') || 
+                                         col.field === 'p_change')) {
                             if (value > 0) {
                                 cssClass = 'positive';
                                 value = '+' + value.toFixed(2) + '%';

@@ -5,6 +5,7 @@
 import json
 import traceback
 from abc import ABC
+from decimal import Decimal
 from tornado import gen
 # import logging
 import datetime
@@ -24,6 +25,9 @@ class MyEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, bytes):
             return "✅" if ord(obj) == 1 else "❌"
+        elif isinstance(obj, Decimal):
+            # 处理 Decimal 类型，转换为 float
+            return float(obj)
         elif isinstance(obj, (datetime.date, datetime.datetime)):
             # 返回标准的ISO日期格式 YYYY-MM-DD 或 YYYY-MM-DD HH:MM:SS
             return obj.isoformat()
