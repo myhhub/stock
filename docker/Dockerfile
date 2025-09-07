@@ -40,6 +40,7 @@ RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
     pip install easytrader && \
     pip install akshare && \
     pip install tushare && \
+    pip install chdb && \
     pip install clickhouse-connect && \
     pip install pycryptodome && \
     mkdir ta-lib && \
