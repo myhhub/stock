@@ -7,6 +7,7 @@ http://data.eastmoney.com/dzjy/dzjy_sctj.aspx
 """
 import pandas as pd
 import requests
+from instock.core.proxy_pool import get_proxy
 
 
 def stock_dzjy_sctj(proxy=None) -> pd.DataFrame:
@@ -35,7 +36,7 @@ def stock_dzjy_sctj(proxy=None) -> pd.DataFrame:
     big_df = pd.DataFrame()
     for page in range(1, total_page+1):
         params.update({'pageNumber': page})
-        r = requests.get(url, params=params, proxies=proxy)
+        r = requests.get(url, params=params, proxies=get_proxy())
         data_json = r.json()
         temp_df = pd.DataFrame(data_json['result']["data"])
         big_df = pd.concat([big_df, temp_df], ignore_index=True)

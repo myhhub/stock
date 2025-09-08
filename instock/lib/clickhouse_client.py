@@ -169,23 +169,25 @@ class ClickHouseClient:
             logger.info(f"处理列 {col}, 数据类型: {series.dtype}")
             
             # 根据列名和数据类型进行转换
-            if 'date' in col.lower():
+            if col.lower() == 'date' or (col.lower().endswith('_date') and series.dtype == 'object'):
                 try:
                     # 检查表定义中该字段的类型
-                    field_is_string = self._is_string_field(col, table_definition)
+                    field_type = self._get_field_type_from_definition(col, table_definition)
                     
-                    if field_is_string or col.lower() in ['report_date', 'listing_date']:
-                        logger.info(f"日期列 {col} 转换为字符串格式")
-                        df_clean[col] = self._convert_series_to_date_string(series)
-                    else:
-                        logger.info(f"日期列 {col} 转换为datetime类型")
+                    # 如果是DATE字段，或者字段名是'date'且数据是字符串，转换为datetime字符串
+                    if (field_type and ('Date' in str(field_type) or 'DATE' in str(field_type))) or (col.lower() == 'date' and series.dtype == 'object'):
+                        logger.info(f"日期列 {col} 转换为datetime字符串格式")
                         df_clean[col] = self._convert_series_to_datetime(series)
+                    else:
+                        # 对于其他包含date的字段，如果原本是字符串，保持字符串
+                        logger.info(f"日期相关列 {col} 保持原始格式")
+                        df_clean[col] = series.where(pd.notna(series) & (series != ''), None)
                         
                 except Exception as e:
                     logger.error(f"日期转换失败 {col}: {e}")
                     df_clean[col] = [None] * len(series)
                     
-            elif series.dtype.name.startswith('int'):
+            elif series.dtype.name.startswith('int') or series.dtype.name.startswith('uint'):
                 df_clean[col] = series.where(pd.notna(series), None).astype('Int64')
                 
             elif series.dtype.name.startswith('float'):
@@ -201,6 +203,17 @@ class ClickHouseClient:
                 df_clean[col] = series.astype(str).where(pd.notna(series), None)
         
         return df_clean
+    
+    def _get_field_type_from_definition(self, col: str, table_definition: dict = None):
+        """从表定义中获取字段类型"""
+        if not table_definition:
+            return None
+            
+        columns = table_definition.get('columns', {})
+        if isinstance(columns, dict) and col in columns:
+            return columns[col].get('type')
+        
+        return None
     
     def _is_string_field(self, col: str, table_definition: dict = None) -> bool:
         """检查字段是否为String类型"""
@@ -219,6 +232,26 @@ class ClickHouseClient:
         return (pd.isna(val) or 
                 val in ['NaT', 'nat', 'None', '', 'nan', 'NaN'] or
                 (isinstance(val, str) and val.strip() == ''))
+    
+    def _is_valid_date_range(self, dt) -> bool:
+        """检查日期是否在合理范围内，避免timestamp()错误"""
+        try:
+            if pd.isna(dt):
+                return False
+            
+            # 检查年份范围 (1900-2100年)
+            year = dt.year if hasattr(dt, 'year') else dt.dt.year
+            if year < 1900 or year > 2100:
+                return False
+            
+            # 尝试调用timestamp()方法检查是否会抛出异常
+            _ = dt.timestamp()
+            return True
+        except (ValueError, OSError, OverflowError) as e:
+            # 捕获"Out of bounds nanosecond timestamp"等错误
+            return False
+        except Exception:
+            return False
     
     def _convert_single_value_to_date_string(self, val) -> str:
         """将单个值转换为日期字符串"""
@@ -288,16 +321,68 @@ class ClickHouseClient:
         return [self._convert_single_value_to_date_string(val) for val in series]
     
     def _convert_series_to_datetime(self, series: pd.Series) -> list:
-        """将Series转换为datetime对象列表"""
-        if series.dtype == 'object':
-            # 对于object类型，需要特殊处理NaT字符串
-            temp_series = series.copy()
-            temp_series = temp_series.replace({'NaT': None, 'nat': None, 'None': None, '': None})
-            date_series = pd.to_datetime(temp_series, errors='coerce')
-        else:
-            date_series = pd.to_datetime(series, errors='coerce')
-            
-        return [dt if pd.notna(dt) else None for dt in date_series]
+        """将Series转换为datetime.date对象列表，适配ClickHouse Date类型"""
+        result = []
+        for val in series:
+            if self._is_null_value(val):
+                result.append(None)
+                continue
+                
+            try:
+                # 尝试直接转换
+                if isinstance(val, str):
+                    # 处理常见的日期字符串格式
+                    if val in ['', 'NaT', 'nat', 'None', 'null', 'NULL']:
+                        result.append(None)
+                        continue
+                    
+                    # 尝试解析日期字符串，返回 datetime 对象
+                    dt = pd.to_datetime(val, errors='coerce')
+                    if pd.isna(dt):
+                        result.append(None)
+                    else:
+                        # 检查日期范围是否合理 (1900-2100年)
+                        if self._is_valid_date_range(dt):
+                            result.append(dt)  # 返回 datetime 对象，支持 timestamp()
+                        else:
+                            logger.warning(f"日期超出有效范围，跳过: {dt}")
+                            result.append(None)
+                elif hasattr(val, 'date'):
+                    # 已经是datetime对象，检查范围后直接使用
+                    if self._is_valid_date_range(val):
+                        result.append(val)
+                    else:
+                        logger.warning(f"日期超出有效范围，跳过: {val}")
+                        result.append(None)
+                elif isinstance(val, (int, float)):
+                    # 数值类型，可能是时间戳
+                    if val > 1e9:  # 秒级时间戳
+                        dt = pd.to_datetime(val, unit='s', errors='coerce')
+                    else:
+                        dt = pd.to_datetime(val, errors='coerce')
+                    
+                    if pd.isna(dt):
+                        result.append(None)
+                    elif self._is_valid_date_range(dt):
+                        result.append(dt)
+                    else:
+                        logger.warning(f"日期超出有效范围，跳过: {dt}")
+                        result.append(None)
+                else:
+                    # 其他类型尝试直接转换
+                    dt = pd.to_datetime(val, errors='coerce')
+                    if pd.isna(dt):
+                        result.append(None)
+                    elif self._is_valid_date_range(dt):
+                        result.append(dt)
+                    else:
+                        logger.warning(f"日期超出有效范围，跳过: {dt}")
+                        result.append(None)
+            except Exception as e:
+                logger.warning(f"日期转换失败: {val} -> {e}")
+                result.append(None)
+                
+        return result
     
     def batch_insert_dataframe(self, table_name: str, df: pd.DataFrame, batch_size: int = 10000) -> bool:
         """

@@ -7,12 +7,11 @@ https://data.eastmoney.com/zjlx/detail.html
 """
 import json
 import time
-from functools import lru_cache
 import math
 
 import pandas as pd
 import requests
-
+from instock.core.proxy_pool import get_proxy
 __author__ = 'myh '
 __date__ = '2023/6/12 '
 
@@ -69,7 +68,7 @@ def stock_individual_fund_flow_rank(indicator: str = "5日", proxy=None) -> pd.D
     while page_count > 1:
         page_current = page_current + 1
         params["pn"] = page_current
-        r = requests.get(url, params=params, proxies=proxy)
+        r = requests.get(url, params=params, proxies=get_proxy())
         data_json = r.json()
         _data = data_json["data"]["diff"]
         data.extend(_data)
@@ -302,7 +301,7 @@ def stock_sector_fund_flow_rank(
     while page_count > 1:
         page_current = page_current + 1
         params["pn"] = page_current
-        r = requests.get(url, params=params, headers=headers, proxies=proxy)
+        r = requests.get(url, params=params, headers=headers, proxies=get_proxy())
         text_data = r.text
         json_data = json.loads(text_data[text_data.find("{"): -2])
         _data = json_data["data"]["diff"]

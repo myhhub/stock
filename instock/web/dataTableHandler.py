@@ -9,6 +9,8 @@ from decimal import Decimal
 from tornado import gen
 # import logging
 import datetime
+import math
+import numpy as np
 import instock.lib.trade_time as trd
 import instock.core.singleton_stock_web_module_data as sswmd
 import instock.web.base as webBase
@@ -31,13 +33,28 @@ class MyEncoder(json.JSONEncoder):
         elif isinstance(obj, (datetime.date, datetime.datetime)):
             # 返回标准的ISO日期格式 YYYY-MM-DD 或 YYYY-MM-DD HH:MM:SS
             return obj.isoformat()
-        elif isinstance(obj, (int, float)) and obj > 1e10:  # 可能是纳秒级时间戳
-            try:
-                # 尝试转换为datetime
-                dt = pd.to_datetime(obj, unit='ns')
-                return dt.isoformat()
-            except:
-                pass
+        elif isinstance(obj, (int, float)):
+            # 处理 NaN 和 infinity 值
+            if math.isnan(obj) or math.isinf(obj):
+                return None
+            elif obj > 1e10:  # 可能是纳秒级时间戳
+                try:
+                    # 尝试转换为datetime
+                    dt = pd.to_datetime(obj, unit='ns')
+                    return dt.isoformat()
+                except:
+                    return obj
+            return obj
+        elif isinstance(obj, np.floating):
+            # 处理 numpy float 类型
+            if np.isnan(obj) or np.isinf(obj):
+                return None
+            return float(obj)
+        elif isinstance(obj, np.integer):
+            # 处理 numpy int 类型
+            return int(obj)
+        elif obj is None or pd.isna(obj):
+            return None
         return json.JSONEncoder.default(self, obj)
 
 
@@ -173,6 +190,24 @@ class GetStockDataHandler(webBase.BaseHandler, ABC):
                 try:
                     query_params = params + [page_size, offset]
                     data = db.query(sql, *query_params)
+                    
+                    # 清理数据中的 NaN 值
+                    cleaned_data = []
+                    for row in data:
+                        if isinstance(row, dict):
+                            cleaned_row = {}
+                            for key, value in row.items():
+                                if pd.isna(value) or (isinstance(value, float) and (math.isnan(value) or math.isinf(value))):
+                                    cleaned_row[key] = None
+                                elif isinstance(value, np.floating) and (np.isnan(value) or np.isinf(value)):
+                                    cleaned_row[key] = None
+                                else:
+                                    cleaned_row[key] = value
+                            cleaned_data.append(cleaned_row)
+                        else:
+                            cleaned_data.append(row)
+                    data = cleaned_data
+                    
                 except Exception as e:
                     traceback.print_exc()
                     print(f"数据查询错误: {e}")
