@@ -317,11 +317,41 @@ class ClickHouseDatabase(DatabaseInterface):
             # 如果存在date列且为uint16类型，转换为日期格式
             if 'date' in result_df.columns and pd.api.types.is_integer_dtype(result_df['date']):
                 try:
-                    result_df["date"] = pd.to_datetime(
-                        result_df["date"],  # 待转换的 uint16 列
-                        origin="1970-01-01",  # 基准日期（ClickHouse Date 类型的起始点）
-                        unit="D"  # 单位：天数（对应 ClickHouse 的存储逻辑）
-                    ).dt.date  # 可选：若只需日期（无时间），加 .dt.date 转为 Python date 类型
+                    # 检查数值范围，避免异常日期
+                    date_values = result_df["date"]
+                    
+                    # 过滤掉异常的日期值（超出合理范围的值）
+                    valid_mask = (date_values >= 0) & (date_values <= 100000)  # 限制在合理的天数范围内
+                    
+                    # 对有效的日期值进行转换
+                    valid_dates = []
+                    for idx, val in enumerate(date_values):
+                        if not valid_mask.iloc[idx] or pd.isna(val):
+                            valid_dates.append(None)
+                        else:
+                            try:
+                                dt = pd.to_datetime(
+                                    val,
+                                    origin="1970-01-01",
+                                    unit="D",
+                                    errors='coerce'
+                                )
+                                if pd.isna(dt):
+                                    valid_dates.append(None)
+                                else:
+                                    # 检查年份范围
+                                    if 1900 <= dt.year <= 2100:
+                                        # 检查timestamp()是否会抛出异常
+                                        _ = dt.timestamp()
+                                        valid_dates.append(dt.date())
+                                    else:
+                                        logging.warning(f"日期超出范围，跳过: {dt}")
+                                        valid_dates.append(None)
+                            except (ValueError, OSError, OverflowError) as e:
+                                logging.warning(f"日期转换失败: {val} -> {e}")
+                                valid_dates.append(None)
+                    
+                    result_df["date"] = valid_dates
                 except Exception as e:
                     logging.warning(f"日期转换失败: {e}")
             if return_type == "DataFrame":
@@ -471,7 +501,26 @@ class ClickHouseDatabase(DatabaseInterface):
                 if 'date' in col.lower() and col_data.dtype == 'object':
                     try:
                         # 尝试转换日期字符串为pandas datetime，然后转为date
-                        df_converted[col] = pd.to_datetime(col_data, errors='coerce').dt.date
+                        datetime_series = pd.to_datetime(col_data, errors='coerce')
+                        # 过滤掉无效的日期和超出范围的日期
+                        valid_dates = []
+                        for dt in datetime_series:
+                            if pd.isna(dt):
+                                valid_dates.append(None)
+                            else:
+                                try:
+                                    # 检查年份范围
+                                    if 1900 <= dt.year <= 2100:
+                                        # 检查是否能正常转换为timestamp
+                                        _ = dt.timestamp()
+                                        valid_dates.append(dt.date())
+                                    else:
+                                        logging.warning(f"日期超出范围，跳过: {dt}")
+                                        valid_dates.append(None)
+                                except (ValueError, OSError, OverflowError):
+                                    logging.warning(f"日期无效，跳过: {dt}")
+                                    valid_dates.append(None)
+                        df_converted[col] = valid_dates
                     except Exception as e:
                         logging.warning(f"日期转换失败 {col}: {e}")
                         # 保持原格式
@@ -664,7 +713,8 @@ class ClickHouseDatabase(DatabaseInterface):
                 'cn_stock_spot_buy': tbs.TABLE_CN_STOCK_SPOT_BUY,
                 'cn_stock_chip_race_open': tbs.TABLE_CN_STOCK_CHIP_RACE_OPEN,
                 'cn_stock_chip_race_end': tbs.TABLE_CN_STOCK_CHIP_RACE_END,
-                'cn_stock_limitup_reason': tbs.TABLE_CN_STOCK_LIMITUP_REASON
+                'cn_stock_limitup_reason': tbs.TABLE_CN_STOCK_LIMITUP_REASON,
+                'cn_stock_history': tbs.TABLE_CN_STOCK_HISTORY
             }
             
             # 动态添加策略表定义

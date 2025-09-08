@@ -9,6 +9,7 @@ import requests
 import pandas as pd
 import math
 from functools import lru_cache
+from instock.core.proxy_pool import get_proxy
 
 
 def stock_zh_a_spot_em(proxy=None) -> pd.DataFrame:
@@ -45,7 +46,8 @@ def stock_zh_a_spot_em(proxy=None) -> pd.DataFrame:
     while page_count > 1:
         page_current = page_current + 1
         params["pn"] = page_current
-        r = requests.get(url, params=params, proxies=proxy)
+        # 分页数据
+        r = requests.get(url, params=params, proxies=get_proxy())
         data_json = r.json()
         _data = data_json["data"]["diff"]
         data.extend(_data)

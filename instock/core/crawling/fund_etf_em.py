@@ -9,7 +9,7 @@ from functools import lru_cache
 import math
 import pandas as pd
 import requests
-
+from instock.core.proxy_pool import get_proxy
 
 def fund_etf_spot_em(proxy=None) -> pd.DataFrame:
     """
@@ -47,7 +47,7 @@ def fund_etf_spot_em(proxy=None) -> pd.DataFrame:
     while page_count > 1:
         page_current = page_current + 1
         params["pn"] = page_current
-        r = requests.get(url, params=params, proxies=proxy)
+        r = requests.get(url, params=params, proxies=get_proxy())
         data_json = r.json()
         _data = data_json["data"]["diff"]
         data.extend(_data)

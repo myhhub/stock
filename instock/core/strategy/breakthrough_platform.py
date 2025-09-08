@@ -35,7 +35,13 @@ def check(code_name, data, date=None, threshold=60):
     breakthrough_row = None
     for _close, _open, _date, _ma60 in zip(data['close'].values, data['open'].values, data['date'].values, data['ma60'].values):
         if _open < _ma60 <= _close:
-            if enter.check_volume(code_name, origin_data, date=datetime.date(datetime.strptime(_date, '%Y-%m-%d')), threshold=threshold):
+            # 处理日期格式：兼容字符串和datetime对象
+            if isinstance(_date, str):
+                date_obj = datetime.strptime(_date, '%Y-%m-%d').date()
+            else:
+                # 如果是datetime对象，提取date部分
+                date_obj = _date.date() if hasattr(_date, 'date') else _date
+            if enter.check_volume(code_name, origin_data, date=date_obj, threshold=threshold):
                 breakthrough_row = _date
                 break
 

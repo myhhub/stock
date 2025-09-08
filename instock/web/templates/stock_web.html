@@ -650,9 +650,20 @@
                     // 处理日期格式
                     if (col.field && col.field.includes('date') && value) {
                         try {
-                            const date = new Date(value);
-                            if (!isNaN(date.getTime())) {
-                                value = date.toISOString().split('T')[0];
+                            // 对于ISO格式的日期字符串，直接提取日期部分避免时区问题
+                            if (typeof value === 'string' && value.includes('T')) {
+                                // 如果是ISO格式 "2025-09-08T00:00:00"，直接提取日期部分
+                                value = value.split('T')[0];
+                            } else {
+                                // 其他格式尝试转换
+                                const date = new Date(value);
+                                if (!isNaN(date.getTime())) {
+                                    // 使用本地日期避免时区偏移
+                                    const year = date.getFullYear();
+                                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                                    const day = String(date.getDate()).padStart(2, '0');
+                                    value = `${year}-${month}-${day}`;
+                                }
                             }
                         } catch (e) {
                             console.warn('日期格式化错误:', value, e);
@@ -920,9 +931,20 @@
                         // 处理日期格式
                         if (col.field && col.field.includes('date') && value) {
                             try {
-                                const date = new Date(value);
-                                if (!isNaN(date.getTime())) {
-                                    value = date.toISOString().split('T')[0];
+                                // 对于ISO格式的日期字符串，直接提取日期部分避免时区问题
+                                if (typeof value === 'string' && value.includes('T')) {
+                                    // 如果是ISO格式 "2025-09-08T00:00:00"，直接提取日期部分
+                                    value = value.split('T')[0];
+                                } else {
+                                    // 其他格式尝试转换
+                                    const date = new Date(value);
+                                    if (!isNaN(date.getTime())) {
+                                        // 使用本地日期避免时区偏移
+                                        const year = date.getFullYear();
+                                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                                        const day = String(date.getDate()).padStart(2, '0');
+                                        value = `${year}-${month}-${day}`;
+                                    }
                                 }
                             } catch (e) {
                                 // 保持原值

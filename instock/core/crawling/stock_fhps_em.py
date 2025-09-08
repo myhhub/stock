@@ -8,7 +8,7 @@ https://data.eastmoney.com/yjfp/
 import pandas as pd
 import requests
 from tqdm import tqdm
-
+from instock.core.proxy_pool import get_proxy
 __author__ = 'myh '
 __date__ = '2023/6/27 '
 
@@ -49,7 +49,7 @@ def stock_fhps_em(date: str = "20231231", proxy=None) -> pd.DataFrame:
     big_df = pd.DataFrame()
     for page in tqdm(range(1, total_pages + 1), leave=False):
         params.update({"pageNumber": page})
-        r = requests.get(url, params=params, proxies=proxy)
+        r = requests.get(url, params=params, proxies=get_proxy())
         data_json = r.json()
         temp_df = pd.DataFrame(data_json["result"]["data"])
         if not temp_df.empty:
