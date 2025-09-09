@@ -33,7 +33,7 @@ if _db_password is not None:
 _db_database = os.environ.get('MYSQL_DATABASE')
 if _db_database is not None:
     db_database = _db_database
-_db_port = os.environ.get('MYSQL_PORT')
+_db_port = int(os.environ.get('MYSQL_PORT'))
 if _db_port is not None:
     db_port = int(_db_port)
 
