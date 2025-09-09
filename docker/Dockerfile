@@ -43,6 +43,7 @@ RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
     pip install chdb && \
     pip install clickhouse-connect && \
     pip install pycryptodome && \
+    pip install baostock && \
     mkdir ta-lib && \
     curl -SL $(curl -s https://api.github.com/repos/ta-lib/ta-lib/releases/latest | grep browser_download_url | cut -d'"' -f4 |grep -E 'tar.gz$') | tar -xz --strip-components=1 -C ./ta-lib && \
     cd ta-lib/ && \
