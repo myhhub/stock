@@ -18,7 +18,7 @@ CLICKHOUSE_CONFIG = {
     'port': int(os.environ.get('CLICKHOUSE_PORT'),
     'username': os.environ.get('CLICKHOUSE_USER'),
     'password': os.environ.get('CLICKHOUSE_PASSWORD'),
-    'database': os.environ.get('CLICKHOUSE_DB')
+    'database': os.environ.get('CLICKHOUSE_DATABASE')
 }
 
 
