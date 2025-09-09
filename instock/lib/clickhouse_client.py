@@ -14,11 +14,11 @@ logger = logging.getLogger(__name__)
 
 # ClickHouse配置
 CLICKHOUSE_CONFIG = {
-    'host': os.environ.get('CLICKHOUSE_HOST', '192.168.1.6'),
-    'port': int(os.environ.get('CLICKHOUSE_PORT', '8123')),
-    'username': os.environ.get('CLICKHOUSE_USER', 'root'),
-    'password': os.environ.get('CLICKHOUSE_PASSWORD', '123456'),
-    'database': os.environ.get('CLICKHOUSE_DB', 'instockdb')
+    'host': os.environ.get('CLICKHOUSE_HOST'),
+    'port': int(os.environ.get('CLICKHOUSE_PORT'),
+    'username': os.environ.get('CLICKHOUSE_USER'),
+    'password': os.environ.get('CLICKHOUSE_PASSWORD'),
+    'database': os.environ.get('CLICKHOUSE_DB')
 }
 
 
