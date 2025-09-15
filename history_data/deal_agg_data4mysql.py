@@ -6,15 +6,32 @@ from sqlalchemy import text
 import glob
 import re
 from datetime import datetime
+import time
 
 from db_engine import create_mysql_engine, DB_CONFIG, AGG_DATA_DIR
 
 MARKET = ["sh", "sz", "bj"]
 
+def check_index_exists(engine, table_name, index_name):
+    """检查索引是否已存在"""
+    try:
+        with engine.connect() as conn:
+            check_index_sql = f"""
+            SELECT COUNT(*) 
+            FROM information_schema.statistics 
+            WHERE table_schema = '{DB_CONFIG['database']}' 
+            AND table_name = '{table_name}' 
+            AND index_name = '{index_name}'
+            """
+            result = conn.execute(text(check_index_sql)).fetchone()
+            return result[0] > 0
+    except Exception as e:
+        print(f"检查索引存在性时出错: {str(e)}")
+        return False
 
-def create_table_if_not_exists(engine, table_name, sample_df):
+def create_table_without_indexes(engine, table_name, sample_df):
     """
-    根据数据框结构创建表（如果不存在）
+    创建表但不创建索引（索引将在数据导入后创建）
     """
     try:
         with engine.connect() as conn:
@@ -60,39 +77,91 @@ def create_table_if_not_exists(engine, table_name, sample_df):
                 """
                 
                 conn.execute(text(create_table_sql))
-                
-                # 创建索引
-                if 'date' in sample_df.columns:
-                    index_date_sql = f"CREATE INDEX idx_{table_name}_date ON `{table_name}` (`date`)"
-                    conn.execute(text(index_date_sql))
-                    print(f"已创建date列索引: idx_{table_name}_date")
-                
-                if 'code' in sample_df.columns:
-                    index_code_sql = f"CREATE INDEX idx_{table_name}_code ON `{table_name}` (`code`)"
-                    conn.execute(text(index_code_sql))
-                    print(f"已创建code列索引: idx_{table_name}_code")
-                
-                # 创建联合索引
-                if 'date' in sample_df.columns and 'code' in sample_df.columns:
-                    index_combined_sql = f"CREATE INDEX idx_{table_name}_date_code ON `{table_name}` (`date`, `code`)"
-                    conn.execute(text(index_combined_sql))
-                    print(f"已创建date+code联合索引: idx_{table_name}_date_code")
-                
                 conn.commit()
                 print(f"成功创建表: {table_name}")
+                return True
             else:
                 print(f"表 {table_name} 已存在")
+                # 检查表是否有数据
+                result = conn.execute(text(f"SELECT COUNT(*) FROM `{table_name}`")).fetchone()
+                if result[0] > 0:
+                    print(f"表 {table_name} 已有 {result[0]} 行数据")
+                return False
                 
     except Exception as e:
         print(f"创建表 {table_name} 时发生错误: {str(e)}")
+        return False
+
+def create_indexes(engine, table_name):
+    """
+    在数据导入完成后创建索引（如果不存在）
+    """
+    try:
+        with engine.connect() as conn:
+            print(f"开始为表 {table_name} 创建索引...")
+            
+            # 创建date列索引（如果不存在）
+            date_index_name = f"idx_{table_name}_date"
+            if not check_index_exists(engine, table_name, date_index_name):
+                index_date_sql = f"CREATE INDEX {date_index_name} ON `{table_name}` (`date`)"
+                conn.execute(text(index_date_sql))
+                print(f"已创建date列索引: {date_index_name}")
+            else:
+                print(f"date列索引已存在: {date_index_name}")
+            
+            # 创建code列索引（如果不存在）
+            code_index_name = f"idx_{table_name}_code"
+            if not check_index_exists(engine, table_name, code_index_name):
+                index_code_sql = f"CREATE INDEX {code_index_name} ON `{table_name}` (`code`)"
+                conn.execute(text(index_code_sql))
+                print(f"已创建code列索引: {code_index_name}")
+            else:
+                print(f"code列索引已存在: {code_index_name}")
+            
+            # 创建联合索引（如果不存在）
+            combined_index_name = f"idx_{table_name}_date_code"
+            if not check_index_exists(engine, table_name, combined_index_name):
+                index_combined_sql = f"CREATE INDEX {combined_index_name} ON `{table_name}` (`date`, `code`)"
+                conn.execute(text(index_combined_sql))
+                print(f"已创建date+code联合索引: {combined_index_name}")
+            else:
+                print(f"date+code联合索引已存在: {combined_index_name}")
+            
+            conn.commit()
+            print(f"成功为表 {table_name} 创建/检查所有索引")
+            return True
+            
+    except Exception as e:
+        print(f"创建索引时发生错误: {str(e)}")
+        return False
 
 def extract_years_from_filename(filename):
     """从文件名中提取年份范围"""
-    # 匹配格式: data_2000_2004.csv
-    match = re.search(r'data_\w+_(\d{4})_(\d{4})\.csv', filename)
+    match = re.search(r'data_(\d{4})_(\d{4})\.csv', filename)
     if match:
         return int(match.group(1)), int(match.group(2))
     return None, None
+
+def clean_numeric_data(df):
+    """清洗数值数据"""
+    # 清洗数值列
+    def clean_numeric(series):
+        return pd.to_numeric(
+            series.astype(str).str.replace(r'[^\d.-]', '', regex=True),
+            errors='coerce'
+        )
+
+    cols_to_clean = ['open', 'high', 'low', 'close', 'preclose', 'volume', 'amount', 'turn', 'p_change']
+    for col in cols_to_clean:
+        if col in df.columns:
+            df[col] = clean_numeric(df[col]).fillna(0.0)
+
+    int_cols = ['adjustflag', 'tradestatus', 'isST']
+    for col in int_cols:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0).astype('int64')
+    
+    return df
 
 def load_and_insert_data(file_path, engine, market=""):
     """读取CSV文件并插入到对应的MySQL表中"""
@@ -100,6 +169,7 @@ def load_and_insert_data(file_path, engine, market=""):
         if market not in MARKET and market != "":
             print(f"无效的市场前缀: {market}")
             return False
+            
         filename = os.path.basename(file_path)
         from_year, end_year = extract_years_from_filename(filename)
         
@@ -113,69 +183,114 @@ def load_and_insert_data(file_path, engine, market=""):
         
         print(f"\n处理文件: {filename} -> 目标表名: {table_name}")
         
-        # 读取CSV文件
-        df = pd.read_csv(file_path)
+        # 读取CSV文件的第一个块来获取表结构
+        sample_df = pd.read_csv(file_path, nrows=1000, low_memory=False)
         
-        if df.empty:
+        # 处理样本数据
+        if sample_df.empty:
             print(f"文件 {filename} 为空，跳过处理")
             return False
-        
-        print(f"读取到 {len(df)} 行数据")
-        
-        # 检查必需的列是否存在
-        if 'date' not in df.columns or 'code' not in df.columns:
-            print(f"警告: 文件 {filename} 中没有 'date' 列或者'code'列，跳过处理")
-            return False
-        
-        # 处理日期列 - 转换为datetime格式
-        try:
-            df['date'] = pd.to_datetime(df['date']).dt.date
-            print("已将date列转换为日期格式")
-        except Exception as e:
-            print(f"转换date列时出错: {str(e)}")
-            return False
-        
-        # 处理code列 - 去掉市场前缀(sh., sz., bj.)
-        if df['code'].dtype == 'object':  # 确保是字符串类型
-            df['code'] = df['code'].str.replace(r'^(sh\.|sz\.|bj\.)', '', regex=True)
-            print("已去掉code列的市场前缀")
-        
-        # 处理其他可能的日期列
-        for col in df.columns:
-            if col != 'date' and ('time' in col.lower()):
-                try:
-                    df[col] = pd.to_datetime(df[col]).dt.date
-                except:
-                    pass
-        # 删除time列
-        if 'time' in df.columns:
-            df.drop(columns=['time'], inplace=True)
-        # pctChg列改为p_change兼容业务代码
-        if 'pctChg' in df.columns:
-            df.rename(columns={'pctChg': 'p_change'}, inplace=True)
-            print("已将pctChg列重命名为p_change")
+            
+        # 处理日期列
+        if 'date' in sample_df.columns:
+            sample_df['date'] = pd.to_datetime(sample_df['date']).dt.date
+            
+        # 处理code列
+        if 'code' in sample_df.columns and sample_df['code'].dtype == 'object':
+            sample_df['code'] = sample_df['code'].str.replace(r'^(sh\.|sz\.|bj\.)', '', regex=True)
+            
+        # 重命名pctChg列
+        if 'pctChg' in sample_df.columns:
+            sample_df = sample_df.rename(columns={'pctChg': 'p_change'})
+            
         # 创建表（如果不存在）
-        create_table_if_not_exists(engine, table_name, df)
+        is_new_table = create_table_without_indexes(engine, table_name, sample_df)
         
-        # 插入数据
-        print(f"开始插入数据到表 {table_name}...")
+        # 检查表是否有数据，如果有数据且不是新创建的表，则跳过导入
+        if not is_new_table:
+            with engine.connect() as conn:
+                result = conn.execute(text(f"SELECT COUNT(*) FROM `{table_name}`")).fetchone()
+                if result[0] > 0:
+                    print(f"表 {table_name} 已有 {result[0]} 行数据，跳过导入")
+                    # 但仍然检查并创建索引（如果不存在）
+                    create_indexes(engine, table_name)
+                    return True
+        
+        # 分批读取和处理数据
+        chunk_size = 50000  # 每批处理5万行
+        total_rows = 0
+        processed_rows = 0
+        
+        print(f"开始分批导入数据到表 {table_name}...")
         start_time = datetime.now()
         
-        # 使用to_sql方法批量插入数据
-        df.to_sql(
-            name=table_name,
-            con=engine,
-            if_exists='append', 
-            index=False,        
-            method='multi',      # 使用批量插入
-            chunksize=5000       # 每次插入5000行（优化后的批量大小）
-        )
+        for chunk in pd.read_csv(file_path, chunksize=chunk_size, low_memory=False):
+            # 处理数据
+            chunk = clean_numeric_data(chunk)
+            
+            if chunk.empty:
+                continue
+                
+            total_rows += len(chunk)
+            
+            # 处理日期列
+            if 'date' in chunk.columns:
+                chunk['date'] = pd.to_datetime(chunk['date']).dt.date
+                
+            # 处理code列
+            if 'code' in chunk.columns and chunk['code'].dtype == 'object':
+                chunk['code'] = chunk['code'].str.replace(r'^(sh\.|sz\.|bj\.)', '', regex=True)
+                
+            # 重命名pctChg列
+            if 'pctChg' in chunk.columns:
+                chunk = chunk.rename(columns={'pctChg': 'p_change'})
+                
+            # 删除time列
+            if 'time' in chunk.columns:
+                chunk.drop(columns=['time'], inplace=True)
+                
+            # 插入数据
+            try:
+                chunk.to_sql(
+                    name=table_name,
+                    con=engine,
+                    if_exists='append',
+                    index=False,
+                    method='multi',
+                    chunksize=1000
+                )
+                processed_rows += len(chunk)
+                print(f"已处理 {processed_rows} 行数据")
+                
+                # 短暂暂停，减轻数据库压力
+                time.sleep(0.5)
+                
+            except Exception as e:
+                print(f"插入数据时发生错误: {str(e)}")
+                # 尝试再次插入
+                try:
+                    chunk.to_sql(
+                        name=table_name,
+                        con=engine,
+                        if_exists='append',
+                        index=False,
+                        method=None  # 不使用批量插入
+                    )
+                    processed_rows += len(chunk)
+                    print(f"重试成功: 已处理 {processed_rows} 行数据")
+                except Exception as e2:
+                    print(f"重试也失败: {str(e2)}")
+                    return False
         
         end_time = datetime.now()
         duration = (end_time - start_time).total_seconds()
         
-        print(f"成功插入 {len(df)} 行数据到表 {table_name}")
+        print(f"成功插入 {processed_rows} 行数据到表 {table_name}")
         print(f"耗时: {duration:.2f} 秒")
+        
+        # 数据导入完成后创建索引
+        if processed_rows > 0:
+            create_indexes(engine, table_name)
         
         return True
         
@@ -218,12 +333,11 @@ def process_all_agg_data(market=""):
             filename = os.path.basename(file_path)
             print(f"\n{'='*50}")
             print(f"处理文件: {filename}")
-            # TODO 先测试2025的
-            if "2020" in filename:
-                if load_and_insert_data(file_path, engine, market):
-                    success_count += 1
-                else:
-                    failed_count += 1
+            
+            if load_and_insert_data(file_path, engine, market):
+                success_count += 1
+            else:
+                failed_count += 1
         
         print(f"\n{'='*50}")
         print(f"处理完成!")
@@ -270,7 +384,7 @@ def split_data_by_market():
             year_range = f"{from_year}_{end_year}"
             
             # 读取CSV文件
-            df = pd.read_csv(file_path)
+            df = pd.read_csv(file_path, on_bad_lines='skip')
             if df.empty:
                 print(f"文件 {filename} 为空，跳过处理")
                 continue
@@ -390,7 +504,5 @@ if __name__ == "__main__":
             print("无效的选择，程序退出")
         market = ["sh", "sz", "bj"]
         
-        
-    
     else:
         print("无效的选择，程序退出")

@@ -17,11 +17,7 @@ EXPOSE 9988
 # 安装依赖库
 # apt-get autoremove -y 删除没有用的依赖lib
 # apt-get --purge remove 软件包名称 , 删除已安装包（不保留配置文件)
-RUN sed -i "s@http://\(deb\|security\).debian.org@https://mirrors.aliyun.com@g" /etc/apt/sources.list && \
-    echo  "[global]\n\
-index-url = https://mirrors.aliyun.com/pypi/simple\n\
-trusted-host = mirrors.aliyun.com" > /etc/pip.conf && \
-    ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
+RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
     echo "Asia/Shanghai" > /etc/timezone && \
     apt-get update && \
     apt-get install -y cron gcc make python3-dev default-libmysqlclient-dev build-essential pkg-config curl && \
@@ -42,6 +38,12 @@ trusted-host = mirrors.aliyun.com" > /etc/pip.conf && \
     pip install tornado && \
     pip install mini-racer && \
     pip install easytrader && \
+    pip install akshare && \
+    pip install tushare && \
+    pip install chdb && \
+    pip install clickhouse-connect && \
+    pip install pycryptodome && \
+    pip install baostock && \
     mkdir ta-lib && \
     curl -SL $(curl -s https://api.github.com/repos/ta-lib/ta-lib/releases/latest | grep browser_download_url | cut -d'"' -f4 |grep -E 'tar.gz$') | tar -xz --strip-components=1 -C ./ta-lib && \
     cd ta-lib/ && \
@@ -56,21 +58,20 @@ trusted-host = mirrors.aliyun.com" > /etc/pip.conf && \
 
 WORKDIR /data
 #InStock软件
-COPY stock /data/InStock
+COPY instock /data/InStock/instock
+COPY supervisor /data/InStock/supervisor
+COPY history_data /data/InStock/history_data
 COPY cron/cron.hourly /etc/cron.hourly
 COPY cron/cron.workdayly /etc/cron.workdayly
 COPY cron/cron.monthly /etc/cron.monthly
 
 #add cron sesrvice.
 #任务调度
-RUN chmod 755 /data/InStock/instock/bin/run_*.sh && \
-    chmod 755 /etc/cron.hourly/* && chmod 755 /etc/cron.workdayly/* && chmod 755 /etc/cron.monthly/* && \
-    echo "SHELL=/bin/sh \n\
-PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin \n\
-# min hour day month weekday command \n\
-*/30 9,10,11,13,14,15 * * 1-5 /bin/run-parts /etc/cron.hourly \n\
-30 17 * * 1-5 /bin/run-parts /etc/cron.workdayly \n\
-30 10 * * 3,6 /bin/run-parts /etc/cron.monthly \n" > /var/spool/cron/crontabs/root && \
-    chmod 600 /var/spool/cron/crontabs/root
+RUN chmod 755 /data/InStock/instock/bin/run_*.sh
+RUN chmod 755 /etc/cron.hourly/*
+RUN chmod 755 /etc/cron.workdayly/*
+RUN chmod 755 /etc/cron.monthly/*
+RUN echo "SHELL=/bin/sh \nPATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin \n*/30 9,10,11,13,14,15 * * 1-5 /bin/run-parts /etc/cron.hourly \n30 17 * * 1-5 /bin/run-parts /etc/cron.workdayly \n30 10 * * 3,6 /bin/run-parts /etc/cron.monthly \n" > /var/spool/cron/crontabs/root
+RUN chmod 600 /var/spool/cron/crontabs/root
 
 ENTRYPOINT ["supervisord","-n","-c","/data/InStock/supervisor/supervisord.conf"]

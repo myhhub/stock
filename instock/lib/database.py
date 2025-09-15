@@ -21,19 +21,19 @@ db_port = 3306  # 数据库服务端口
 db_charset = "utf8mb4"  # 数据库字符集
 
 # 使用环境变量获得数据库,docker -e 传递
-_db_host = os.environ.get('db_host')
+_db_host = os.environ.get('MYSQL_HOST')
 if _db_host is not None:
     db_host = _db_host
-_db_user = os.environ.get('db_user')
+_db_user = os.environ.get('MYSQL_USER')
 if _db_user is not None:
     db_user = _db_user
-_db_password = os.environ.get('db_password')
+_db_password = os.environ.get('MYSQL_PASSWORD')
 if _db_password is not None:
     db_password = _db_password
-_db_database = os.environ.get('db_database')
+_db_database = os.environ.get('MYSQL_DATABASE')
 if _db_database is not None:
     db_database = _db_database
-_db_port = os.environ.get('db_port')
+_db_port = os.environ.get('MYSQL_PORT')
 if _db_port is not None:
     db_port = int(_db_port)
 

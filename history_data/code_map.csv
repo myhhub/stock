@@ -1,5 +1,5 @@
 code,id,market,flag
-689009,1,SH,True
+689009,1,SH,False
 688981,1,SH,False
 688819,1,SH,False
 688800,1,SH,False
@@ -2416,7 +2416,7 @@ code,id,market,flag
 600003,1,SH,False
 600002,1,SH,False
 600001,1,SH,False
-600000,1,SH,True
+600000,1,SH,False
 302132,0,SZ,False
 301678,0,SZ,False
 301665,0,SZ,False
