@@ -17,7 +17,8 @@ def check_enter(code_name, data, date=None, threshold=60):
     else:
         end_date = date.strftime("%Y-%m-%d")
     if end_date is not None:
-        mask = (data['date'] <= end_date)
+        import pandas as pd
+        mask = (pd.to_datetime(data['date']) <= pd.to_datetime(end_date))
         data = data.loc[mask]
     if len(data.index) < threshold:
         return False

@@ -5,37 +5,32 @@ import math
 import pandas as pd
 import requests
 import instock.core.tablestructure as tbs
-from instock.core.singleton_proxy import proxys
+from instock.core.proxy_pool import get_proxy
 
 
-__author__ = 'myh '
-__date__ = '2023/5/9 '
-
-
-def stock_selection() -> pd.DataFrame:
+def stock_selection(proxy=None) -> pd.DataFrame:
     """
     东方财富网-个股-选股器
     https://data.eastmoney.com/xuangu/
+    :param proxy: 代理设置
+    :type proxy: dict
     :return: 选股器
     :rtype: pandas.DataFrame
     """
     cols = tbs.TABLE_CN_STOCK_SELECTION['columns']
-    page_size = 50
+    page_size = 300
     page_current = 1
-    sty = ""  # 初始值 "SECUCODE,SECURITY_CODE,SECURITY_NAME_ABBR,CHANGE_RATE"
-    for k in cols:
-        sty = f"{sty},{cols[k]['map']}"
+    sty = ",".join([cols[k]['map'] for k in cols])
     url = "https://data.eastmoney.com/dataapi/xuangu/list"
     params = {
-        "sty": sty[1:],
+        "sty": sty,
         "filter": "(MARKET+in+(\"上交所主板\",\"深交所主板\",\"深交所创业板\"))(NEW_PRICE>0)",
         "p": page_current,
         "ps": page_size,
         "source": "SELECT_SECURITIES",
         "client": "WEB"
     }
-
-    r = requests.get(url, proxies = proxys().get_proxies(), params=params)
+    r = requests.get(url, params=params, proxies=proxy)
     data_json = r.json()
     data = data_json["result"]["data"]
     if not data:
@@ -45,8 +40,16 @@ def stock_selection() -> pd.DataFrame:
     page_count = math.ceil(data_count/page_size)
     while page_count > 1:
         page_current = page_current + 1
+        print(f"正在获取第 {page_current} 页数据...")
         params["p"] = page_current
-        r = requests.get(url, proxies = proxys().get_proxies(), params=params)
+        try:
+            r = requests.get(url, params=params, proxies=proxy)
+        except Exception as e:
+            print(f"获取第 {page_current} 页数据异常：{e},重新获取代理")
+            proxy = get_proxy()
+            print(f"重新获取代理：{proxy}")
+            page_current = page_current - 1
+            continue
         data_json = r.json()
         _data = data_json["result"]["data"]
         data.extend(_data)
@@ -65,7 +68,9 @@ def stock_selection() -> pd.DataFrame:
             temp_df[cols[k]["map"]] = pd.to_numeric(temp_df[cols[k]["map"]], errors="coerce")
         elif t == 'datetime':
             temp_df[cols[k]["map"]] = pd.to_datetime(temp_df[cols[k]["map"]], errors="coerce").dt.date
-
+    # 删除SECURITY_CODE列如果存在
+    if 'SECURITY_CODE' in temp_df.columns:
+        temp_df.drop(columns=['SECURITY_CODE'], inplace=True)
     return temp_df
 
 

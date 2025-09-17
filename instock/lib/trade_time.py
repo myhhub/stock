@@ -7,7 +7,32 @@ from instock.core.singleton_trade_date import stock_trade_date
 __author__ = 'myh '
 __date__ = '2023/4/10 '
 
-
+def is_market_close():
+    """
+    判断是否应该在最近一个交易日结束后执行动作
+    
+    Returns:
+        bool: True表示应该执行，False表示不应该执行
+        str: 执行的目标日期
+    """
+    now_time = datetime.datetime.now()
+    run_date, run_date_nph = get_trade_date_last()
+    
+    # 场景1：当前是交易日且已收盘
+    if is_trade_date(now_time.date()) and is_close(now_time):
+        print(f"✅ 当前是交易日 {now_time.date()} 且已收盘，可以执行当日的收盘后任务")
+        return True, run_date
+    
+    # 场景2：当前不是交易日（周末、节假日）
+    elif not is_trade_date(now_time.date()):
+        print(f"✅ 当前是非交易日 {now_time.date()}，可以执行最近交易日 {run_date} 的收盘后任务")
+        return True, run_date
+    
+    # 场景3：当前是交易日但未收盘
+    else:
+        print(f"❌ 当前是交易日 {now_time.date()} 但未收盘，暂不执行")
+        return False, None
+    
 def is_trade_date(date=None):
     trade_date = stock_trade_date().get_data()
     if trade_date is None:

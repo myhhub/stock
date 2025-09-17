@@ -8,18 +8,19 @@ https://data.eastmoney.com/yjfp/
 import pandas as pd
 import requests
 from tqdm import tqdm
-from instock.core.singleton_proxy import proxys
-
+from instock.core.proxy_pool import get_proxy
 __author__ = 'myh '
 __date__ = '2023/6/27 '
 
 
-def stock_fhps_em(date: str = "20231231") -> pd.DataFrame:
+def stock_fhps_em(date: str = "20231231", proxy=None) -> pd.DataFrame:
     """
     东方财富网-数据中心-年报季报-分红送配
     https://data.eastmoney.com/yjfp/
     :param date: 分红送配报告期
     :type date: str
+    :param proxy: 代理设置
+    :type proxy: dict
     :return: 分红送配
     :rtype: pandas.DataFrame
     """
@@ -42,13 +43,13 @@ def stock_fhps_em(date: str = "20231231") -> pd.DataFrame:
         "filter": f"""(REPORT_DATE='{"-".join([date[:4], date[4:6], date[6:]])}')""",
     }
 
-    r = requests.get(url, proxies = proxys().get_proxies(), params=params)
+    r = requests.get(url, params=params, proxies=proxy)
     data_json = r.json()
     total_pages = int(data_json["result"]["pages"])
     big_df = pd.DataFrame()
     for page in tqdm(range(1, total_pages + 1), leave=False):
         params.update({"pageNumber": page})
-        r = requests.get(url, proxies = proxys().get_proxies(), params=params)
+        r = requests.get(url, params=params, proxies=get_proxy())
         data_json = r.json()
         temp_df = pd.DataFrame(data_json["result"]["data"])
         if not temp_df.empty:

@@ -23,9 +23,11 @@ logging.basicConfig(format='%(asctime)s %(message)s', filename=os.path.join(log_
 logging.getLogger().setLevel(logging.ERROR)
 import instock.lib.torndb as torndb
 import instock.lib.database as mdb
+from instock.lib.database_factory import get_database, db_config, DatabaseType
 import instock.lib.version as version
 import instock.web.dataTableHandler as dataTableHandler
 import instock.web.dataIndicatorsHandler as dataIndicatorsHandler
+import instock.web.dataDownloadHandler as dataDownloadHandler
 import instock.web.base as webBase
 
 __author__ = 'myh '
@@ -41,10 +43,18 @@ class Application(tornado.web.Application):
             # 使用datatable 展示报表数据模块。
             (r"/instock/api_data", dataTableHandler.GetStockDataHandler),
             (r"/instock/data", dataTableHandler.GetStockHtmlHandler),
+            # 独立搜索页面
+            (r"/instock/search", SearchPageHandler),
             # 获得股票指标数据。
             (r"/instock/data/indicators", dataIndicatorsHandler.GetDataIndicatorsHandler),
             # 加入关注
             (r"/instock/control/attention", dataIndicatorsHandler.SaveCollectHandler),
+            # 数据下载页面
+            (r"/instock/data_download", dataDownloadHandler.DataDownloadPageHandler),
+            # 数据下载API
+            (r"/instock/data_download_api", dataDownloadHandler.DataDownloadApiHandler),
+            # 文件下载
+            (r"/instock/download/(.*)", dataDownloadHandler.FileDownloadHandler),
         ]
         settings = dict(  # 配置
             template_path=os.path.join(os.path.dirname(__file__), "templates"),
@@ -65,6 +75,19 @@ class HomeHandler(webBase.BaseHandler, ABC):
     def get(self):
         self.render("index.html",
                     stockVersion=version.__version__,
+                    leftMenu=webBase.GetLeftMenu(self.request.uri))
+
+
+# 搜索页面handler。
+class SearchPageHandler(webBase.BaseHandler, ABC):
+    @gen.coroutine
+    def get(self):
+        import instock.lib.trade_time as trd
+        run_date, run_date_nph = trd.get_trade_date_last()
+        date_now_str = run_date.strftime("%Y-%m-%d")
+        
+        self.render("stock_search.html",
+                    date_now=date_now_str,
                     leftMenu=webBase.GetLeftMenu(self.request.uri))
 
 

@@ -21,7 +21,8 @@ def check(code_name, data, date=None, threshold=60):
         end_date = date.strftime("%Y-%m-%d")
 
     if end_date is not None:
-        mask = (data['date'] <= end_date)
+        import pandas as pd
+        mask = (pd.to_datetime(data['date']) <= pd.to_datetime(end_date))
         data = data.loc[mask].copy()
     if len(data.index) < 250:
         return False
@@ -72,8 +73,25 @@ def check(code_name, data, date=None, threshold=60):
                 recent_lowest_row[1] = _volume
                 recent_lowest_row[2] = _date
 
-    date_diff = datetime.date(datetime.strptime(recent_lowest_row[2], '%Y-%m-%d')) - \
-                datetime.date(datetime.strptime(highest_row[2], '%Y-%m-%d'))
+    date_diff = None
+    
+    # 处理日期差值计算，兼容字符串和datetime对象
+    try:
+        if isinstance(recent_lowest_row[2], str):
+            recent_date = datetime.strptime(recent_lowest_row[2], '%Y-%m-%d').date()
+        else:
+            # 如果是datetime对象，提取date部分
+            recent_date = recent_lowest_row[2].date() if hasattr(recent_lowest_row[2], 'date') else recent_lowest_row[2]
+            
+        if isinstance(highest_row[2], str):
+            highest_date = datetime.strptime(highest_row[2], '%Y-%m-%d').date()
+        else:
+            # 如果是datetime对象，提取date部分
+            highest_date = highest_row[2].date() if hasattr(highest_row[2], 'date') else highest_row[2]
+            
+        date_diff = recent_date - highest_date
+    except (ValueError, TypeError) as e:
+        return False
 
     if not (timedelta(days=10) <= date_diff <= timedelta(days=50)):
         return False

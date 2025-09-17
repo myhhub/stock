@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from sqlalchemy import DATE, VARCHAR, FLOAT, BIGINT, SmallInteger, DATETIME
+from sqlalchemy import DATE, VARCHAR, FLOAT, BIGINT, SmallInteger, DATETIME, INT
 from sqlalchemy.dialects.mysql import BIT
 import talib as tl
 from instock.core.strategy import enter
@@ -43,6 +43,24 @@ TABLE_CN_ETF_SPOT = {'name': 'cn_etf_spot', 'cn': '每日ETF数据',
                                  'free_cap': {'type': BIGINT, 'cn': '流通市值', 'size': 120}}}
 
 TABLE_CN_STOCK_SPOT = {'name': 'cn_stock_spot', 'cn': '每日股票数据',
+                        'columns_to_history_db':{
+                            'date': 'date',
+                            'code': 'code', 
+                            'open_price': 'open',
+                            'high_price': 'high',
+                            'low_price': 'low',
+                            'new_price': 'close',
+                            'pre_close_price': 'preclose',
+                            'volume': 'volume', # TODO 注意单位API返回的是手，数据库存储的是股,
+                            'turnoverrate': 'turn',
+                            'change_rate': 'p_change',
+                        },
+                        'db_description':{
+                            'amount': '成交额(元), 需要计算后存',
+                            'isST': '是否ST股, 需要计算后存',
+                            'tradestatus': '能查到的股票都是交易中的,直接存1',
+                            'adjustflag': '复权状态, 默认不复权db中是3',
+                        },
                        'columns': {'date': {'type': DATE, 'cn': '日期', 'size': 0},
                                    'code': {'type': VARCHAR(6, _COLLATE), 'cn': '代码', 'size': 60},
                                    'name': {'type': VARCHAR(20, _COLLATE), 'cn': '名称', 'size': 70},
@@ -84,7 +102,23 @@ TABLE_CN_STOCK_SPOT = {'name': 'cn_stock_spot', 'cn': '每日股票数据',
                                    'free_cap': {'type': BIGINT, 'cn': '流通市值', 'size': 120},
                                    'industry': {'type': VARCHAR(20, _COLLATE), 'cn': '所处行业', 'size': 100},
                                    'listing_date': {'type': DATE, 'cn': '上市时间', 'size': 110}}}
-
+TABLE_CN_STOCK_HISTORY = {'name': 'cn_stock_history', 'cn': '股票历史数据',
+                          'columns': {'date': {'type': DATE, 'cn': '日期', 'size': 110},
+                                      'code': {'type': VARCHAR(6, _COLLATE), 'cn': '代码', 'size': 60},
+                                      'p_change': {'type': FLOAT, 'cn': '涨跌幅', 'size': 80},
+                                      'open': {'type': FLOAT, 'cn': '开盘价', 'size': 80},
+                                      'high': {'type': FLOAT, 'cn': '最高价', 'size': 80},
+                                      'low': {'type': FLOAT, 'cn': '最低价', 'size': 80},
+                                      'close': {'type': FLOAT, 'cn': '收盘价', 'size': 80},
+                                      'preclose': {'type': FLOAT, 'cn': '昨收价', 'size': 80},
+                                      'volume': {'type': BIGINT, 'cn': '成交量', 'size': 100},
+                                      'amount': {'type': BIGINT, 'cn': '成交额', 'size': 100},
+                                      'adjustflag': {'type': VARCHAR(5, _COLLATE), 'cn': '复权标志', 'size': 80},
+                                      'turn': {'type': FLOAT, 'cn': '换手率', 'size': 80},
+                                      'tradestatus': {'type':INT, 'cn': '交易状态', 'size': 80},
+                                      'market': {'type': VARCHAR(10, _COLLATE), 'cn': '市场', 'size': 70},
+                                      'isST': {'type': INT, 'cn': '是否ST', 'size': 70}}
+}
 TABLE_CN_STOCK_SPOT_BUY = {'name': 'cn_stock_spot_buy', 'cn': '基本面选股',
                            'columns': TABLE_CN_STOCK_SPOT['columns'].copy()}
 
@@ -263,9 +297,10 @@ CN_STOCK_HIST_DATA = {'name': 'fund_etf_hist_em', 'cn': '基金某时间段的�
                                   'volume': {'type': FLOAT, 'cn': '成交量'},
                                   'amount': {'type': FLOAT, 'cn': '成交额'},
                                   'amplitude': {'type': FLOAT, 'cn': '振幅'},
-                                  'quote_change': {'type': FLOAT, 'cn': '涨跌幅'},
+                                  'p_change': {'type': FLOAT, 'cn': '涨跌幅'},
                                   'ups_downs': {'type': FLOAT, 'cn': '涨跌额'},
                                   'turnover': {'type': FLOAT, 'cn': '换手率'}}}
+
 
 TABLE_CN_STOCK_FOREIGN_KEY = {'name': 'cn_stock_foreign_key', 'cn': '股票外键',
                               'columns': {'date': {'type': DATE, 'cn': '日期', 'size': 0},
@@ -515,8 +550,8 @@ TABLE_CN_STOCK_KLINE_PATTERN['columns'].update(STOCK_KLINE_PATTERN_DATA['columns
 
 TABLE_CN_STOCK_SELECTION = {'name': 'cn_stock_selection', 'cn': '综合选股',
                             'columns': {'date': {'type': DATE, 'cn': '日期', 'size': 0, 'map': 'MAX_TRADE_DATE'},
-                                        'code': {'type': VARCHAR(6, _COLLATE), 'cn': '代码', 'size': 60,
-                                                 'map': 'SECURITY_CODE'},
+                                        'secucode': {'type': VARCHAR(10, _COLLATE), 'cn': '全代码', 'size': 0,
+                                                     'map': 'SECUCODE'},
                                         'name': {'type': VARCHAR(20, _COLLATE), 'cn': '名称', 'size': 70,
                                                  'map': 'SECURITY_NAME_ABBR'},
                                         'new_price': {'type': FLOAT, 'cn': '最新价', 'size': 70, 'map': 'NEW_PRICE'},
@@ -902,9 +937,9 @@ TABLE_CN_STOCK_SELECTION = {'name': 'cn_stock_selection', 'cn': '综合选股',
                                         'mutual_netbuy_amt': {'type': BIGINT, 'cn': '沪深股通净买入金额', 'size': 90,
                                                               'map': 'MUTUAL_NETBUY_AMT'},
                                         'hold_ratio': {'type': FLOAT, 'cn': '沪深股通持股比例', 'size': 70,
-                                                       'map': 'HOLD_RATIO'},
-                                        'secucode': {'type': VARCHAR(10, _COLLATE), 'cn': '全代码', 'size': 0,
-                                                     'map': 'SECUCODE'}}}
+                                                       'map': 'HOLD_RATIO'}
+                                        }
+                            }
 
 CN_STOCK_CPBD = {'name': 'cn_stock_cpbd', 'cn': '操盘必读',
                  'columns': {'SECURITY_CODE': {'type': VARCHAR(6, _COLLATE), 'cn': '代码'},

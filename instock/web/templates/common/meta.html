@@ -1,5 +1,4 @@
 {% block meta %}
-<meta name="spreadjs culture" content="zh-cn" />
 <link rel="icon" href="/static/img/favicon.ico">
 <link rel="stylesheet" href="/static/css/bootstrap.min-3.4.1.css" />
 <link rel="stylesheet" href="/static/css/font-awesome.min-4.5.0.css" />
@@ -9,12 +8,82 @@
 </script>
 <script src="/static/js/bootstrap.min-3.4.1.js"></script>
 <style>
+/* 基础重置，已在main.html中定义现代化样式 */
 html,body {
     top: 0;
     bottom: 0;
     left: 0;
     right: 0;
-    height:100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+/* 确保Bootstrap组件与现代化样式兼容 */
+.container, .container-fluid {
+    background: transparent;
+}
+
+/* 优化Bootstrap默认样式 */
+.well {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.well:hover {
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+    transform: translateY(-5px);
+}
+
+/* 优化表格条纹 */
+.table-striped > tbody > tr:nth-of-type(odd) {
+    background-color: rgba(102, 126, 234, 0.02);
+}
+
+/* 优化分页组件 */
+.pagination > li > a,
+.pagination > li > span {
+    border-radius: 6px !important;
+    margin: 0 2px;
+    border: 2px solid #e9ecef !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.pagination > li > a:hover {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border-color: #667eea !important;
+    color: white !important;
+    transform: translateY(-2px);
+}
+
+.pagination > .active > a {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border-color: #667eea !important;
+}
+
+/* 优化模态框 */
+.modal-content {
+    border-radius: 12px !important;
+    border: none !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
+    backdrop-filter: blur(10px);
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white !important;
+    border-radius: 12px 12px 0 0 !important;
+    border: none !important;
+}
+
+.modal-footer {
+    border: none !important;
+    background: #f8f9fa;
+    border-radius: 0 0 12px 12px !important;
 }
 </style>
 {% end %}

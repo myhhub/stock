@@ -12,10 +12,14 @@ import re
 import numpy as np
 from instock.core.singleton_proxy import proxys
 
-def stock_limitup_reason(date: str = "2025-02-27") -> pd.DataFrame:
+def stock_limitup_reason(date: str = "2025-02-27", proxy=None) -> pd.DataFrame:
     """
     同花顺涨停原因
     http://zx.10jqka.com.cn/event/api/getharden/date/2025-02-27/orderby/date/orderway/desc/charset/GBK/
+    :param date: 交易日
+    :type date: str
+    :param proxy: 代理设置
+    :type proxy: dict
     :return: 涨停原因
     :rtype: pandas.DataFrame
     """
@@ -23,7 +27,7 @@ def stock_limitup_reason(date: str = "2025-02-27") -> pd.DataFrame:
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36 Thx"
     }
-    r = requests.get(url, proxies = proxys().get_proxies(), headers=headers)
+    r = requests.get(url, headers=headers, proxies=proxy)
     data_json = r.json()
 
     data = data_json["data"]

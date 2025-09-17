@@ -11,6 +11,7 @@ sys.path.append(cpath)
 import instock.lib.run_template as runt
 import instock.core.tablestructure as tbs
 import instock.lib.database as mdb
+from instock.lib.database_factory import get_database, execute_sql, insert_db_from_df
 import instock.core.stockfetch as stf
 
 __author__ = 'myh '
@@ -28,12 +29,12 @@ def save_after_close_stock_blocktrade_data(date):
         # 删除老数据。
         if mdb.checkTableIsExist(table_name):
             del_sql = f"DELETE FROM `{table_name}` where `date` = '{date}'"
-            mdb.executeSql(del_sql)
+            execute_sql(del_sql)
             cols_type = None
         else:
             cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_BLOCKTRADE['columns'])
 
-        mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
+        insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
     except Exception as e:
         logging.error(f"basic_data_after_close_daily_job.save_stock_blocktrade_data处理异常：{e}")
 
@@ -48,12 +49,12 @@ def save_after_close_stock_chip_race_end_data(date):
         # 删除老数据。
         if mdb.checkTableIsExist(table_name):
             del_sql = f"DELETE FROM `{table_name}` where `date` = '{date}'"
-            mdb.executeSql(del_sql)
+            execute_sql(del_sql)
             cols_type = None
         else:
             cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_CHIP_RACE_END['columns'])
 
-        mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
+        insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
     except Exception as e:
         logging.error(f"basic_data_after_close_daily_job.save_after_close_stock_chip_race_end_data：{e}")
 

@@ -7,13 +7,15 @@ http://data.eastmoney.com/dzjy/dzjy_sctj.aspx
 """
 import pandas as pd
 import requests
-from instock.core.singleton_proxy import proxys
+from instock.core.proxy_pool import get_proxy
 
 
-def stock_dzjy_sctj() -> pd.DataFrame:
+def stock_dzjy_sctj(proxy=None) -> pd.DataFrame:
     """
     东方财富网-数据中心-大宗交易-市场统计
     http://data.eastmoney.com/dzjy/dzjy_sctj.aspx
+    :param proxy: 代理设置
+    :type proxy: dict
     :return: 市场统计表
     :rtype: pandas.DataFrame
     """
@@ -28,13 +30,13 @@ def stock_dzjy_sctj() -> pd.DataFrame:
         'source': 'WEB',
         'client': 'WEB',
     }
-    r = requests.get(url, proxies = proxys().get_proxies(), params=params)
+    r = requests.get(url, params=params, proxies=proxy)
     data_json = r.json()
     total_page = int(data_json['result']["pages"])
     big_df = pd.DataFrame()
     for page in range(1, total_page+1):
         params.update({'pageNumber': page})
-        r = requests.get(url, proxies = proxys().get_proxies(), params=params)
+        r = requests.get(url, params=params, proxies=get_proxy())
         data_json = r.json()
         temp_df = pd.DataFrame(data_json['result']["data"])
         big_df = pd.concat([big_df, temp_df], ignore_index=True)
@@ -62,7 +64,7 @@ def stock_dzjy_sctj() -> pd.DataFrame:
     return big_df
 
 
-def stock_dzjy_mrmx(symbol: str = '基金', start_date: str = '20220104', end_date: str = '20220104') -> pd.DataFrame:
+def stock_dzjy_mrmx(symbol: str = '基金', start_date: str = '20220104', end_date: str = '20220104', proxy=None) -> pd.DataFrame:
     """
     东方财富网-数据中心-大宗交易-每日明细
     http://data.eastmoney.com/dzjy/dzjy_mrmxa.aspx
@@ -72,6 +74,8 @@ def stock_dzjy_mrmx(symbol: str = '基金', start_date: str = '20220104', end_da
     :type start_date: str
     :param end_date: 结束日期
     :type end_date: str
+    :param proxy: 代理设置
+    :type proxy: dict
     :return: 每日明细
     :rtype: pandas.DataFrame
     """
@@ -93,7 +97,7 @@ def stock_dzjy_mrmx(symbol: str = '基金', start_date: str = '20220104', end_da
         'client': 'WEB',
         'filter': f"""(SECURITY_TYPE_WEB={symbol_map[symbol]})(TRADE_DATE>='{'-'.join([start_date[:4], start_date[4:6], start_date[6:]])}')(TRADE_DATE<='{'-'.join([end_date[:4], end_date[4:6], end_date[6:]])}')"""
     }
-    r = requests.get(url, proxies = proxys().get_proxies(), params=params)
+    r = requests.get(url, params=params, proxies=proxy)
     data_json = r.json()
     if not data_json['result']["data"]:
         return pd.DataFrame()
@@ -187,7 +191,7 @@ def stock_dzjy_mrmx(symbol: str = '基金', start_date: str = '20220104', end_da
     return temp_df
 
 
-def stock_dzjy_mrtj(start_date: str = '20220105', end_date: str = '20220105') -> pd.DataFrame:
+def stock_dzjy_mrtj(start_date: str = '20220105', end_date: str = '20220105', proxy=None) -> pd.DataFrame:
     """
     东方财富网-数据中心-大宗交易-每日统计
     http://data.eastmoney.com/dzjy/dzjy_mrtj.aspx
@@ -195,6 +199,8 @@ def stock_dzjy_mrtj(start_date: str = '20220105', end_date: str = '20220105') ->
     :type start_date: str
     :param end_date: 结束日期
     :type end_date: str
+    :param proxy: 代理设置
+    :type proxy: dict
     :return: 每日统计
     :rtype: pandas.DataFrame
     """
@@ -210,7 +216,7 @@ def stock_dzjy_mrtj(start_date: str = '20220105', end_date: str = '20220105') ->
         'client': 'WEB',
         'filter': f"(TRADE_DATE>='{'-'.join([start_date[:4], start_date[4:6], start_date[6:]])}')(TRADE_DATE<='{'-'.join([end_date[:4], end_date[4:6], end_date[6:]])}')"
     }
-    r = requests.get(url, proxies = proxys().get_proxies(), params=params)
+    r = requests.get(url, params=params, proxies=proxy)
     data_json = r.json()
     temp_df = pd.DataFrame(data_json['result']["data"])
     temp_df.reset_index(inplace=True)
@@ -260,12 +266,14 @@ def stock_dzjy_mrtj(start_date: str = '20220105', end_date: str = '20220105') ->
     return temp_df
 
 
-def stock_dzjy_hygtj(symbol: str = '近三月') -> pd.DataFrame:
+def stock_dzjy_hygtj(symbol: str = '近三月', proxy=None) -> pd.DataFrame:
     """
     东方财富网-数据中心-大宗交易-活跃 A 股统计
     http://data.eastmoney.com/dzjy/dzjy_hygtj.aspx
     :param symbol: choice of {'近一月', '近三月', '近六月', '近一年'}
     :type symbol: str
+    :param proxy: 代理设置
+    :type proxy: dict
     :return: 活跃 A 股统计
     :rtype: pandas.DataFrame
     """
@@ -287,13 +295,13 @@ def stock_dzjy_hygtj(symbol: str = '近三月') -> pd.DataFrame:
         'client': 'WEB',
         'filter': f'(DATE_TYPE_CODE={period_map[symbol]})',
     }
-    r = requests.get(url, proxies = proxys().get_proxies(), params=params)
+    r = requests.get(url, params=params, proxies=proxy)
     data_json = r.json()
     total_page = data_json['result']["pages"]
     big_df = pd.DataFrame()
     for page in range(1, int(total_page)+1):
         params.update({"pageNumber": page})
-        r = requests.get(url, proxies = proxys().get_proxies(), params=params)
+        r = requests.get(url, params=params, proxies=proxy)
         data_json = r.json()
         temp_df = pd.DataFrame(data_json['result']["data"])
         big_df = pd.concat([big_df, temp_df], ignore_index=True)
@@ -353,12 +361,14 @@ def stock_dzjy_hygtj(symbol: str = '近三月') -> pd.DataFrame:
     return big_df
 
 
-def stock_dzjy_hyyybtj(symbol: str = '近3日') -> pd.DataFrame:
+def stock_dzjy_hyyybtj(symbol: str = '近3日', proxy=None) -> pd.DataFrame:
     """
     东方财富网-数据中心-大宗交易-活跃营业部统计
     https://data.eastmoney.com/dzjy/dzjy_hyyybtj.html
     :param symbol: choice of {'当前交易日', '近3日', '近5日', '近10日', '近30日'}
     :type symbol: str
+    :param proxy: 代理设置
+    :type proxy: dict
     :return: 活跃营业部统计
     :rtype: pandas.DataFrame
     """
@@ -381,13 +391,13 @@ def stock_dzjy_hyyybtj(symbol: str = '近3日') -> pd.DataFrame:
         'client': 'WEB',
         'filter': f'(N_DATE=-{period_map[symbol]})',
     }
-    r = requests.get(url, proxies = proxys().get_proxies(), params=params)
+    r = requests.get(url, params=params, proxies=proxy)
     data_json = r.json()
     total_page = data_json['result']["pages"]
     big_df = pd.DataFrame()
     for page in range(1, int(total_page)+1):
         params.update({"pageNumber": page})
-        r = requests.get(url, proxies = proxys().get_proxies(), params=params)
+        r = requests.get(url, params=params, proxies=proxy)
         data_json = r.json()
         temp_df = pd.DataFrame(data_json['result']["data"])
         big_df = pd.concat([big_df, temp_df], ignore_index=True)
@@ -426,12 +436,14 @@ def stock_dzjy_hyyybtj(symbol: str = '近3日') -> pd.DataFrame:
     return big_df
 
 
-def stock_dzjy_yybph(symbol: str = '近三月') -> pd.DataFrame:
+def stock_dzjy_yybph(symbol: str = '近三月', proxy=None) -> pd.DataFrame:
     """
     东方财富网-数据中心-大宗交易-营业部排行
     http://data.eastmoney.com/dzjy/dzjy_yybph.aspx
     :param symbol: choice of {'近一月', '近三月', '近六月', '近一年'}
     :type symbol: str
+    :param proxy: 代理设置
+    :type proxy: dict
     :return: 营业部排行
     :rtype: pandas.DataFrame
     """
@@ -453,13 +465,13 @@ def stock_dzjy_yybph(symbol: str = '近三月') -> pd.DataFrame:
         'client': 'WEB',
         'filter': f'(N_DATE=-{period_map[symbol]})',
     }
-    r = requests.get(url, proxies = proxys().get_proxies(), params=params)
+    r = requests.get(url, params=params, proxies=proxy)
     data_json = r.json()
     total_page = data_json['result']["pages"]
     big_df = pd.DataFrame()
     for page in range(1, int(total_page)+1):
         params.update({"pageNumber": page})
-        r = requests.get(url, proxies = proxys().get_proxies(), params=params)
+        r = requests.get(url, params=params, proxies=proxy)
         data_json = r.json()
         temp_df = pd.DataFrame(data_json['result']["data"])
         big_df = pd.concat([big_df, temp_df], ignore_index=True)

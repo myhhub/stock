@@ -12,7 +12,7 @@ from instock.core.singleton_proxy import proxys
 
 
 def stock_lhb_detail_em(
-    start_date: str = "20230403", end_date: str = "20230417"
+    start_date: str = "20230403", end_date: str = "20230417", proxy=None
 ) -> pd.DataFrame:
     """
     东方财富网-数据中心-龙虎榜单-龙虎榜详情
@@ -21,6 +21,8 @@ def stock_lhb_detail_em(
     :type start_date: str
     :param end_date: 结束日期
     :type end_date: str
+    :param proxy: 代理设置
+    :type proxy: dict
     :return: 龙虎榜详情
     :rtype: pandas.DataFrame
     """
@@ -38,7 +40,7 @@ def stock_lhb_detail_em(
         "client": "WEB",
         "filter": f"(TRADE_DATE<='{end_date}')(TRADE_DATE>='{start_date}')",
     }
-    r = requests.get(url, proxies = proxys().get_proxies(), params=params)
+    r = requests.get(url, params=params, proxies=proxy)
     data_json = r.json()
     total_page_num = data_json["result"]["pages"]
     big_df = pd.DataFrame()
@@ -48,7 +50,7 @@ def stock_lhb_detail_em(
                 "pageNumber": page,
             }
         )
-        r = requests.get(url, proxies = proxys().get_proxies(), params=params)
+        r = requests.get(url, params=params, proxies=proxy)
         data_json = r.json()
         temp_df = pd.DataFrame(data_json["result"]["data"])
         big_df = pd.concat([big_df, temp_df], ignore_index=True)
@@ -127,12 +129,14 @@ def stock_lhb_detail_em(
     return big_df
 
 
-def stock_lhb_stock_statistic_em(symbol: str = "近一月") -> pd.DataFrame:
+def stock_lhb_stock_statistic_em(symbol: str = "近一月", proxy=None) -> pd.DataFrame:
     """
     东方财富网-数据中心-龙虎榜单-个股上榜统计
     https://data.eastmoney.com/stock/tradedetail.html
     :param symbol: choice of {"近一月", "近三月", "近六月", "近一年"}
     :type symbol: str
+    :param proxy: 代理设置
+    :type proxy: dict
     :return: 个股上榜统计
     :rtype: pandas.DataFrame
     """
@@ -154,7 +158,7 @@ def stock_lhb_stock_statistic_em(symbol: str = "近一月") -> pd.DataFrame:
         "client": "WEB",
         "filter": f'(STATISTICS_CYCLE="{symbol_map[symbol]}")',
     }
-    r = requests.get(url, proxies = proxys().get_proxies(), params=params)
+    r = requests.get(url, params=params, proxies=proxy)
     data_json = r.json()
     temp_df = pd.DataFrame(data_json["result"]["data"])
     temp_df.reset_index(inplace=True)
@@ -215,7 +219,7 @@ def stock_lhb_stock_statistic_em(symbol: str = "近一月") -> pd.DataFrame:
 
 
 def stock_lhb_jgmmtj_em(
-    start_date: str = "20220906", end_date: str = "20220906"
+    start_date: str = "20220906", end_date: str = "20220906", proxy=None
 ) -> pd.DataFrame:
     """
     东方财富网-数据中心-龙虎榜单-机构买卖每日统计
@@ -241,7 +245,7 @@ def stock_lhb_jgmmtj_em(
         "client": "WEB",
         "filter": f"(TRADE_DATE>='{start_date}')(TRADE_DATE<='{end_date}')",
     }
-    r = requests.get(url, proxies = proxys().get_proxies(), params=params)
+    r = requests.get(url, params=params, proxies=proxy)
     data_json = r.json()
     temp_df = pd.DataFrame(data_json["result"]["data"])
     temp_df.reset_index(inplace=True)

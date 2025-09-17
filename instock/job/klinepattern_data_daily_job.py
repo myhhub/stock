@@ -14,9 +14,10 @@ sys.path.append(cpath)
 import instock.lib.run_template as runt
 import instock.core.tablestructure as tbs
 import instock.lib.database as mdb
+from instock.lib.database_factory import get_database, execute_sql, insert_db_from_df
 from instock.core.singleton_stock import stock_hist_data
 import instock.core.pattern.pattern_recognitions as kpr
-
+from instock.lib.common_check import check_and_delete_old_data_for_realtime_data
 __author__ = 'myh '
 __date__ = '2023/3/10 '
 
@@ -29,16 +30,7 @@ def prepare(date):
         results = run_check(stocks_data, date=date)
         if results is None:
             return
-
-        table_name = tbs.TABLE_CN_STOCK_KLINE_PATTERN['name']
-        # 删除老数据。
-        if mdb.checkTableIsExist(table_name):
-            del_sql = f"DELETE FROM `{table_name}` where `date` = '{date}'"
-            mdb.executeSql(del_sql)
-            cols_type = None
-        else:
-            cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_KLINE_PATTERN['columns'])
-
+        
         dataKey = pd.DataFrame(results.keys())
         _columns = tuple(tbs.TABLE_CN_STOCK_FOREIGN_KEY['columns'])
         dataKey.columns = _columns
@@ -50,7 +42,8 @@ def prepare(date):
         date_str = date.strftime("%Y-%m-%d")
         if date.strftime("%Y-%m-%d") != data.iloc[0]['date']:
             data['date'] = date_str
-        mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
+        # 更新数据
+        check_and_delete_old_data_for_realtime_data(tbs.TABLE_CN_STOCK_KLINE_PATTERN, data, date)
 
     except Exception as e:
         logging.error(f"klinepattern_data_daily_job.prepare处理异常：{e}")

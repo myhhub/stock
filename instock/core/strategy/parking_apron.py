@@ -19,7 +19,8 @@ def check(code_name, data, date=None, threshold=15):
     else:
         end_date = date.strftime("%Y-%m-%d")
     if end_date is not None:
-        mask = (data['date'] <= end_date)
+        import pandas as pd
+        mask = (pd.to_datetime(data['date']) <= pd.to_datetime(end_date))
         data = data.loc[mask]
     if len(data.index) < threshold:
         return False
@@ -30,7 +31,13 @@ def check(code_name, data, date=None, threshold=15):
     # 找出涨停日
     for _close, _p_change, _date in zip(data['close'].values, data['p_change'].values, data['date'].values):
         if _p_change > 9.5:
-            if turtle_trade.check_enter(code_name, origin_data, date=datetime.date(datetime.strptime(_date, '%Y-%m-%d')), threshold=threshold):
+            # 处理日期格式：兼容字符串和datetime对象
+            if isinstance(_date, str):
+                date_obj = datetime.strptime(_date, '%Y-%m-%d').date()
+            else:
+                # 如果是datetime对象，提取date部分
+                date_obj = _date.date() if hasattr(_date, 'date') else _date
+            if turtle_trade.check_enter(code_name, origin_data, date=date_obj, threshold=threshold):
                 limitup_row[0] = _close
                 limitup_row[1] = _date
                 if check_internal(data, limitup_row):

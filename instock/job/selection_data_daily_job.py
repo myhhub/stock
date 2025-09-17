@@ -13,6 +13,7 @@ sys.path.append(cpath)
 import instock.lib.run_template as runt
 import instock.core.tablestructure as tbs
 import instock.lib.database as mdb
+from instock.lib.database_factory import get_database, execute_sql, insert_db_from_df
 import instock.core.stockfetch as stf
 
 __author__ = 'myh '
@@ -27,20 +28,19 @@ def save_nph_stock_selection_data(date, before=True):
         data = stf.fetch_stock_selection()
         if data is None:
             return
-
         table_name = tbs.TABLE_CN_STOCK_SELECTION['name']
         # 删除老数据。
         if mdb.checkTableIsExist(table_name):
             _date = data.iloc[0]['date']
             del_sql = f"DELETE FROM `{table_name}` where `date` = '{_date}'"
-            mdb.executeSql(del_sql)
+            execute_sql(del_sql)
             cols_type = None
         else:
             cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_SELECTION['columns'])
 
-        mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
+        insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
     except Exception as e:
-        logging.error(f"selection_data_daily_job.save_nph_stock_selection_data处理异常：{e}")
+        logging.exception(f"selection_data_daily_job.save_nph_stock_selection_data处理异常：{e}")
 
 
 def main():

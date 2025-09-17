@@ -14,19 +14,21 @@ from tqdm import tqdm
 from instock.core.singleton_proxy import proxys
 
 
-def stock_lhb_detail_daily_sina(date: str = "20240222") -> pd.DataFrame:
+def stock_lhb_detail_daily_sina(date: str = "20240222", proxy=None) -> pd.DataFrame:
     """
     龙虎榜-每日详情
     https://vip.stock.finance.sina.com.cn/q/go.php/vInvestConsult/kind/lhb/index.phtml
     :param date: 交易日
     :type date: str
+    :param proxy: 代理设置
+    :type proxy: dict
     :return: 龙虎榜-每日详情
     :rtype: pandas.DataFrame
     """
     date = "-".join([date[:4], date[4:6], date[6:]])
     url = "https://vip.stock.finance.sina.com.cn/q/go.php/vInvestConsult/kind/lhb/index.phtml"
     params = {"tradedate": date}
-    r = requests.get(url, proxies = proxys().get_proxies(), params=params)
+    r = requests.get(url, params=params, proxies=proxy)
     soup = BeautifulSoup(r.text, features="lxml")
     selected_html = soup.find(name="div", attrs={"class": "list"}).find_all(
         name="table", attrs={"class": "list_table"}
@@ -87,12 +89,13 @@ def _find_last_page(
     return previous_page
 
 
-def stock_lhb_ggtj_sina(symbol: str = "5") -> pd.DataFrame:
+def stock_lhb_ggtj_sina(symbol: str = "5", proxy=None) -> pd.DataFrame:
     """
     龙虎榜-个股上榜统计
     https://vip.stock.finance.sina.com.cn/q/go.php/vLHBData/kind/ggtj/index.phtml
     :param symbol: choice of {"5": 最近 5 天; "10": 最近 10 天; "30": 最近 30 天; "60": 最近 60 天;}
     :type symbol: str
+    :param proxy: 代理设置
     :return: 龙虎榜-个股上榜统计
     :rtype: pandas.DataFrame
     """
@@ -106,7 +109,7 @@ def stock_lhb_ggtj_sina(symbol: str = "5") -> pd.DataFrame:
             "last": symbol,
             "p": page,
         }
-        r = requests.get(url, proxies = proxys().get_proxies(), params=params)
+        r = requests.get(url, params=params, proxies=proxy)
         temp_df = pd.read_html(StringIO(r.text))[0].iloc[0:, :]
         big_df = pd.concat(objs=[big_df, temp_df], ignore_index=True)
     big_df["股票代码"] = big_df["股票代码"].astype(str).str.zfill(6)

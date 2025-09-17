@@ -9,10 +9,9 @@ from functools import lru_cache
 import math
 import pandas as pd
 import requests
-from instock.core.singleton_proxy import proxys
+from instock.core.proxy_pool import get_proxy
 
-
-def fund_etf_spot_em() -> pd.DataFrame:
+def fund_etf_spot_em(proxy=None) -> pd.DataFrame:
     """
     东方财富-ETF 实时行情
     https://quote.eastmoney.com/center/gridlist.html#fund_etf
@@ -36,7 +35,7 @@ def fund_etf_spot_em() -> pd.DataFrame:
         "fields": "f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f12,f13,f14,f15,f16,f17,f18,f20,f21,f23,f24,f25,f22,f11,f62,f128,f136,f115,f152",
         "_": "1672806290972",
     }
-    r = requests.get(url, proxies = proxys().get_proxies(), params=params)
+    r = requests.get(url, params=params, proxies=proxy)
     data_json = r.json()
 
     data = data_json["data"]["diff"]
@@ -48,7 +47,7 @@ def fund_etf_spot_em() -> pd.DataFrame:
     while page_count > 1:
         page_current = page_current + 1
         params["pn"] = page_current
-        r = requests.get(url, proxies = proxys().get_proxies(), params=params)
+        r = requests.get(url, params=params, proxies=get_proxy())
         data_json = r.json()
         _data = data_json["data"]["diff"]
         data.extend(_data)
@@ -108,7 +107,7 @@ def fund_etf_spot_em() -> pd.DataFrame:
 
 
 @lru_cache()
-def _fund_etf_code_id_map_em() -> dict:
+def _fund_etf_code_id_map_em(proxy=None) -> dict:
     """
     东方财富-ETF 代码和市场标识映射
     https://quote.eastmoney.com/center/gridlist.html#fund_etf
@@ -130,7 +129,7 @@ def _fund_etf_code_id_map_em() -> dict:
         "fields": "f12,f13",
         "_": "1672806290972",
     }
-    r = requests.get(url, proxies = proxys().get_proxies(), params=params)
+    r = requests.get(url, params=params, proxies=proxy)
     data_json = r.json()
     temp_df = pd.DataFrame(data_json["data"]["diff"])
     temp_dict = dict(zip(temp_df["f12"], temp_df["f13"]))
@@ -142,6 +141,7 @@ def fund_etf_hist_em(
     start_date: str = "19700101",
     end_date: str = "20500101",
     adjust: str = "",
+    proxy=None,
 ) -> pd.DataFrame:
     """
     东方财富-ETF 行情
@@ -156,10 +156,12 @@ def fund_etf_hist_em(
     :type end_date: str
     :param adjust: choice of {"qfq": "前复权", "hfq": "后复权", "": "不复权"}
     :type adjust: str
+    :param proxy: 代理设置
+    :type proxy: dict
     :return: 每日行情
     :rtype: pandas.DataFrame
     """
-    code_id_dict = _fund_etf_code_id_map_em()
+    code_id_dict = _fund_etf_code_id_map_em(proxy)
     adjust_dict = {"qfq": "1", "hfq": "2", "": "0"}
     period_dict = {"daily": "101", "weekly": "102", "monthly": "103"}
     url = "http://push2his.eastmoney.com/api/qt/stock/kline/get"
@@ -174,7 +176,7 @@ def fund_etf_hist_em(
         "end": end_date,
         "_": "1623766962675",
     }
-    r = requests.get(url, proxies = proxys().get_proxies(), params=params)
+    r = requests.get(url, params=params, proxies=proxy)
     data_json = r.json()
     if not (data_json["data"] and data_json["data"]["klines"]):
         return pd.DataFrame()
@@ -214,6 +216,7 @@ def fund_etf_hist_min_em(
     end_date: str = "2222-01-01 09:32:00",
     period: str = "5",
     adjust: str = "",
+    proxy=None,
 ) -> pd.DataFrame:
     """
     东方财富-ETF 行情
@@ -228,10 +231,12 @@ def fund_etf_hist_min_em(
     :type period: str
     :param adjust: choice of {'', 'qfq', 'hfq'}
     :type adjust: str
+    :param proxy: 代理设置
+    :type proxy: dict
     :return: 每日分时行情
     :rtype: pandas.DataFrame
     """
-    code_id_dict = _fund_etf_code_id_map_em()
+    code_id_dict = _fund_etf_code_id_map_em(proxy)
     adjust_map = {
         "": "0",
         "qfq": "1",
@@ -248,7 +253,7 @@ def fund_etf_hist_min_em(
             "secid": f"{code_id_dict[symbol]}.{symbol}",
             "_": "1623766962675",
         }
-        r = requests.get(url, proxies = proxys().get_proxies(), params=params)
+        r = requests.get(url, params=params, proxies=proxy)
         data_json = r.json()
         temp_df = pd.DataFrame(
             [item.split(",") for item in data_json["data"]["trends"]]
@@ -288,7 +293,7 @@ def fund_etf_hist_min_em(
             "end": "20500000",
             "_": "1630930917857",
         }
-        r = requests.get(url, proxies = proxys().get_proxies(), params=params)
+        r = requests.get(url, params=params, proxies=proxy)
         data_json = r.json()
         temp_df = pd.DataFrame(
             [item.split(",") for item in data_json["data"]["klines"]]
@@ -341,39 +346,42 @@ def fund_etf_hist_min_em(
 if __name__ == "__main__":
     fund_etf_spot_em_df = fund_etf_spot_em()
     print(fund_etf_spot_em_df)
+    # import akshare as ak
+    # fund_etf_spot_em_df = ak.fund_etf_spot_em()
+    # print(fund_etf_spot_em_df)
 
-    fund_etf_hist_hfq_em_df = fund_etf_hist_em(
-        symbol="513500",
-        period="daily",
-        start_date="20000101",
-        end_date="20230201",
-        adjust="hfq",
-    )
-    print(fund_etf_hist_hfq_em_df)
+    # fund_etf_hist_hfq_em_df = fund_etf_hist_em(
+    #     symbol="513500",
+    #     period="daily",
+    #     start_date="20000101",
+    #     end_date="20230201",
+    #     adjust="hfq",
+    # )
+    # print(fund_etf_hist_hfq_em_df)
 
-    fund_etf_hist_qfq_em_df = fund_etf_hist_em(
-        symbol="513500",
-        period="daily",
-        start_date="20000101",
-        end_date="20230201",
-        adjust="qfq",
-    )
-    print(fund_etf_hist_qfq_em_df)
+    # fund_etf_hist_qfq_em_df = fund_etf_hist_em(
+    #     symbol="513500",
+    #     period="daily",
+    #     start_date="20000101",
+    #     end_date="20230201",
+    #     adjust="qfq",
+    # )
+    # print(fund_etf_hist_qfq_em_df)
 
-    fund_etf_hist_em_df = fund_etf_hist_em(
-        symbol="513500",
-        period="daily",
-        start_date="20000101",
-        end_date="20230201",
-        adjust="",
-    )
-    print(fund_etf_hist_em_df)
+    # fund_etf_hist_em_df = fund_etf_hist_em(
+    #     symbol="513500",
+    #     period="daily",
+    #     start_date="20000101",
+    #     end_date="20230201",
+    #     adjust="",
+    # )
+    # print(fund_etf_hist_em_df)
 
-    fund_etf_hist_min_em_df = fund_etf_hist_min_em(
-        symbol="513500",
-        period="5",
-        adjust="hfq",
-        start_date="2023-01-01 09:32:00",
-        end_date="2023-01-04 14:40:00",
-    )
-    print(fund_etf_hist_min_em_df)
+    # fund_etf_hist_min_em_df = fund_etf_hist_min_em(
+    #     symbol="513500",
+    #     period="5",
+    #     adjust="hfq",
+    #     start_date="2023-01-01 09:32:00",
+    #     end_date="2023-01-04 14:40:00",
+    # )
+    # print(fund_etf_hist_min_em_df)
