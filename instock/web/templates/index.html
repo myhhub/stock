@@ -15,6 +15,9 @@
                 <button type="button" class="btn btn-success" onclick="openSearchPage()">
                     <i class="fa fa-search"></i> 股票搜索
                 </button>
+                <button type="button" class="btn btn-warning" onclick="showJobUpdateDialog()" id="updateFullBtn">
+                    <i class="fa fa-refresh"></i> 数据更新
+                </button>
             </div>
         </div>
     </div>
@@ -400,6 +403,54 @@
     </div>
 </div>
 
+<div class="modal fade" id="jobUpdateModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">
+                    <i class="fa fa-refresh"></i> 数据更新选项
+                </h4>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <strong>当前位置:</strong> InStock股票系统主页
+                    <br><strong>功能:</strong> 细粒度数据更新管理
+                </div>
+                
+                <div id="jobUpdateOptions">
+                    <div class="text-center">
+                        <i class="fa fa-spinner fa-spin fa-2x"></i>
+                        <p>正在加载更新选项...</p>
+                    </div>
+                </div>
+                
+                <div class="mt-3" id="updateStatusArea" style="display: none;">
+                    <div class="alert alert-warning">
+                        <div id="updateProgressBar">
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" 
+                                     style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                                    0%
+                                </div>
+                            </div>
+                        </div>
+                        <div id="updateMessage" class="mt-2"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="startUpdateBtn" onclick="startSelectedJobUpdate()" style="display: none;">
+                    <i class="fa fa-play"></i> 开始更新
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- K线图快捷入口对话框 -->
 <div class="modal fade" id="klineModal" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
@@ -487,6 +538,473 @@ function openKLine() {
     }
     
     window.open(url, '_blank', 'width=1400,height=900,scrollbars=yes,resizable=yes');
+}
+
+// 主页面细粒度数据更新功能
+let currentJobType = null;
+let currentTaskId = null;
+let updatePollInterval = null;
+
+function showJobUpdateDialog() {
+    // 显示更新对话框
+    $('#jobUpdateModal').modal('show');
+    
+    // 加载所有job选项
+    loadAllJobOptions();
+}
+
+function loadAllJobOptions() {
+    fetch('/instock/job_list')
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                displayAllJobOptions(result.data);
+            } else {
+                showJobOptionsError('获取更新选项失败');
+            }
+        })
+        .catch(error => {
+            console.error('加载更新选项失败:', error);
+            showJobOptionsError('网络错误');
+        });
+}
+
+function displayAllJobOptions(jobs) {
+    const optionsContainer = document.getElementById('jobUpdateOptions');
+    
+    let html = '<div class="row">';
+    
+    // 按类型分组显示
+    const jobTypes = {};
+    Object.keys(jobs).forEach(jobKey => {
+        const job = jobs[jobKey];
+        if (!jobTypes[job.type]) {
+            jobTypes[job.type] = [];
+        }
+        jobTypes[job.type].push({key: jobKey, ...job});
+    });
+    
+    // 按特定顺序显示类型
+    const typeOrder = ['basic', 'indicators', 'pattern', 'strategy', 'selection', 'backtest', 'complete'];
+    
+    typeOrder.forEach(type => {
+        if (!jobTypes[type]) return;
+        
+        html += `
+            <div class="col-md-6 mb-3">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="card-title">${getJobTypeName(type)}</h6>
+                    </div>
+                    <div class="card-body">
+        `;
+        
+        jobTypes[type].forEach(job => {
+            html += `
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" name="updateOption" id="job_${job.key}" value="${job.key}">
+                    <label class="form-check-label" for="job_${job.key}" style="cursor: pointer;">
+                        <strong>${job.name}</strong>
+                        <br><small class="text-muted">${job.description}</small>
+                    </label>
+                </div>
+            `;
+        });
+        
+        html += '</div></div></div>';
+    });
+    
+    html += '</div>';
+    
+    // 添加更新说明
+    html += `
+        <div class="alert alert-info mt-3">
+            <h6><i class="fa fa-info-circle"></i> 更新说明</h6>
+            <ul class="mb-0">
+                <li><strong>基础数据:</strong> 股票实时行情、资金流向、龙虎榜等开盘即可获取的数据</li>
+                <li><strong>技术指标:</strong> MACD、KDJ、RSI等技术指标计算</li>
+                <li><strong>K线形态:</strong> 61种K线形态识别</li>
+                <li><strong>策略选股:</strong> 执行内置选股策略</li>
+                <li><strong>综合选股:</strong> 基于200多个条件的综合筛选</li>
+                <li><strong>完整更新:</strong> 执行所有数据更新流程（推荐）</li>
+            </ul>
+        </div>
+    `;
+    
+    optionsContainer.innerHTML = html;
+    
+    // 默认选中完整更新
+    const completeUpdate = document.getElementById('job_complete');
+    if (completeUpdate) {
+        completeUpdate.checked = true;
+    }
+    
+    // 显示开始按钮
+    document.getElementById('startUpdateBtn').style.display = 'block';
+}
+
+function getJobTypeName(type) {
+    const typeNames = {
+        'basic': '📊 基础数据',
+        'indicators': '📈 技术指标', 
+        'pattern': '📉 K线形态',
+        'strategy': '🎯 策略选股',
+        'selection': '🔍 综合选股',
+        'backtest': '📋 策略回测',
+        'complete': '🚀 完整更新'
+    };
+    return typeNames[type] || type;
+}
+
+function startSelectedJobUpdate() {
+    const selectedOption = document.querySelector('input[name="updateOption"]:checked');
+    if (!selectedOption) {
+        alert('请选择更新选项');
+        return;
+    }
+    
+    const jobType = selectedOption.value;
+    
+    // 禁用开始按钮
+    const startBtn = document.getElementById('startUpdateBtn');
+    startBtn.disabled = true;
+    startBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> 更新中...';
+    
+    // 显示进度区域
+    document.getElementById('updateStatusArea').style.display = 'block';
+    
+    // 显示主页面状态提示
+    showMainUpdateStatus(`${getJobTypeName(jobType.split('_')[0])}任务开始执行...`);
+    
+    // 发送更新请求
+    fetch('/instock/job_update', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            job_type: jobType
+        })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            currentTaskId = result.task_id;
+            document.getElementById('updateMessage').innerHTML = `
+                <i class="fa fa-check-circle text-success"></i> ${result.message}
+            `;
+            
+            // 开始轮询状态
+            startJobUpdatePolling();
+        } else {
+            throw new Error(result.message);
+        }
+    })
+    .catch(error => {
+        console.error('更新请求失败:', error);
+        document.getElementById('updateMessage').innerHTML = `
+            <i class="fa fa-exclamation-triangle text-danger"></i> 更新失败: ${error.message}
+        `;
+        
+        // 恢复按钮状态
+        setTimeout(() => {
+            startBtn.disabled = false;
+            startBtn.innerHTML = '<i class="fa fa-play"></i> 开始更新';
+        }, 3000);
+    });
+}
+
+function startJobUpdatePolling() {
+    if (updatePollInterval) {
+        clearInterval(updatePollInterval);
+    }
+    
+    updatePollInterval = setInterval(() => {
+        checkJobUpdateStatus();
+    }, 2000); // 2秒检查一次
+}
+
+function checkJobUpdateStatus() {
+    if (!currentTaskId) return;
+    
+    fetch(`/instock/job_update_status?task_id=${currentTaskId}`)
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                const status = result.data;
+                
+                if (status.running) {
+                    // 更新进度条
+                    const progressBar = document.querySelector('.progress-bar');
+                    progressBar.style.width = `${status.progress}%`;
+                    progressBar.textContent = `${status.progress}%`;
+                    progressBar.setAttribute('aria-valuenow', status.progress);
+                    
+                    document.getElementById('updateMessage').innerHTML = `
+                        <i class="fa fa-spinner fa-spin text-primary"></i> ${status.message}
+                    `;
+                    
+                    // 更新主页面状态
+                    showMainUpdateStatus(`${status.job_info.name} - ${status.message} (${status.progress}%)`);
+                } else {
+                    // 任务完成
+                    clearInterval(updatePollInterval);
+                    updatePollInterval = null;
+                    
+                    const progressBar = document.querySelector('.progress-bar');
+                    progressBar.style.width = '100%';
+                    progressBar.textContent = '100%';
+                    
+                    if (status.success) {
+                        document.getElementById('updateMessage').innerHTML = `
+                            <i class="fa fa-check-circle text-success"></i> 更新完成！
+                        `;
+                        
+                        showMainUpdateStatus('数据更新完成！', 'success');
+                        
+                        // 3秒后关闭对话框
+                        setTimeout(() => {
+                            $('#jobUpdateModal').modal('hide');
+                        }, 3000);
+                    } else {
+                        document.getElementById('updateMessage').innerHTML = `
+                            <i class="fa fa-exclamation-triangle text-danger"></i> 更新失败: ${status.message}
+                        `;
+                        
+                        showMainUpdateStatus('更新失败: ' + status.message, 'error');
+                    }
+                    
+                    // 恢复按钮状态
+                    const startBtn = document.getElementById('startUpdateBtn');
+                    setTimeout(() => {
+                        startBtn.disabled = false;
+                        startBtn.innerHTML = '<i class="fa fa-play"></i> 开始更新';
+                    }, 3000);
+                }
+            }
+        })
+        .catch(error => {
+            console.error('检查更新状态失败:', error);
+            clearInterval(updatePollInterval);
+            updatePollInterval = null;
+        });
+}
+
+function showJobOptionsError(message) {
+    const optionsContainer = document.getElementById('jobUpdateOptions');
+    optionsContainer.innerHTML = `
+        <div class="alert alert-danger">
+            <i class="fa fa-exclamation-triangle"></i>
+            <strong>加载失败</strong>
+            <p>${message}</p>
+            <button class="btn btn-sm btn-outline-secondary" onclick="loadAllJobOptions()">
+                <i class="fa fa-refresh"></i> 重试
+            </button>
+        </div>
+    `;
+}
+
+// 模态框关闭时清理
+$('#jobUpdateModal').on('hidden.bs.modal', function () {
+    if (updatePollInterval) {
+        clearInterval(updatePollInterval);
+        updatePollInterval = null;
+    }
+    currentTaskId = null;
+    currentJobType = null;
+    
+    // 重置界面
+    document.getElementById('updateStatusArea').style.display = 'none';
+    const startBtn = document.getElementById('startUpdateBtn');
+    startBtn.disabled = false;
+    startBtn.innerHTML = '<i class="fa fa-play"></i> 开始更新';
+    startBtn.style.display = 'none';
+    
+    const progressBar = document.querySelector('.progress-bar');
+    if (progressBar) {
+        progressBar.style.width = '0%';
+        progressBar.textContent = '0%';
+    }
+    
+    // 清空选项内容
+    document.getElementById('jobUpdateOptions').innerHTML = `
+        <div class="text-center">
+            <i class="fa fa-spinner fa-spin fa-2x"></i>
+            <p>正在加载更新选项...</p>
+        </div>
+    `;
+});
+
+function updateFullData() {
+    const updateBtn = document.getElementById('updateFullBtn');
+    
+    // 检查是否已有任务在运行
+    if (mainUpdateTaskId) {
+        alert('已有数据更新任务在执行中，请稍后再试');
+        return;
+    }
+    
+    const confirmUpdate = confirm('确定要更新全部数据吗？\n\n这将执行完整的股票数据更新流程，包括：\n- 基础数据抓取\n- 技术指标计算\n- K线形态识别\n- 策略选股\n\n更新过程可能需要几分钟时间。');
+    
+    if (!confirmUpdate) return;
+    
+    // 禁用按钮并显示状态
+    updateBtn.disabled = true;
+    updateBtn.innerHTML = '<i class="fa fa-refresh fa-spin"></i> 更新中';
+    
+    // 显示更新状态提示
+    showMainUpdateStatus('更新任务开始执行...');
+    
+    // 发送更新请求
+    fetch('/instock/data_update', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            type: 'full'
+        })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            mainUpdateTaskId = result.task_id;
+            showMainUpdateStatus('数据更新任务已开始执行，请等待完成...');
+            
+            // 开始轮询任务状态
+            startMainUpdateStatusPolling();
+        } else {
+            throw new Error(result.message);
+        }
+    })
+    .catch(error => {
+        console.error('更新请求失败:', error);
+        showMainUpdateStatus('更新失败: ' + error.message, 'error');
+        
+        // 5秒后恢复按钮状态
+        setTimeout(() => {
+            resetMainUpdateButton();
+        }, 5000);
+    });
+}
+
+function showMainUpdateStatus(message, type = 'info') {
+    // 创建或更新状态提示元素
+    let statusElement = document.getElementById('mainUpdateStatus');
+    if (!statusElement) {
+        statusElement = document.createElement('div');
+        statusElement.id = 'mainUpdateStatus';
+        statusElement.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            padding: 15px 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            max-width: 400px;
+            word-wrap: break-word;
+            transition: all 0.3s ease;
+        `;
+        document.body.appendChild(statusElement);
+    }
+    
+    // 设置样式和内容
+    if (type === 'error') {
+        statusElement.style.backgroundColor = '#f8d7da';
+        statusElement.style.color = '#721c24';
+        statusElement.style.border = '1px solid #f5c6cb';
+    } else if (type === 'success') {
+        statusElement.style.backgroundColor = '#d4edda';
+        statusElement.style.color = '#155724';
+        statusElement.style.border = '1px solid #c3e6cb';
+    } else {
+        statusElement.style.backgroundColor = '#d1ecf1';
+        statusElement.style.color = '#0c5460';
+        statusElement.style.border = '1px solid #bee5eb';
+    }
+    
+    statusElement.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <i class="fa fa-${type === 'error' ? 'exclamation-triangle' : type === 'success' ? 'check-circle' : 'spinner fa-spin'}"></i>
+            <span>${message}</span>
+        </div>
+    `;
+}
+
+function hideMainUpdateStatus() {
+    const statusElement = document.getElementById('mainUpdateStatus');
+    if (statusElement) {
+        statusElement.remove();
+    }
+}
+
+function startMainUpdateStatusPolling() {
+    if (mainUpdateCheckInterval) {
+        clearInterval(mainUpdateCheckInterval);
+    }
+    
+    mainUpdateCheckInterval = setInterval(() => {
+        checkMainUpdateStatus();
+    }, 2000); // 2秒检查一次
+}
+
+function checkMainUpdateStatus() {
+    fetch('/instock/data_update_status')
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                const status = result.data;
+                
+                if (status.running) {
+                    showMainUpdateStatus(`
+                        更新进度: ${status.progress}%<br>
+                        ${status.message}
+                    `);
+                } else {
+                    // 任务完成
+                    clearInterval(mainUpdateCheckInterval);
+                    mainUpdateCheckInterval = null;
+                    
+                    if (status.success) {
+                        showMainUpdateStatus('数据更新完成！', 'success');
+                        
+                        // 5秒后隐藏状态提示
+                        setTimeout(() => {
+                            hideMainUpdateStatus();
+                        }, 5000);
+                    } else {
+                        showMainUpdateStatus('更新失败: ' + status.message, 'error');
+                        
+                        // 8秒后隐藏状态提示
+                        setTimeout(() => {
+                            hideMainUpdateStatus();
+                        }, 8000);
+                    }
+                    
+                    // 恢复按钮状态
+                    resetMainUpdateButton();
+                }
+            }
+        })
+        .catch(error => {
+            console.error('检查更新状态失败:', error);
+            clearInterval(mainUpdateCheckInterval);
+            mainUpdateCheckInterval = null;
+            
+            showMainUpdateStatus('状态检查失败', 'error');
+            
+            setTimeout(() => {
+                resetMainUpdateButton();
+            }, 3000);
+        });
+}
+
+function resetMainUpdateButton() {
+    const updateBtn = document.getElementById('updateFullBtn');
+    updateBtn.disabled = false;
+    updateBtn.innerHTML = '<i class="fa fa-refresh"></i> 更新全部数据';
+    mainUpdateTaskId = null;
 }
 </script>
 

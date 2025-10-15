@@ -6,7 +6,7 @@ import random
 from pathlib import Path
 
 # 如果下面目标站不可用，请使用test.ipw.cn、ip.sb、ipinfo.io、ip-api.com、64.ipcheck.ing
-def get_proxy(proxy=None, pool_size=5):
+def get_proxy(proxy=None, pool_size=8):
     """
     基于青果代理获取动态代理IP，带缓存机制
     

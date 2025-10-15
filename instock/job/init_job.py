@@ -103,10 +103,11 @@ def create_new_base_table():
 def check_database():
     """检查数据库连接"""
     try:
+        
         if db_config.db_type == DatabaseType.MYSQL:
             check_mysql_database()
-        elif db_config.db_type == DatabaseType.CLICKHOUSE:
-            check_clickhouse_database()
+        # elif db_config.db_type == DatabaseType.CLICKHOUSE:
+        #     check_clickhouse_database()
         else:
             raise Exception(f"不支持的数据库类型: {db_config.db_type}")
     except Exception as e:
@@ -137,7 +138,7 @@ def main():
         check_database()
         logging.info("数据库连接检查成功")
     except Exception as e:
-        logging.error("执行信息：数据库不存在或连接失败，将创建/初始化数据库。")
+        logging.exception("执行信息：数据库不存在或连接失败，将创建/初始化数据库。")
         # 检查数据库失败，
         create_new_database()
     

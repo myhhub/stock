@@ -1,6 +1,17 @@
 from sqlalchemy import create_engine
 import os
 import pandas as pd
+from pathlib import Path
+
+# 加载.env文件
+env_path = Path(__file__).parent.parent / '.env'
+if env_path.exists():
+    with open(env_path) as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith('#') and '=' in line:
+                key, value = line.split('=', 1)
+                os.environ[key] = value
 
 DB_CONFIG = {
     'host': os.environ.get('MYSQL_HOST'),

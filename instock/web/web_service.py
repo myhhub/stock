@@ -28,6 +28,8 @@ import instock.lib.version as version
 import instock.web.dataTableHandler as dataTableHandler
 import instock.web.dataIndicatorsHandler as dataIndicatorsHandler
 import instock.web.dataDownloadHandler as dataDownloadHandler
+import instock.web.dataUpdateHandler as dataUpdateHandler
+import instock.web.jobUpdateHandler as jobUpdateHandler
 import instock.web.base as webBase
 
 __author__ = 'myh '
@@ -55,6 +57,20 @@ class Application(tornado.web.Application):
             (r"/instock/data_download_api", dataDownloadHandler.DataDownloadApiHandler),
             # 文件下载
             (r"/instock/download/(.*)", dataDownloadHandler.FileDownloadHandler),
+            # 数据更新API
+            (r"/instock/data_update", dataUpdateHandler.DataUpdateHandler),
+            # 数据更新状态查询
+            (r"/instock/data_update_status", dataUpdateHandler.DataUpdateStatusHandler),
+            # 数据检查
+            (r"/instock/data_check", dataUpdateHandler.DataCheckHandler),
+            # 细粒度job更新API
+            (r"/instock/job_update", jobUpdateHandler.JobUpdateHandler),
+            # job更新状态查询
+            (r"/instock/job_update_status", jobUpdateHandler.JobUpdateStatusHandler),
+            # job列表查询
+            (r"/instock/job_list", jobUpdateHandler.JobListHandler),
+            # 菜单到job映射
+            (r"/instock/menu_to_job", jobUpdateHandler.MenuToJobMappingHandler),
         ]
         settings = dict(  # 配置
             template_path=os.path.join(os.path.dirname(__file__), "templates"),

@@ -95,7 +95,6 @@ def main():
             runt.run_with_args(prepare, strategy, stocks_data)
         except Exception as e:
             logging.exception(f"strategy_data_daily_job.main处理异常：{strategy}策略{e}")
-        print("debug")
     # runt.run_with_args(prepare, tbs.TABLE_CN_STOCK_STRATEGIES[2], stocks_data)
     # runt.run_with_args(prepare, tbs.TABLE_CN_STOCK_STRATEGIES[3], stocks_data)
     # runt.run_with_args(prepare, tbs.TABLE_CN_STOCK_STRATEGIES[1])
