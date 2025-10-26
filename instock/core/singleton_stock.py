@@ -17,8 +17,11 @@ class stock_data(metaclass=singleton_type):
     def __init__(self, date):
         try:
             self.data = stf.fetch_stocks(date)
+            if self.data is None:
+                logging.warning(f"singleton.stock_data: 日期 {date} 未获取到股票数据")
         except Exception as e:
             logging.error(f"singleton.stock_data处理异常：{e}")
+            self.data = None
 
     def get_data(self):
         return self.data
@@ -28,7 +31,16 @@ class stock_data(metaclass=singleton_type):
 class stock_hist_data(metaclass=singleton_type):
     def __init__(self, date=None, stocks=None, workers=16):
         if stocks is None:
-            _subset = stock_data(date).get_data()[list(tbs.TABLE_CN_STOCK_FOREIGN_KEY['columns'])]
+            # 修复：添加数据有效性检查，避免对None进行索引操作
+            stock_data_instance = stock_data(date)
+            data = stock_data_instance.get_data()
+
+            if data is None or len(data) == 0:
+                logging.warning(f"singleton.stock_hist_data: 无法获取日期 {date} 的股票数据")
+                self.data = None
+                return
+
+            _subset = data[list(tbs.TABLE_CN_STOCK_FOREIGN_KEY['columns'])]
             stocks = [tuple(x) for x in _subset.values]
         if stocks is None:
             self.data = None
