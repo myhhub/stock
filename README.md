@@ -280,14 +280,14 @@ a.安装依赖库：
 
 ```
 #dos切换到本系统的根目录，执行下面命令：
-python pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
 b.若想升级项目依赖库至最新版，可以通过下面方法：
 
 先打开requirements.txt，然后修改文件中的“==”为“>=”，接着执行下面命令：
 
 ```
-python pip install -r requirements.txt --upgrade
+python -m pip install -r requirements.txt --upgrade
 ```
 
 c.若扩展了本项目，可以通过下面方法生成项目依赖：
@@ -295,10 +295,10 @@ c.若扩展了本项目，可以通过下面方法生成项目依赖：
 ```
 #使用pipreqs生成项目相关依赖的requirements.txt
 
-python pip install pipreqs
+python -m pip install pipreqs
 # 安装pipreqs，若有安装可跳过
 
-python  pipreqs --encoding utf-8 --force ./ 
+python -m pipreqs --encoding utf-8 --force ./ 
 # 本项目是utf-8编码
 ```
 
