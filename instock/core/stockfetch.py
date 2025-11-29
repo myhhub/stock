@@ -108,9 +108,9 @@ def fetch_stocks(date):
     return None
 
 
-def fetch_stock_selection():
+def fetch_stock_selection(date=None):
     try:
-        data = sst.stock_selection()
+        data = sst.stock_selection(date)
         if data is None or len(data.index) == 0:
             return None
         data.columns = list(tbs.TABLE_CN_STOCK_SELECTION['columns'])

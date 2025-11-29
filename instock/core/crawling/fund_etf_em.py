@@ -36,25 +36,35 @@ def fund_etf_spot_em() -> pd.DataFrame:
         "fields": "f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f12,f13,f14,f15,f16,f17,f18,f20,f21,f23,f24,f25,f22,f11,f62,f128,f136,f115,f152",
         "_": "1672806290972",
     }
-    r = requests.get(url, proxies = proxys().get_proxies(), params=params)
-    data_json = r.json()
-
-    data = data_json["data"]["diff"]
-    if not data:
-        return pd.DataFrame()
-
-    data_count = data_json["data"]["total"]
-    page_count = math.ceil(data_count/page_size)
-    while page_count > 1:
-        page_current = page_current + 1
-        params["pn"] = page_current
-        r = requests.get(url, proxies = proxys().get_proxies(), params=params)
+    try:
+        r = requests.get(url, proxies = proxys().get_proxies(), params=params, timeout=10)
+        r.raise_for_status()  # 检查请求是否成功
         data_json = r.json()
-        _data = data_json["data"]["diff"]
-        data.extend(_data)
-        page_count =page_count - 1
+        if "data" not in data_json or "diff" not in data_json["data"]:
+            return pd.DataFrame()
 
-    temp_df = pd.DataFrame(data)
+        data = data_json["data"]["diff"]
+        if not data:
+            return pd.DataFrame()
+
+        data_count = data_json["data"]["total"]
+        page_count = math.ceil(data_count/page_size)
+        while page_count > 1:
+            page_current = page_current + 1
+            params["pn"] = page_current
+            r = requests.get(url, proxies = proxys().get_proxies(), params=params, timeout=10)
+            r.raise_for_status()  # 检查请求是否成功
+            data_json = r.json()
+            if "data" not in data_json or "diff" not in data_json["data"]:
+                break
+            _data = data_json["data"]["diff"]
+            data.extend(_data)
+            page_count = page_count - 1
+
+        temp_df = pd.DataFrame(data)
+    except Exception as e:
+        print(f"获取ETF数据失败: {e}")
+        return pd.DataFrame()
     temp_df.rename(
         columns={
             "f12": "代码",

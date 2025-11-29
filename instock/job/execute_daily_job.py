@@ -16,8 +16,15 @@ sys.path.append(cpath)
 log_path = os.path.join(cpath_current, 'log')
 if not os.path.exists(log_path):
     os.makedirs(log_path)
-logging.basicConfig(format='%(asctime)s %(message)s', filename=os.path.join(log_path, 'stock_execute_job.log'))
-logging.getLogger().setLevel(logging.INFO)
+# 配置日志，同时输出到控制台和文件
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s %(levelname)s %(message)s',
+    handlers=[
+        logging.FileHandler(os.path.join(log_path, 'stock_execute_job.log'), encoding='utf-8'),
+        logging.StreamHandler(sys.stdout)
+    ]
+)
 import init_job as bj
 import basic_data_daily_job as hdj
 import basic_data_other_daily_job as hdtj

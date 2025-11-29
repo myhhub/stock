@@ -12,7 +12,7 @@ __author__ = 'myh '
 __date__ = '2023/5/9 '
 
 
-def stock_selection() -> pd.DataFrame:
+def stock_selection(date=None) -> pd.DataFrame:
     """
     东方财富网-个股-选股器
     https://data.eastmoney.com/xuangu/
@@ -54,6 +54,9 @@ def stock_selection() -> pd.DataFrame:
 
     temp_df = pd.DataFrame(data)
 
+    # 删除重复的主键
+    temp_df.drop_duplicates(subset=['SECURITY_CODE'], keep='first', inplace=True)
+
     mask = ~temp_df['CONCEPT'].isna()
     temp_df.loc[mask, 'CONCEPT'] = temp_df.loc[mask, 'CONCEPT'].apply(lambda x: ', '.join(x))
     mask = ~temp_df['STYLE'].isna()
@@ -66,6 +69,11 @@ def stock_selection() -> pd.DataFrame:
         elif t == 'datetime':
             temp_df[cols[k]["map"]] = pd.to_datetime(temp_df[cols[k]["map"]], errors="coerce").dt.date
 
+    # 添加日期列
+    if date is None:
+        import datetime
+        date = datetime.date.today()
+    temp_df['MAX_TRADE_DATE'] = date
     return temp_df
 
 

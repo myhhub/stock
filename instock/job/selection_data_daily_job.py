@@ -10,6 +10,18 @@ import sys
 cpath_current = os.path.dirname(os.path.dirname(__file__))
 cpath = os.path.abspath(os.path.join(cpath_current, os.pardir))
 sys.path.append(cpath)
+log_path = os.path.join(cpath_current, 'log')
+if not os.path.exists(log_path):
+    os.makedirs(log_path)
+# 配置日志，同时输出到控制台和文件
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s %(levelname)s %(message)s',
+    handlers=[
+        logging.FileHandler(os.path.join(log_path, 'stock_selection_data_daily_job.log'), encoding='utf-8'),
+        logging.StreamHandler(sys.stdout)
+    ]
+)
 import instock.lib.run_template as runt
 import instock.core.tablestructure as tbs
 import instock.lib.database as mdb
@@ -24,14 +36,15 @@ def save_nph_stock_selection_data(date, before=True):
         return
 
     try:
-        data = stf.fetch_stock_selection()
+        data = stf.fetch_stock_selection(date)
         if data is None:
             return
 
         table_name = tbs.TABLE_CN_STOCK_SELECTION['name']
         # 删除老数据。
         if mdb.checkTableIsExist(table_name):
-            _date = data.iloc[0]['date']
+            # 使用当前日期删除老数据
+            _date = date.strftime("%Y-%m-%d")
             del_sql = f"DELETE FROM `{table_name}` where `date` = '{_date}'"
             mdb.executeSql(del_sql)
             cols_type = None

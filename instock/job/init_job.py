@@ -10,6 +10,18 @@ import sys
 cpath_current = os.path.dirname(os.path.dirname(__file__))
 cpath = os.path.abspath(os.path.join(cpath_current, os.pardir))
 sys.path.append(cpath)
+log_path = os.path.join(cpath_current, 'log')
+if not os.path.exists(log_path):
+    os.makedirs(log_path)
+# 配置日志，同时输出到控制台和文件
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s %(levelname)s %(message)s',
+    handlers=[
+        logging.FileHandler(os.path.join(log_path, 'stock_init_job.log')),
+        logging.StreamHandler(sys.stdout)
+    ]
+)
 import instock.lib.database as mdb
 
 __author__ = 'myh '

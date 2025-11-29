@@ -34,24 +34,34 @@ def stock_zh_a_spot_em() -> pd.DataFrame:
         "fields": "f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f14,f15,f16,f17,f18,f20,f21,f22,f23,f24,f25,f26,f37,f38,f39,f40,f41,f45,f46,f48,f49,f57,f61,f100,f112,f113,f114,f115,f221",
         "_": "1623833739532",
     }
-    r = requests.get(url, proxies = proxys().get_proxies(), params=params)
-    data_json = r.json()
-    data = data_json["data"]["diff"]
-    if not data:
-        return pd.DataFrame()
-
-    data_count = data_json["data"]["total"]
-    page_count = math.ceil(data_count/page_size)
-    while page_count > 1:
-        page_current = page_current + 1
-        params["pn"] = page_current
-        r = requests.get(url, proxies = proxys().get_proxies(), params=params)
+    try:
+        r = requests.get(url, proxies = proxys().get_proxies(), params=params, timeout=10)
+        r.raise_for_status()  # 检查请求是否成功
         data_json = r.json()
-        _data = data_json["data"]["diff"]
-        data.extend(_data)
-        page_count =page_count - 1
+        if "data" not in data_json or "diff" not in data_json["data"]:
+            return pd.DataFrame()
+        data = data_json["data"]["diff"]
+        if not data:
+            return pd.DataFrame()
 
-    temp_df = pd.DataFrame(data)
+        data_count = data_json["data"]["total"]
+        page_count = math.ceil(data_count/page_size)
+        while page_count > 1:
+            page_current = page_current + 1
+            params["pn"] = page_current
+            r = requests.get(url, proxies = proxys().get_proxies(), params=params, timeout=10)
+            r.raise_for_status()  # 检查请求是否成功
+            data_json = r.json()
+            if "data" not in data_json or "diff" not in data_json["data"]:
+                break
+            _data = data_json["data"]["diff"]
+            data.extend(_data)
+            page_count = page_count - 1
+
+        temp_df = pd.DataFrame(data)
+    except Exception as e:
+        print(f"获取股票数据失败: {e}")
+        return pd.DataFrame()
     temp_df.columns = [
         "最新价",
         "涨跌幅",
