@@ -5,7 +5,6 @@
 import time
 import datetime
 import concurrent.futures
-import logging
 import os.path
 import sys
 
@@ -16,8 +15,11 @@ sys.path.append(cpath)
 log_path = os.path.join(cpath_current, 'log')
 if not os.path.exists(log_path):
     os.makedirs(log_path)
-logging.basicConfig(format='%(asctime)s %(message)s', filename=os.path.join(log_path, 'stock_execute_job.log'))
-logging.getLogger().setLevel(logging.INFO)
+
+# 配置日志同时输出到控制台和文件
+from instock.lib.logger import setup_logger
+log_file = os.path.join(log_path, 'stock_execute_job.log')
+logger = setup_logger('stock_execute_job', log_file)
 import init_job as bj
 import basic_data_daily_job as hdj
 import basic_data_other_daily_job as hdtj
@@ -35,30 +37,33 @@ __date__ = '2023/3/10 '
 def main():
     start = time.time()
     _start = datetime.datetime.now()
-    logging.info("######## 任务执行时间: %s #######" % _start.strftime("%Y-%m-%d %H:%M:%S.%f"))
-    # 第1步创建数据库
-    bj.main()
-    # 第2.1步创建股票基础数据表
-    hdj.main()
-    # 第2.2步创建综合股票数据表
-    sddj.main()
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        # # 第3.1步创建股票其它基础数据表
-        executor.submit(hdtj.main)
-        # # 第3.2步创建股票指标数据表
-        executor.submit(gdj.main)
-        # # # # 第4步创建股票k线形态表
-        executor.submit(kdj.main)
-        # # # # 第5步创建股票策略数据表
-        executor.submit(sdj.main)
+    logger.info("######## 任务执行时间: %s #######" % _start.strftime("%Y-%m-%d %H:%M:%S.%f"))
+    try:
+        # 第1步创建数据库
+        bj.main()
+        # 第2.1步创建股票基础数据表
+        hdj.main()
+        # 第2.2步创建综合股票数据表
+        sddj.main()
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            # # 第3.1步创建股票其它基础数据表
+            executor.submit(hdtj.main)
+            # # 第3.2步创建股票指标数据表
+            executor.submit(gdj.main)
+            # # # # 第4步创建股票k线形态表
+            executor.submit(kdj.main)
+            # # # # 第5步创建股票策略数据表
+            executor.submit(sdj.main)
 
-    # # # # 第6步创建股票回测
-    bdj.main()
+        # # # # 第6步创建股票回测
+        bdj.main()
 
-    # # # # 第7步创建股票闭盘后才有的数据
-    acdj.main()
+        # # # # 第7步创建股票闭盘后才有的数据
+        acdj.main()
 
-    logging.info("######## 完成任务, 使用时间: %s 秒 #######" % (time.time() - start))
+        logger.info("######## 完成任务, 使用时间: %s 秒 #######" % (time.time() - start))
+    except Exception as e:
+        logger.error(f"执行每日任务时发生异常：{e}")
 
 
 # main函数入口

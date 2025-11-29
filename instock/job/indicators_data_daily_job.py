@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 
-import logging
 import concurrent.futures
 import pandas as pd
 import os.path
@@ -11,23 +10,32 @@ import sys
 cpath_current = os.path.dirname(os.path.dirname(__file__))
 cpath = os.path.abspath(os.path.join(cpath_current, os.pardir))
 sys.path.append(cpath)
+
+from instock.lib.logger import setup_logger
 import instock.lib.run_template as runt
 import instock.core.tablestructure as tbs
 import instock.lib.database as mdb
 import instock.core.indicator.calculate_indicator as idr
 from instock.core.singleton_stock import stock_hist_data
 
+# 配置日志
+log_file = os.path.join(cpath_current, 'log', 'indicators_data_daily_job.log')
+logger = setup_logger('indicators_data_daily_job', log_file)
+
 __author__ = 'myh '
 __date__ = '2023/3/10 '
 
 
 def prepare(date):
+    logger.info(f"开始准备股票指标数据，日期：{date}")
     try:
         stocks_data = stock_hist_data(date=date).get_data()
         if stocks_data is None:
+            logger.warning(f"股票历史数据为空，无法准备指标数据，日期：{date}")
             return
         results = run_check(stocks_data, date=date)
         if results is None:
+            logger.warning(f"股票指标数据计算结果为空，日期：{date}")
             return
 
         table_name = tbs.TABLE_CN_STOCK_INDICATORS['name']
@@ -53,9 +61,10 @@ def prepare(date):
         if date.strftime("%Y-%m-%d") != data.iloc[0]['date']:
             data['date'] = date_str
         mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
+        logger.info(f"股票指标数据保存成功，日期：{date}")
 
     except Exception as e:
-        logging.error(f"indicators_data_daily_job.prepare处理异常：{e}")
+        logger.error(f"prepare处理异常：{e}")
 
 
 def run_check(stocks, date=None, workers=40):
@@ -64,6 +73,7 @@ def run_check(stocks, date=None, workers=40):
     columns.insert(0, 'code')
     columns.insert(0, 'date')
     data_column = columns
+    logger.info(f"开始运行检查股票指标，共 {len(stocks)} 只股票需要检查")
     try:
         with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
             future_to_data = {executor.submit(idr.get_indicator, k, stocks[k], data_column, date=date): k for k in stocks}
@@ -74,21 +84,25 @@ def run_check(stocks, date=None, workers=40):
                     if _data_ is not None:
                         data[stock] = _data_
                 except Exception as e:
-                    logging.error(f"indicators_data_daily_job.run_check处理异常：{stock[1]}代码{e}")
+                    logger.error(f"run_check处理异常：{stock[1]}代码{e}")
     except Exception as e:
-        logging.error(f"indicators_data_daily_job.run_check处理异常：{e}")
+        logger.error(f"run_check处理异常：{e}")
     if not data:
+        logger.warning("股票指标检查结果为空")
         return None
     else:
+        logger.info(f"股票指标检查完成，共获得 {len(data)} 条有效结果")
         return data
 
 
 # 对每日指标数据，进行筛选。将符合条件的。二次筛选出来。
 # 只是做简单筛选
 def guess_buy(date):
+    logger.info(f"开始筛选买入股票，日期：{date}")
     try:
         _table_name = tbs.TABLE_CN_STOCK_INDICATORS['name']
         if not mdb.checkTableIsExist(_table_name):
+            logger.warning(f"股票指标表不存在，无法筛选买入股票，日期：{date}")
             return
 
         _columns = tuple(tbs.TABLE_CN_STOCK_FOREIGN_KEY['columns'])
@@ -101,6 +115,7 @@ def guess_buy(date):
         # data.set_index('code', inplace=True)
 
         if len(data.index) == 0:
+            logger.warning(f"没有符合买入条件的股票，日期：{date}")
             return
 
         table_name = tbs.TABLE_CN_STOCK_INDICATORS_BUY['name']
@@ -115,15 +130,18 @@ def guess_buy(date):
         _columns_backtest = tuple(tbs.TABLE_CN_STOCK_BACKTEST_DATA['columns'])
         data = pd.concat([data, pd.DataFrame(columns=_columns_backtest)])
         mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
+        logger.info(f"买入股票筛选完成，共筛选出 {len(data)} 只股票，日期：{date}")
     except Exception as e:
-        logging.error(f"indicators_data_daily_job.guess_buy处理异常：{e}")
+        logger.error(f"guess_buy处理异常：{e}")
 
 
 # 设置卖出数据。
 def guess_sell(date):
+    logger.info(f"开始筛选卖出股票，日期：{date}")
     try:
         _table_name = tbs.TABLE_CN_STOCK_INDICATORS['name']
         if not mdb.checkTableIsExist(_table_name):
+            logger.warning(f"股票指标表不存在，无法筛选卖出股票，日期：{date}")
             return
 
         _columns = tuple(tbs.TABLE_CN_STOCK_FOREIGN_KEY['columns'])
@@ -135,6 +153,7 @@ def guess_sell(date):
         data = data.drop_duplicates(subset="code", keep="last")
         # data.set_index('code', inplace=True)
         if len(data.index) == 0:
+            logger.warning(f"没有符合卖出条件的股票，日期：{date}")
             return
 
         table_name = tbs.TABLE_CN_STOCK_INDICATORS_SELL['name']
@@ -149,16 +168,19 @@ def guess_sell(date):
         _columns_backtest = tuple(tbs.TABLE_CN_STOCK_BACKTEST_DATA['columns'])
         data = pd.concat([data, pd.DataFrame(columns=_columns_backtest)])
         mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
+        logger.info(f"卖出股票筛选完成，共筛选出 {len(data)} 只股票，日期：{date}")
     except Exception as e:
-        logging.error(f"indicators_data_daily_job.guess_sell处理异常：{e}")
+        logger.error(f"guess_sell处理异常：{e}")
 
 
 def main():
+    logger.info("开始执行股票指标数据每日任务")
     # 使用方法传递。
     runt.run_with_args(prepare)
     # 二次筛选数据。直接计算买卖股票数据。
     runt.run_with_args(guess_buy)
     runt.run_with_args(guess_sell)
+    logger.info("股票指标数据每日任务执行完成")
 
 
 # main函数入口

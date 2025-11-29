@@ -1,17 +1,22 @@
 #!/usr/local/bin/python3
 # -*- coding: utf-8 -*-
 
-import logging
 import os.path
 import sys
 
 cpath_current = os.path.dirname(os.path.dirname(__file__))
 cpath = os.path.abspath(os.path.join(cpath_current, os.pardir))
 sys.path.append(cpath)
+
+from instock.lib.logger import setup_logger
 import instock.lib.run_template as runt
 import instock.core.tablestructure as tbs
 import instock.lib.database as mdb
 import instock.core.stockfetch as stf
+
+# 配置日志
+log_file = os.path.join(cpath_current, 'log', 'basic_data_after_close_daily_job.log')
+logger = setup_logger('basic_data_after_close_daily_job', log_file)
 
 __author__ = 'myh '
 __date__ = '2023/3/10 '
@@ -19,9 +24,11 @@ __date__ = '2023/3/10 '
 
 # 每日股票大宗交易
 def save_after_close_stock_blocktrade_data(date):
+    logger.info(f"开始保存每日股票大宗交易数据，日期：{date}")
     try:
         data = stf.fetch_stock_blocktrade_data(date)
         if data is None or len(data.index) == 0:
+            logger.warning(f"每日股票大宗交易数据为空，日期：{date}")
             return
 
         table_name = tbs.TABLE_CN_STOCK_BLOCKTRADE['name']
@@ -34,14 +41,17 @@ def save_after_close_stock_blocktrade_data(date):
             cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_BLOCKTRADE['columns'])
 
         mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
+        logger.info(f"每日股票大宗交易数据保存成功，日期：{date}")
     except Exception as e:
-        logging.error(f"basic_data_after_close_daily_job.save_stock_blocktrade_data处理异常：{e}")
+        logger.error(f"save_after_close_stock_blocktrade_data处理异常：{e}")
 
 # 每日尾盘抢筹
 def save_after_close_stock_chip_race_end_data(date):
+    logger.info(f"开始保存每日尾盘抢筹数据，日期：{date}")
     try:
         data = stf.fetch_stock_chip_race_end(date)
         if data is None or len(data.index) == 0:
+            logger.warning(f"每日尾盘抢筹数据为空，日期：{date}")
             return
 
         table_name = tbs.TABLE_CN_STOCK_CHIP_RACE_END['name']
@@ -54,12 +64,15 @@ def save_after_close_stock_chip_race_end_data(date):
             cols_type = tbs.get_field_types(tbs.TABLE_CN_STOCK_CHIP_RACE_END['columns'])
 
         mdb.insert_db_from_df(data, table_name, cols_type, False, "`date`,`code`")
+        logger.info(f"每日尾盘抢筹数据保存成功，日期：{date}")
     except Exception as e:
-        logging.error(f"basic_data_after_close_daily_job.save_after_close_stock_chip_race_end_data：{e}")
+        logger.error(f"save_after_close_stock_chip_race_end_data处理异常：{e}")
 
 def main():
+    logger.info("开始执行收盘后基础数据每日任务")
     runt.run_with_args(save_after_close_stock_blocktrade_data)
     runt.run_with_args(save_after_close_stock_chip_race_end_data)
+    logger.info("收盘后基础数据每日任务执行完成")
 
 
 # main函数入口
