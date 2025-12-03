@@ -24,6 +24,9 @@ import instock.core.crawling.stock_limitup_reason as slr
 __author__ = 'myh '
 __date__ = '2023/3/10 '
 
+# 获取logger实例
+logger = logging.getLogger(__name__)
+
 # 设置基础目录，每次加载使用。
 cpath_current = os.path.dirname(os.path.dirname(__file__))
 stock_hist_cache_path = os.path.join(cpath_current, 'cache', 'hist')
@@ -61,63 +64,100 @@ def is_open_with_line(price):
 
 # 读取股票交易日历数据
 def fetch_stocks_trade_date():
+    logger.info("开始获取股票交易日历数据")
     try:
+        logger.info("调用tdh.tool_trade_date_hist_sina()获取新浪财经交易日历数据")
         data = tdh.tool_trade_date_hist_sina()
+        
         if data is None or len(data.index) == 0:
+            logger.warning("获取到的股票交易日历数据为空")
             return None
+            
         data_date = set(data['trade_date'].values.tolist())
+        logger.info(f"成功获取股票交易日历数据，共 {len(data_date)} 个交易日")
         return data_date
     except Exception as e:
-        logging.error(f"stockfetch.fetch_stocks_trade_date处理异常：{e}")
+        logger.error(f"stockfetch.fetch_stocks_trade_date处理异常：{e}")
+        import traceback
+        logger.error(f"异常堆栈信息: {traceback.format_exc()}")
     return None
 
 
 # 读取当天股票数据
 def fetch_etfs(date):
+    logger.info(f"开始获取ETF数据，日期：{date}")
     try:
+        logger.info("调用fee.fund_etf_spot_em()获取ETF数据")
         data = fee.fund_etf_spot_em()
+        
         if data is None or len(data.index) == 0:
+            logger.warning(f"获取到的ETF数据为空，日期：{date}")
             return None
+            
         if date is None:
             data.insert(0, 'date', datetime.datetime.now().strftime("%Y-%m-%d"))
         else:
-            data.insert(0, 'date', date.strftime("%Y-%m-%d"))
+            data.insert(0, 'date', datetime.datetime.combine(date, datetime.time.min).strftime("%Y-%m-%d"))
+        
         data.columns = list(tbs.TABLE_CN_ETF_SPOT['columns'])
         data = data.loc[data['new_price'].apply(is_open)]
+        
+        logger.info(f"成功获取ETF数据，日期：{date}，共 {len(data)} 条记录")
         return data
     except Exception as e:
-        logging.error(f"stockfetch.fetch_etfs处理异常：{e}")
+        logger.error(f"stockfetch.fetch_etfs处理异常，日期：{date}：{e}")
+        import traceback
+        logger.error(f"异常堆栈信息: {traceback.format_exc()}")
     return None
 
 
 # 读取当天股票数据
 def fetch_stocks(date):
+    logger.info(f"开始获取股票数据，日期：{date}")
     try:
+        logger.info("调用she.stock_zh_a_spot_em()获取股票数据")
         data = she.stock_zh_a_spot_em()
+        
         if data is None or len(data.index) == 0:
+            logger.warning(f"获取到的股票数据为空，日期：{date}")
             return None
+            
         if date is None:
             data.insert(0, 'date', datetime.datetime.now().strftime("%Y-%m-%d"))
         else:
-            data.insert(0, 'date', date.strftime("%Y-%m-%d"))
+            data.insert(0, 'date', datetime.datetime.combine(date, datetime.time.min).strftime("%Y-%m-%d"))
+        
         data.columns = list(tbs.TABLE_CN_STOCK_SPOT['columns'])
         data = data.loc[data['code'].apply(is_a_stock)].loc[data['new_price'].apply(is_open)]
+        
+        logger.info(f"成功获取股票数据，日期：{date}，共 {len(data)} 条记录")
         return data
     except Exception as e:
-        logging.error(f"stockfetch.fetch_stocks处理异常：{e}")
+        logger.error(f"stockfetch.fetch_stocks处理异常，日期：{date}：{e}")
+        import traceback
+        logger.error(f"异常堆栈信息: {traceback.format_exc()}")
     return None
 
 
-def fetch_stock_selection():
+def fetch_stock_selection(date=None):
+    logger.info(f"开始获取选股数据，日期：{date}")
     try:
+        logger.info("调用sst.stock_selection()获取选股数据")
         data = sst.stock_selection()
+        
         if data is None or len(data.index) == 0:
+            logger.warning(f"获取到的选股数据为空，日期：{date}")
             return None
+            
         data.columns = list(tbs.TABLE_CN_STOCK_SELECTION['columns'])
         data.drop_duplicates('code', keep='last', inplace=True)
+        
+        logger.info(f"成功获取选股数据，日期：{date}，共 {len(data)} 条记录")
         return data
     except Exception as e:
-        logging.error(f"stockfetch.fetch_stocks_selection处理异常：{e}")
+        logger.error(f"stockfetch.fetch_stock_selection处理异常，日期：{date}：{e}")
+        import traceback
+        logger.error(f"异常堆栈信息: {traceback.format_exc()}")
     return None
 
 
@@ -159,7 +199,7 @@ def fetch_stocks_bonus(date):
         if date is None:
             data.insert(0, 'date', datetime.datetime.now().strftime("%Y-%m-%d"))
         else:
-            data.insert(0, 'date', date.strftime("%Y-%m-%d"))
+            data.insert(0, 'date', datetime.datetime.combine(date, datetime.time.min).strftime("%Y-%m-%d"))
         data.columns = list(tbs.TABLE_CN_STOCK_BONUS['columns'])
         data = data.loc[data['code'].apply(is_a_stock)]
         return data
@@ -325,54 +365,91 @@ def fetch_etf_hist(data_base, date_start=None, date_end=None, adjust='qfq'):
 def fetch_stock_hist(data_base, date_start=None, is_cache=True):
     date = data_base[0]
     code = data_base[1]
+    logger.info(f"开始获取股票历史数据，代码：{code}，日期：{date}")
 
-    if date_start is None:
-        date_start, is_cache = trd.get_trade_hist_interval(date)  # 提高运行效率，只运行一次
-        # date_end = date_end.strftime("%Y%m%d")
     try:
+        if date_start is None:
+            logger.info(f"date_start为空，获取交易历史区间，日期：{date}")
+            date_start, is_cache = trd.get_trade_hist_interval(date)  # 提高运行效率，只运行一次
+            logger.info(f"交易历史区间：{date_start}，是否使用缓存：{is_cache}")
+            # date_end = date_end.strftime("%Y%m%d")
+            
+        logger.info(f"调用stock_hist_cache获取股票历史数据，代码：{code}，开始日期：{date_start}，是否使用缓存：{is_cache}")
         data = stock_hist_cache(code, date_start, None, is_cache, 'qfq')
-        if data is not None:
+        
+        if data is not None and not data.empty:
+            logger.info(f"成功获取股票历史数据，代码：{code}，共 {len(data)} 条记录")
             data.loc[:, 'p_change'] = tl.ROC(data['close'].values, 1)
             data['p_change'].values[np.isnan(data['p_change'].values)] = 0.0
             data["volume"] = data['volume'].values.astype('double') * 100  # 成交量单位从手变成股。
+        else:
+            logger.warning(f"获取到的股票历史数据为空，代码：{code}")
+            
         return data
     except Exception as e:
-        logging.error(f"stockfetch.fetch_stock_hist处理异常：{e}")
+        logger.error(f"stockfetch.fetch_stock_hist处理异常，代码：{code}：{e}")
+        import traceback
+        logger.error(f"异常堆栈信息: {traceback.format_exc()}")
     return None
 
 
 # 增加读取股票缓存方法。加快处理速度。多线程解决效率
 def stock_hist_cache(code, date_start, date_end=None, is_cache=True, adjust=''):
+    logger.info(f"开始执行stock_hist_cache，代码：{code}，开始日期：{date_start}，结束日期：{date_end}，是否使用缓存：{is_cache}，复权方式：{adjust}")
+    
     cache_dir = os.path.join(stock_hist_cache_path, date_start[0:6], date_start)
+    logger.info(f"缓存目录：{cache_dir}")
+    
     # 如果没有文件夹创建一个。月文件夹和日文件夹。方便删除。
     try:
         if not os.path.exists(cache_dir):
+            logger.info(f"缓存目录不存在，创建目录：{cache_dir}")
             os.makedirs(cache_dir)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.error(f"创建缓存目录失败，目录：{cache_dir}：{e}")
+        import traceback
+        logger.error(f"异常堆栈信息: {traceback.format_exc()}")
+        
     cache_file = os.path.join(cache_dir, "%s%s.gzip.pickle" % (code, adjust))
+    logger.info(f"缓存文件路径：{cache_file}")
+    
     # 如果缓存存在就直接返回缓存数据。压缩方式。
     try:
         if os.path.isfile(cache_file):
+            logger.info(f"缓存文件存在，读取缓存数据，文件：{cache_file}")
             return pd.read_pickle(cache_file, compression="gzip")
         else:
+            logger.info(f"缓存文件不存在，从网络获取股票历史数据，代码：{code}")
+            
             if date_end is not None:
+                logger.info(f"调用she.stock_zh_a_hist获取股票历史数据，代码：{code}，开始日期：{date_start}，结束日期：{date_end}，复权方式：{adjust}")
                 stock = she.stock_zh_a_hist(symbol=code, period="daily", start_date=date_start, end_date=date_end,
                                             adjust=adjust)
             else:
+                logger.info(f"调用she.stock_zh_a_hist获取股票历史数据，代码：{code}，开始日期：{date_start}，复权方式：{adjust}")
                 stock = she.stock_zh_a_hist(symbol=code, period="daily", start_date=date_start, adjust=adjust)
 
-            if stock is None or len(stock.index) == 0:
+            if stock is None or stock.empty:
+                logger.warning(f"从网络获取到的股票历史数据为空，代码：{code}")
                 return None
+                
+            logger.info(f"成功从网络获取股票历史数据，代码：{code}，共 {len(stock)} 条记录")
             stock.columns = tuple(tbs.CN_STOCK_HIST_DATA['columns'])
             stock = stock.sort_index()  # 将数据按照日期排序下。
+            
             try:
                 if is_cache:
+                    logger.info(f"保存股票历史数据到缓存，文件：{cache_file}")
                     stock.to_pickle(cache_file, compression="gzip")
-            except Exception:
-                pass
+            except Exception as e:
+                logger.error(f"保存股票历史数据到缓存失败，文件：{cache_file}：{e}")
+                import traceback
+                logger.error(f"异常堆栈信息: {traceback.format_exc()}")
+                
             # time.sleep(1)
             return stock
     except Exception as e:
-        logging.error(f"stockfetch.stock_hist_cache处理异常：{code}代码{e}")
+        logger.error(f"stockfetch.stock_hist_cache处理异常，代码：{code}：{e}")
+        import traceback
+        logger.error(f"异常堆栈信息: {traceback.format_exc()}")
     return None

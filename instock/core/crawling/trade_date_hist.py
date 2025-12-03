@@ -9,8 +9,12 @@ https://finance.sina.com.cn/realstock/company/klc_td_sh.txt
 import datetime
 import pandas as pd
 import requests
+import logging
 from py_mini_racer import MiniRacer
 from instock.core.singleton_proxy import proxys
+
+# 获取logger实例
+logger = logging.getLogger(__name__)
 
 hk_js_decode = """
 function d(t) {
@@ -310,21 +314,71 @@ def tool_trade_date_hist_sina() -> pd.DataFrame:
     :return: 交易日历
     :rtype: pandas.DataFrame
     """
-    url = "https://finance.sina.com.cn/realstock/company/klc_td_sh.txt"
-    r = requests.get(url, proxies = proxys().get_proxies())
-    js_code = MiniRacer()
-    js_code.eval(hk_js_decode)
-    dict_list = js_code.call(
-        "d", r.text.split("=")[1].split(";")[0].replace('"', "")
-    )  # 执行js解密代码
-    temp_df = pd.DataFrame(dict_list)
-    temp_df.columns = ["trade_date"]
-    temp_df["trade_date"] = pd.to_datetime(temp_df["trade_date"]).dt.date
-    temp_list = temp_df["trade_date"].to_list()
-    temp_list.append(datetime.date(1992, 5, 4))  # 是交易日但是交易日历缺失该日期
-    temp_list.sort()
-    temp_df = pd.DataFrame(temp_list, columns=["trade_date"])
-    return temp_df
+    logger.info("开始获取新浪财经交易日历数据")
+    try:
+        url = "https://finance.sina.com.cn/realstock/company/klc_td_sh.txt"
+        logger.info(f"请求新浪财经交易日历数据，URL：{url}")
+        
+        # 获取代理
+        logger.info("获取代理服务器")
+        proxies = proxys().get_proxies()
+        logger.info(f"使用代理：{proxies}")
+        
+        # 发送请求，设置超时时间为30秒
+        r = requests.get(url, proxies=proxies, timeout=30)
+        logger.info(f"请求响应状态码：{r.status_code}")
+        
+        if r.status_code != 200:
+            logger.error(f"请求新浪财经交易日历数据失败，状态码：{r.status_code}")
+            return pd.DataFrame()
+            
+        logger.info("开始解析新浪财经交易日历数据")
+        
+        # 初始化MiniRacer并执行JS解密代码
+        js_code = MiniRacer()
+        logger.info("执行JS解密代码")
+        js_code.eval(hk_js_decode)
+        
+        # 提取需要解密的数据
+        data_str = r.text.split("=")[1].split(";")[0].replace('"', "")
+        logger.info(f"提取到的数据长度：{len(data_str)}")
+        
+        # 调用JS解密函数
+        dict_list = js_code.call("d", data_str)
+        logger.info(f"解密后得到 {len(dict_list)} 个交易日")
+        
+        # 转换为DataFrame
+        temp_df = pd.DataFrame(dict_list)
+        temp_df.columns = ["trade_date"]
+        temp_df["trade_date"] = pd.to_datetime(temp_df["trade_date"]).dt.date
+        
+        # 添加缺失的1992年5月4日交易日
+        temp_list = temp_df["trade_date"].to_list()
+        logger.info("添加缺失的1992年5月4日交易日数据")
+        temp_list.append(datetime.date(1992, 5, 4))
+        
+        # 排序并重新创建DataFrame
+        temp_list.sort()
+        temp_df = pd.DataFrame(temp_list, columns=["trade_date"])
+        
+        logger.info(f"成功获取新浪财经交易日历数据，共 {len(temp_df)} 个交易日")
+        return temp_df
+        
+    except requests.Timeout:
+        logger.error("请求新浪财经交易日历数据超时")
+        import traceback
+        logger.error(f"异常堆栈信息: {traceback.format_exc()}")
+        return pd.DataFrame()
+    except requests.RequestException as e:
+        logger.error(f"请求新浪财经交易日历数据异常：{e}")
+        import traceback
+        logger.error(f"异常堆栈信息: {traceback.format_exc()}")
+        return pd.DataFrame()
+    except Exception as e:
+        logger.error(f"trade_date_hist.tool_trade_date_hist_sina处理异常：{e}")
+        import traceback
+        logger.error(f"异常堆栈信息: {traceback.format_exc()}")
+        return pd.DataFrame()
 
 
 if __name__ == "__main__":

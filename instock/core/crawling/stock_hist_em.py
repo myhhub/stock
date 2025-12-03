@@ -8,7 +8,6 @@ import requests
 import pandas as pd
 import math
 from functools import lru_cache
-from instock.core.singleton_proxy import proxys
 
 
 def stock_zh_a_spot_em() -> pd.DataFrame:
@@ -34,10 +33,32 @@ def stock_zh_a_spot_em() -> pd.DataFrame:
         "fields": "f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f14,f15,f16,f17,f18,f20,f21,f22,f23,f24,f25,f26,f37,f38,f39,f40,f41,f45,f46,f48,f49,f57,f61,f100,f112,f113,f114,f115,f221",
         "_": "1623833739532",
     }
-    r = requests.get(url, proxies = proxys().get_proxies(), params=params)
-    data_json = r.json()
+    
+    # 增加请求失败的处理
+    max_retries = 3
+    retry_count = 0
+    while retry_count < max_retries:
+        try:
+            r = requests.get(url, params=params, timeout=10)
+            r.raise_for_status()  # 检查请求是否成功
+            data_json = r.json()
+            break
+        except requests.exceptions.RequestException as e:
+            retry_count += 1
+            print(f"请求失败，正在重试... ({retry_count}/{max_retries})")
+            print(f"错误信息: {e}")
+            if retry_count == max_retries:
+                print("请求失败，已达到最大重试次数")
+                return pd.DataFrame()
+    
+    # 检查返回的数据是否为空
+    if "data" not in data_json or "diff" not in data_json["data"]:
+        print("返回的数据格式不正确")
+        return pd.DataFrame()
+    
     data = data_json["data"]["diff"]
     if not data:
+        print("返回的数据为空")
         return pd.DataFrame()
 
     data_count = data_json["data"]["total"]
@@ -45,8 +66,28 @@ def stock_zh_a_spot_em() -> pd.DataFrame:
     while page_count > 1:
         page_current = page_current + 1
         params["pn"] = page_current
-        r = requests.get(url, proxies = proxys().get_proxies(), params=params)
-        data_json = r.json()
+        
+        # 增加请求失败的处理
+        retry_count = 0
+        while retry_count < max_retries:
+            try:
+                r = requests.get(url, params=params, timeout=10)
+                r.raise_for_status()  # 检查请求是否成功
+                data_json = r.json()
+                break
+            except requests.exceptions.RequestException as e:
+                retry_count += 1
+                print(f"请求失败，正在重试... ({retry_count}/{max_retries})")
+                print(f"错误信息: {e}")
+                if retry_count == max_retries:
+                    print("请求失败，已达到最大重试次数")
+                    return pd.DataFrame()
+        
+        # 检查返回的数据是否为空
+        if "data" not in data_json or "diff" not in data_json["data"]:
+            print("返回的数据格式不正确")
+            return pd.DataFrame()
+        
         _data = data_json["data"]["diff"]
         data.extend(_data)
         page_count =page_count - 1
@@ -179,119 +220,37 @@ def stock_zh_a_spot_em() -> pd.DataFrame:
     return temp_df
 
 
-@lru_cache()
 def code_id_map_em() -> dict:
     """
-    东方财富-股票和市场代码
-    http://quote.eastmoney.com/center/gridlist.html#hs_a_board
-    :return: 股票和市场代码
+    股票代码和市场代码的映射关系
+    上海证券交易所：1
+    深圳证券交易所：0
+    :return: 股票代码和市场代码的映射关系
     :rtype: dict
     """
-    url = "http://80.push2.eastmoney.com/api/qt/clist/get"
-    page_size = 50
-    page_current = 1
-    params = {
-        "pn": page_current,
-        "pz": page_size,
-        "po": "1",
-        "np": "1",
-        "ut": "bd1d9ddb04089700cf9c27f6f7426281",
-        "fltt": "2",
-        "invt": "2",
-        "fid": "f12",
-        "fs": "m:1 t:2,m:1 t:23",
-        "fields": "f12",
-        "_": "1623833739532",
-    }
-    r = requests.get(url, proxies = proxys().get_proxies(), params=params)
-    data_json = r.json()
-    data = data_json["data"]["diff"]
-    if not data:
-        return dict()
-
-    data_count = data_json["data"]["total"]
-    page_count = math.ceil(data_count/page_size)
-    while page_count > 1:
-        page_current = page_current + 1
-        params["pn"] = page_current
-        r = requests.get(url, proxies = proxys().get_proxies(), params=params)
-        data_json = r.json()
-        _data = data_json["data"]["diff"]
-        data.extend(_data)
-        page_count =page_count - 1
-
-    temp_df = pd.DataFrame(data)
-    temp_df["market_id"] = 1
-    temp_df.columns = ["sh_code", "sh_id"]
-    code_id_dict = dict(zip(temp_df["sh_code"], temp_df["sh_id"]))
-    page_current = 1
-    params = {
-        "pn": page_current,
-        "pz": page_size,
-        "po": "1",
-        "np": "1",
-        "ut": "bd1d9ddb04089700cf9c27f6f7426281",
-        "fltt": "2",
-        "invt": "2",
-        "fid": "f12",
-        "fs": "m:0 t:6,m:0 t:80",
-        "fields": "f12",
-        "_": "1623833739532",
-    }
-    r = requests.get(url, proxies = proxys().get_proxies(), params=params)
-    data_json = r.json()
-    data = data_json["data"]["diff"]
-    if not data:
-        return dict()
-
-    data_count = data_json["data"]["total"]
-    page_count = math.ceil(data_count/page_size)
-    while page_count > 1:
-        page_current = page_current + 1
-        params["pn"] = page_current
-        r = requests.get(url, proxies = proxys().get_proxies(), params=params)
-        data_json = r.json()
-        _data = data_json["data"]["diff"]
-        data.extend(_data)
-        page_count =page_count - 1
-
-    temp_df_sz = pd.DataFrame(data)
-    temp_df_sz["sz_id"] = 0
-    code_id_dict.update(dict(zip(temp_df_sz["f12"], temp_df_sz["sz_id"])))
-    page_current = 1
-    params = {
-        "pn": page_current,
-        "pz": page_size,
-        "po": "1",
-        "np": "1",
-        "ut": "bd1d9ddb04089700cf9c27f6f7426281",
-        "fltt": "2",
-        "invt": "2",
-        "fid": "f12",
-        "fs": "m:0 t:81 s:2048",
-        "fields": "f12",
-        "_": "1623833739532",
-    }
-    r = requests.get(url, proxies = proxys().get_proxies(), params=params)
-    data_json = r.json()
-    data = data_json["data"]["diff"]
-    if not data:
-        return dict()
-
-    data_count = data_json["data"]["total"]
-    page_count = math.ceil(data_count/page_size)
-    while page_count > 1:
-        page_current = page_current + 1
-        params["pn"] = page_current
-        r = requests.get(url, proxies = proxys().get_proxies(), params=params)
-        data_json = r.json()
-        _data = data_json["data"]["diff"]
-        data.extend(_data)
-        page_count =page_count - 1
-
-    temp_df_sz = pd.DataFrame(data)
-    temp_df_sz["bj_id"] = 0
-    code_id_dict.update(dict(zip(temp_df_sz["f12"], temp_df_sz["bj_id"])))
+    # 简单的股票代码映射表，根据股票代码的前缀判断市场
+    code_id_dict = dict()
+    
+    # 上海证券交易所股票代码前缀：600, 601, 603, 605, 688（科创板）
+    sh_prefixes = ["600", "601", "603", "605", "688"]
+    
+    # 深圳证券交易所股票代码前缀：000（主板）, 001（主板）, 002（中小板）, 003（中小板）, 300（创业板）
+    sz_prefixes = ["000", "001", "002", "003", "300"]
+    
+    # 动态判断股票代码所属市场的函数
+    def get_market_id(code):
+        if code[:3] in sh_prefixes:
+            return 1
+        elif code[:3] in sz_prefixes:
+            return 0
+        else:
+            # 默认是上海证券交易所
+            return 1
+    
+    # 将函数添加到字典中，以便在stock_zh_a_hist函数中调用
+    code_id_dict["get_market_id"] = get_market_id
+    
+    print("成功创建股票代码映射函数")
     return code_id_dict
 
 
@@ -319,6 +278,8 @@ def stock_zh_a_hist(
     :rtype: pandas.DataFrame
     """
     code_id_dict = code_id_map_em()
+    get_market_id = code_id_dict["get_market_id"]
+    market_id = get_market_id(symbol)
     adjust_dict = {"qfq": "1", "hfq": "2", "": "0"}
     period_dict = {"daily": "101", "weekly": "102", "monthly": "103"}
     url = "http://push2his.eastmoney.com/api/qt/stock/kline/get"
@@ -328,12 +289,12 @@ def stock_zh_a_hist(
         "ut": "7eea3edcaed734bea9cbfc24409ed989",
         "klt": period_dict[period],
         "fqt": adjust_dict[adjust],
-        "secid": f"{code_id_dict[symbol]}.{symbol}",
+        "secid": f"{market_id}.{symbol}",
         "beg": start_date,
         "end": end_date,
         "_": "1623766962675",
     }
-    r = requests.get(url, proxies = proxys().get_proxies(), params=params)
+    r = requests.get(url, params=params)
     data_json = r.json()
     if not (data_json["data"] and data_json["data"]["klines"]):
         return pd.DataFrame()
