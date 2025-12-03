@@ -311,20 +311,37 @@ def tool_trade_date_hist_sina() -> pd.DataFrame:
     :rtype: pandas.DataFrame
     """
     url = "https://finance.sina.com.cn/realstock/company/klc_td_sh.txt"
-    r = requests.get(url, proxies = proxys().get_proxies())
-    js_code = MiniRacer()
-    js_code.eval(hk_js_decode)
-    dict_list = js_code.call(
-        "d", r.text.split("=")[1].split(";")[0].replace('"', "")
-    )  # 执行js解密代码
-    temp_df = pd.DataFrame(dict_list)
-    temp_df.columns = ["trade_date"]
-    temp_df["trade_date"] = pd.to_datetime(temp_df["trade_date"]).dt.date
-    temp_list = temp_df["trade_date"].to_list()
-    temp_list.append(datetime.date(1992, 5, 4))  # 是交易日但是交易日历缺失该日期
-    temp_list.sort()
-    temp_df = pd.DataFrame(temp_list, columns=["trade_date"])
-    return temp_df
+    try:
+        # 添加超时时间，避免请求无限期等待
+        r = requests.get(url, proxies=proxys().get_proxies(), timeout=10)
+        r.raise_for_status()  # 检查响应状态
+        
+        js_code = MiniRacer()
+        js_code.eval(hk_js_decode)
+        dict_list = js_code.call(
+            "d", r.text.split("=")[1].split(";").replace('"', "")
+        )  # 执行js解密代码
+        
+        temp_df = pd.DataFrame(dict_list)
+        temp_df.columns = ["trade_date"]
+        temp_df["trade_date"] = pd.to_datetime(temp_df["trade_date"]).dt.date
+        
+        temp_list = temp_df["trade_date"].to_list()
+        temp_list.append(datetime.date(1992, 5, 4))  # 是交易日但是交易日历缺失该日期
+        temp_list.sort()
+        
+        temp_df = pd.DataFrame(temp_list, columns=["trade_date"])
+        return temp_df
+    except requests.exceptions.Timeout:
+        logging.error("tool_trade_date_hist_sina: 请求超时")
+    except requests.exceptions.ConnectionError:
+        logging.error("tool_trade_date_hist_sina: 连接错误")
+    except requests.exceptions.HTTPError as e:
+        logging.error(f"tool_trade_date_hist_sina: HTTP错误 {e.response.status_code}")
+    except Exception as e:
+        logging.error(f"tool_trade_date_hist_sina: 处理异常 {e}")
+    
+    return None
 
 
 if __name__ == "__main__":

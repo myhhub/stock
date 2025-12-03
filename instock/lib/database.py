@@ -13,8 +13,8 @@ __date__ = '2023/3/10 '
 
 db_host = "localhost"  # 数据库服务主机
 db_user = "root"  # 数据库访问用户
-db_password = "root"  # 数据库访问密码
-db_database = "instockdb"  # 数据库名称
+db_password = "L123456v"  # 数据库访问密码
+db_database = "instockAdb"  # 数据库名称
 db_port = 3306  # 数据库服务端口
 db_charset = "utf8mb4"  # 数据库字符集
 
@@ -100,12 +100,14 @@ def insert_other_db_from_df(to_db, data, table_name, cols_type, write_index, pri
         logging.error(f"database.insert_other_db_from_df处理异常：{table_name}表{e}")
 
     # 判断是否存在主键
-    if not ipt.get_pk_constraint(table_name)['constrained_columns']:
+    if primary_keys and not ipt.get_pk_constraint(table_name)['constrained_columns']:
         try:
             # 执行数据库插入数据。
             with get_connection() as conn:
                 with conn.cursor() as db:
-                    db.execute(f'ALTER TABLE `{table_name}` ADD PRIMARY KEY ({primary_keys});')
+                    # 移除主键中的反引号
+                    primary_keys_clean = primary_keys.replace('`', '')
+                    db.execute(f'ALTER TABLE `{table_name}` ADD PRIMARY KEY ({primary_keys_clean});')
                     if indexs is not None:
                         for k in indexs:
                             db.execute(f'ALTER TABLE `{table_name}` ADD INDEX IN{k}({indexs[k]});')
