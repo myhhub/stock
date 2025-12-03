@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import datetime
+import logging
 from instock.core.singleton_trade_date import stock_trade_date
 
 __author__ = 'myh '
@@ -9,12 +10,20 @@ __date__ = '2023/4/10 '
 
 
 def is_trade_date(date=None):
-    trade_date = stock_trade_date().get_data()
-    if trade_date is None:
-        return False
-    if date in trade_date:
-        return True
-    else:
+    try:
+        logging.info(f"检查日期{date}是否为交易日")
+        trade_date = stock_trade_date().get_data()
+        if trade_date is None:
+            logging.warning("股票交易日历数据为空，无法检查日期是否为交易日")
+            return False
+        if date in trade_date:
+            logging.info(f"日期{date}是交易日")
+            return True
+        else:
+            logging.info(f"日期{date}不是交易日")
+            return False
+    except Exception as e:
+        logging.error(f"trade_time.is_trade_date处理异常：{e}")
         return False
 
 
@@ -127,18 +136,30 @@ def get_trade_hist_interval(date):
 
 
 def get_trade_date_last():
-    now_time = datetime.datetime.now()
-    run_date = now_time.date()
-    run_date_nph = run_date
-    if is_trade_date(run_date):
-        if not is_close(now_time):
-            run_date = get_previous_trade_date(run_date)
-            if not is_open(now_time):
-                run_date_nph = run_date
-    else:
-        run_date = get_previous_trade_date(run_date)
+    try:
+        logging.info("获取最后一个交易日")
+        now_time = datetime.datetime.now()
+        run_date = now_time.date()
         run_date_nph = run_date
-    return run_date, run_date_nph
+        logging.info(f"当前日期：{run_date}")
+        if is_trade_date(run_date):
+            logging.info("当前日期是交易日")
+            if not is_close(now_time):
+                logging.info("当前时间未收盘，获取上一个交易日")
+                run_date = get_previous_trade_date(run_date)
+                if not is_open(now_time):
+                    logging.info("当前时间未开盘，更新run_date_nph为上一个交易日")
+                    run_date_nph = run_date
+        else:
+            logging.info("当前日期不是交易日，获取上一个交易日")
+            run_date = get_previous_trade_date(run_date)
+            run_date_nph = run_date
+        logging.info(f"最后一个交易日：{run_date}")
+        logging.info(f"最后一个交易日（盘后）：{run_date_nph}")
+        return run_date, run_date_nph
+    except Exception as e:
+        logging.error(f"trade_time.get_trade_date_last处理异常：{e}")
+        return None, None
 
 
 def get_quarterly_report_date():

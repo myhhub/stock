@@ -9,6 +9,7 @@ https://finance.sina.com.cn/realstock/company/klc_td_sh.txt
 import datetime
 import pandas as pd
 import requests
+import logging
 from py_mini_racer import MiniRacer
 from instock.core.singleton_proxy import proxys
 
@@ -311,20 +312,28 @@ def tool_trade_date_hist_sina() -> pd.DataFrame:
     :rtype: pandas.DataFrame
     """
     url = "https://finance.sina.com.cn/realstock/company/klc_td_sh.txt"
-    r = requests.get(url, proxies = proxys().get_proxies())
-    js_code = MiniRacer()
-    js_code.eval(hk_js_decode)
-    dict_list = js_code.call(
-        "d", r.text.split("=")[1].split(";")[0].replace('"', "")
-    )  # 执行js解密代码
-    temp_df = pd.DataFrame(dict_list)
-    temp_df.columns = ["trade_date"]
-    temp_df["trade_date"] = pd.to_datetime(temp_df["trade_date"]).dt.date
-    temp_list = temp_df["trade_date"].to_list()
-    temp_list.append(datetime.date(1992, 5, 4))  # 是交易日但是交易日历缺失该日期
-    temp_list.sort()
-    temp_df = pd.DataFrame(temp_list, columns=["trade_date"])
-    return temp_df
+    try:
+        r = requests.get(url, proxies = proxys().get_proxies(), timeout=10)
+        r.raise_for_status()  # 检查请求是否成功
+        js_code = MiniRacer()
+        js_code.eval(hk_js_decode)
+        dict_list = js_code.call(
+            "d", r.text.split("=")[1].split(";")[0].replace('"', "")
+        )  # 执行js解密代码
+        temp_df = pd.DataFrame(dict_list)
+        temp_df.columns = ["trade_date"]
+        temp_df["trade_date"] = pd.to_datetime(temp_df["trade_date"]).dt.date
+        temp_list = temp_df["trade_date"].to_list()
+        temp_list.append(datetime.date(1992, 5, 4))  # 是交易日但是交易日历缺失该日期
+        temp_list.sort()
+        temp_df = pd.DataFrame(temp_list, columns=["trade_date"])
+        return temp_df
+    except requests.exceptions.RequestException as e:
+        logging.error(f"获取新浪财经交易日历数据失败: {e}")
+        return None
+    except Exception as e:
+        logging.error(f"处理新浪财经交易日历数据失败: {e}")
+        return None
 
 
 if __name__ == "__main__":

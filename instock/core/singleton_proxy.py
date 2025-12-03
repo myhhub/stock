@@ -4,6 +4,7 @@
 import os.path
 import sys
 import random
+import logging
 from instock.lib.singleton_type import singleton_type
 
 # 在项目运行时，临时将项目路径添加到环境变量
@@ -22,8 +23,10 @@ class proxys(metaclass=singleton_type):
         try:
             with open(proxy_filename, "r") as file:
                 self.data = list(set(line.strip() for line in file.readlines() if line.strip()))
-        except Exception:
-           pass
+            logging.info(f"成功读取代理文件，共{len(self.data)}个代理")
+        except Exception as e:
+            logging.error(f"读取代理文件失败: {e}")
+            self.data = []
 
     def get_data(self):
         return self.data

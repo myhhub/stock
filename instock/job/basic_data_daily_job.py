@@ -69,8 +69,10 @@ def save_nph_etf_spot_data(date, before=True):
 
 
 def main():
+    logging.info("开始执行basic_data_daily_job任务")
     runt.run_with_args(save_nph_stock_spot_data)
     runt.run_with_args(save_nph_etf_spot_data)
+    logging.info("basic_data_daily_job任务执行完成")
 
 
 # main函数入口

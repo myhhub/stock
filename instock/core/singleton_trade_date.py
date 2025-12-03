@@ -13,7 +13,12 @@ __date__ = '2023/3/10 '
 class stock_trade_date(metaclass=singleton_type):
     def __init__(self):
         try:
+            logging.info("初始化股票交易日历单例")
             self.data = stf.fetch_stocks_trade_date()
+            if self.data is None:
+                logging.warning("股票交易日历单例数据为空")
+            else:
+                logging.info(f"股票交易日历单例初始化成功，共{len(self.data)}个交易日")
         except Exception as e:
             logging.error(f"singleton.stock_trade_date处理异常：{e}")
 

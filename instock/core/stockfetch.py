@@ -62,10 +62,13 @@ def is_open_with_line(price):
 # 读取股票交易日历数据
 def fetch_stocks_trade_date():
     try:
+        logging.info("开始获取股票交易日历数据")
         data = tdh.tool_trade_date_hist_sina()
         if data is None or len(data.index) == 0:
+            logging.warning("股票交易日历数据为空")
             return None
         data_date = set(data['trade_date'].values.tolist())
+        logging.info(f"成功获取股票交易日历数据，共{len(data_date)}个交易日")
         return data_date
     except Exception as e:
         logging.error(f"stockfetch.fetch_stocks_trade_date处理异常：{e}")
@@ -95,6 +98,7 @@ def fetch_stocks(date):
     try:
         data = she.stock_zh_a_spot_em()
         if data is None or len(data.index) == 0:
+            logging.warning("获取股票数据为空")
             return None
         if date is None:
             data.insert(0, 'date', datetime.datetime.now().strftime("%Y-%m-%d"))
@@ -102,6 +106,7 @@ def fetch_stocks(date):
             data.insert(0, 'date', date.strftime("%Y-%m-%d"))
         data.columns = list(tbs.TABLE_CN_STOCK_SPOT['columns'])
         data = data.loc[data['code'].apply(is_a_stock)].loc[data['new_price'].apply(is_open)]
+        logging.info(f"成功获取股票数据，共{len(data)}条记录")
         return data
     except Exception as e:
         logging.error(f"stockfetch.fetch_stocks处理异常：{e}")

@@ -89,6 +89,7 @@ def guess_buy(date):
     try:
         _table_name = tbs.TABLE_CN_STOCK_INDICATORS['name']
         if not mdb.checkTableIsExist(_table_name):
+            logging.warning(f"indicators_data_daily_job.guess_buy：表{_table_name}不存在，跳过处理")
             return
 
         _columns = tuple(tbs.TABLE_CN_STOCK_FOREIGN_KEY['columns'])
@@ -124,6 +125,7 @@ def guess_sell(date):
     try:
         _table_name = tbs.TABLE_CN_STOCK_INDICATORS['name']
         if not mdb.checkTableIsExist(_table_name):
+            logging.warning(f"indicators_data_daily_job.guess_sell：表{_table_name}不存在，跳过处理")
             return
 
         _columns = tuple(tbs.TABLE_CN_STOCK_FOREIGN_KEY['columns'])
