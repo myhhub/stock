@@ -3,13 +3,15 @@
 
 import math
 import pandas as pd
-import requests
 import instock.core.tablestructure as tbs
-from instock.core.singleton_proxy import proxys
+from instock.core.eastMoneyFetcher import eastMoneyFetcher
 
 
 __author__ = 'myh '
 __date__ = '2023/5/9 '
+
+# 创建全局实例，供所有函数使用
+fetcher = eastMoneyFetcher()
 
 
 def stock_selection() -> pd.DataFrame:
@@ -35,7 +37,7 @@ def stock_selection() -> pd.DataFrame:
         "client": "WEB"
     }
 
-    r = requests.get(url, proxies = proxys().get_proxies(), params=params)
+    r = fetcher.make_request(url, params=params)
     data_json = r.json()
     data = data_json["result"]["data"]
     if not data:
@@ -46,7 +48,7 @@ def stock_selection() -> pd.DataFrame:
     while page_count > 1:
         page_current = page_current + 1
         params["p"] = page_current
-        r = requests.get(url, proxies = proxys().get_proxies(), params=params)
+        r = fetcher.make_request(url, params=params)
         data_json = r.json()
         _data = data_json["result"]["data"]
         data.extend(_data)
@@ -86,7 +88,7 @@ def stock_selection_params():
         "client": "WEB"
     }
 
-    r = requests.get(url, proxies = proxys().get_proxies(), params=params)
+    r = fetcher.make_request(url, params=params)
     data_json = r.json()
     zxzb = data_json["result"]["data"]  # 指标
     print(zxzb)

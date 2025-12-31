@@ -2,12 +2,14 @@
 # !/usr/bin/env python
 
 import pandas as pd
-import requests
 import instock.core.tablestructure as tbs
-from instock.core.singleton_proxy import proxys
+from instock.core.eastMoneyFetcher import eastMoneyFetcher
 
 __author__ = 'myh '
 __date__ = '2023/5/7 '
+
+# 创建全局实例，供所有函数使用
+fetcher = eastMoneyFetcher()
 
 
 def stock_cpbd_em(symbol: str = "688041") -> pd.DataFrame:
@@ -26,7 +28,7 @@ def stock_cpbd_em(symbol: str = "688041") -> pd.DataFrame:
         symbol = f"SZ{symbol}"
     params = {"code": symbol}
 
-    r = requests.get(url, proxies = proxys().get_proxies(), params=params)
+    r =  fetcher.make_request(url, params=params)
     data_json = r.json()
     zxzb = data_json["zxzb"]  # 主要指标
     if len(zxzb) < 1:
@@ -124,7 +126,7 @@ def stock_zjlx_em(symbol: str = "688041") -> pd.DataFrame:
         "secid": symbol
     }
 
-    r = requests.get(url, proxies = proxys().get_proxies(), params=params)
+    r =  fetcher.make_request(url, params=params)
     data_json = r.json()
     klines = data_json["klines"]  # 主要指标
     "日期","主力净流入额","小单净流入额","中单净流入额","大单净流入额","超大单净流入额","主力净流入占比", "小单净流入占比", "中单净流入占比", "大单净流入占比", "超大单净流入占比"
@@ -135,5 +137,5 @@ def stock_zjlx_em(symbol: str = "688041") -> pd.DataFrame:
 
 
 if __name__ == "__main__":
-    stock_cpbd_em_df = stock_cpbd_em(symbol="688041")
+    stock_cpbd_em_df = stock_zjlx_em(symbol="000001")
     print(stock_cpbd_em_df)

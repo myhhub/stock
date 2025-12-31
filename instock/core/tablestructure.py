@@ -974,10 +974,12 @@ TABLE_CN_STOCK_CHIP_RACE_OPEN = {'name': 'cn_stock_chip_race_open', 'cn': '早�
                                  'pre_close_price': {'type': FLOAT, 'cn': '昨收', 'size': 70},
                                  'open_price': {'type': FLOAT, 'cn': '今开', 'size': 70},
                                  'deal_amount': {'type': BIGINT, 'cn': '开盘金额', 'size': 90},
-                                 'bid_rate': {'type': FLOAT, 'cn': '抢筹幅度', 'size': 70},
+                                 'bid_rate': {'type': FLOAT, 'cn': '抢筹幅度', 'size': 60},
                                  'bid_trust_amount': {'type': BIGINT, 'cn': '抢筹委托金额', 'size': 100},
                                  'bid_deal_amount': {'type': BIGINT, 'cn': '抢筹成交金额', 'size': 100},
-                                 'bid_ratio': {'type': FLOAT, 'cn': '抢筹占比', 'size': 70}}}
+                                 'bid_ratio': {'type': FLOAT, 'cn': '抢筹占比', 'size': 60},
+                                 'limitup_day': {'type': SmallInteger, 'cn': '天', 'size': 40},
+                                 'limitup_board': {'type': SmallInteger, 'cn': '板', 'size': 40}}}
 
 TABLE_CN_STOCK_CHIP_RACE_END = {'name': 'cn_stock_chip_race_end', 'cn': '尾盘抢筹数据',
                      'columns': {'date': {'type': DATE, 'cn': '日期', 'size': 0},
@@ -988,10 +990,12 @@ TABLE_CN_STOCK_CHIP_RACE_END = {'name': 'cn_stock_chip_race_end', 'cn': '尾盘�
                                  'pre_close_price': {'type': FLOAT, 'cn': '昨收', 'size': 70},
                                  'open_price': {'type': FLOAT, 'cn': '今开', 'size': 70},
                                  'deal_amount': {'type': BIGINT, 'cn': '收盘金额', 'size': 90},
-                                 'bid_rate': {'type': FLOAT, 'cn': '抢筹幅度', 'size': 70},
+                                 'bid_rate': {'type': FLOAT, 'cn': '抢筹幅度', 'size': 60},
                                  'bid_trust_amount': {'type': BIGINT, 'cn': '抢筹委托金额', 'size': 100},
                                  'bid_deal_amount': {'type': BIGINT, 'cn': '抢筹成交金额', 'size': 100},
-                                 'bid_ratio': {'type': FLOAT, 'cn': '抢筹占比', 'size': 70}}}
+                                 'bid_ratio': {'type': FLOAT, 'cn': '抢筹占比', 'size': 60},
+                                 'limitup_day': {'type': SmallInteger, 'cn': '天', 'size': 40},
+                                 'limitup_board': {'type': SmallInteger, 'cn': '板', 'size': 40}}}
 
 TABLE_CN_STOCK_LIMITUP_REASON = {'name': 'cn_stock_limitup_reason', 'cn': '涨停原因揭密',
                      'columns': {'date': {'type': DATE, 'cn': '日期', 'size': 0},

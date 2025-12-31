@@ -47,6 +47,8 @@ def stock_chip_race_open(date: str = "") -> pd.DataFrame:
         "抢筹成交金额",
         "最新价",
         "_",
+        "天",
+        "板",
     ]
 
     temp_df["昨收"] = temp_df["昨收"]/10000
@@ -69,6 +71,8 @@ def stock_chip_race_open(date: str = "") -> pd.DataFrame:
             "抢筹委托金额",
             "抢筹成交金额",
             "抢筹占比",
+            "天",
+            "板",
         ]
     ]
 
@@ -111,6 +115,8 @@ def stock_chip_race_end(date: str = "") -> pd.DataFrame:
         "抢筹成交金额",
         "最新价",
         "_",
+        "天",
+        "板",
     ]
 
     temp_df["昨收"] = temp_df["昨收"]/10000
@@ -133,6 +139,8 @@ def stock_chip_race_end(date: str = "") -> pd.DataFrame:
             "抢筹委托金额",
             "抢筹成交金额",
             "抢筹占比",
+            "天",
+            "板",
         ]
     ]
 
