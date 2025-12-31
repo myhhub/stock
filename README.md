@@ -204,10 +204,10 @@ K线形态作业 klinepattern_data_daily_job.py
 策略数据作业 python strategy_data_daily_job.py
 回测数据 python backtest_data_daily_job.py
 ```
-## 十二：支持代理
+## 十二：支持代理及Cookie
 
 支持多代理获取数据。由于很多网站对大量请求有防护机制，使用单一IP地址频繁访问可能导致被封禁或限制访问。代理IP能够帮助分散请求来源，避免单一IP被封锁，从而保证爬虫程序的稳定运行。
-
+支持注入Cookie，解决数据获取频率过高，限制数据获取。
 ## 十三：存储采用数据库设计
 
 数据存储采用数据库设计，能保存历史数据，以及对数据进行扩展分析、统计、挖掘。系统实现自动创建数据库、数据表，封装了批量更新、插入数据，方便业务扩展。
@@ -348,6 +348,7 @@ abc:123456@65.1.244.232:3128
 ### 8.设置东方财富网Cookie
 东方财富数据获取频率过高，会限制获取数据，可以通过注入cookie解决。
 以下是详细的操作步骤：
+```
 1、获取Cookie
     打开浏览器，访问东方财富网行情页面：https://quote.eastmoney.com/center/gridlist.html#hs_a_board
     登录账号（如果有东方财富网账号，建议登录以获取更稳定的Cookie）
@@ -360,24 +361,18 @@ abc:123456@65.1.244.232:3128
 2、设置Cookie的两种方式
     方式一：通过环境变量设置（推荐）
     Windows系统：
-    cmd
-    ```
-    setx EAST_MONEY_COOKIE "你的Cookie值"
-    ```
+    cmd命令： setx EAST_MONEY_COOKIE "你的Cookie值"
     重启Python环境：设置环境变量后，需要重启Python IDE或命令提示符窗口
     Linux/macOS系统：
-    bash
-    ```
-    export EAST_MONEY_COOKIE="你的Cookie值"
-    ```
-    （注意：这种方式只在当前终端会话有效，若要永久设置，需要编辑 ~/.bashrc 或 ~/.zshrc 文件）
+    bash命令：export EAST_MONEY_COOKIE="你的Cookie值"
+    注意：这种方式只在当前终端会话有效，若要永久设置，需要编辑 ~/.bashrc 或 ~/.zshrc 文件
     方式二：通过文件设置
     编辑eastmoney_cookie.txt文件，替换Cookie。
 3、注意事项
     Cookie有效期：东方财富网的Cookie通常会在一段时间后过期（一般为几天到几周），如突然无法正常工作，可能是Cookie过期了，需要重新获取并设置
     定期更新：建议每隔一段时间（如每周）更新一次Cookie，以确保爬取的稳定性
-    多账号轮换：如果您有多个东方财富网账号，可以轮换使用不同账号的Cookie，进一步降低被限制的风险
-
+    多账号轮换：如果有多个东方财富网账号，可以轮换使用不同账号的Cookie，进一步降低被限制的风险
+```
 ### 9.安装自动交易（可选）
 
 ```
