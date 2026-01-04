@@ -66,7 +66,7 @@ def stock_lhb_detail_em(
     big_df["index"] = big_df.index + 1
     big_df.rename(
         columns={
-            "index": "序号",
+            "index": "-",
             "SECURITY_CODE": "代码",
             "SECUCODE": "-",
             "SECURITY_NAME_ABBR": "名称",
@@ -94,7 +94,6 @@ def stock_lhb_detail_em(
 
     big_df = big_df[
         [
-            "序号",
             "代码",
             "名称",
             "上榜日",

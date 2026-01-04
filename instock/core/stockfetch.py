@@ -199,6 +199,29 @@ def fetch_stock_top_entity_data(date):
         logging.error(f"stockfetch.fetch_stock_top_entity_data处理异常：{e}")
     return None
 
+# 描述: 获取东方财富-龙虎榜-个股上榜统计
+def fetch_stock_lhb_data(date,count=12):
+    try:
+        start_date = trd.get_previous_trade_date(date,count).strftime("%Y%m%d")
+        end_date = date.strftime("%Y%m%d")
+
+        data = sle.stock_lhb_detail_em(start_date, end_date)
+        if data is None or len(data.index) == 0:
+            return None
+        _columns = list(tbs.TABLE_CN_STOCK_lHB['columns'])
+        _columns.pop(0)
+        data.columns = _columns
+        data = data.loc[data['code'].apply(is_a_stock)]
+        data.drop_duplicates('code', keep='last', inplace=True)
+        # data = data.sort_values(by='ranking_times', ascending=False)
+        if date is None:
+            data.insert(0, 'date', datetime.datetime.now().strftime("%Y-%m-%d"))
+        else:
+            data.insert(0, 'date', date.strftime("%Y-%m-%d"))
+        return data
+    except Exception as e:
+        logging.error(f"stockfetch.fetch_stock_lhb_data处理异常：{e}")
+    return None
 
 # 描述: 获取新浪财经-龙虎榜-个股上榜统计
 def fetch_stock_top_data(date):

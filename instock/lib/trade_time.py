@@ -18,7 +18,15 @@ def is_trade_date(date=None):
         return False
 
 
-def get_previous_trade_date(date):
+def get_previous_trade_date(date, count=1):
+    while True:
+        date =  get_one_previous_trade_date(date)
+        count -= 1
+        if count == 0:
+            break
+    return date
+
+def get_one_previous_trade_date(date):
     trade_date = stock_trade_date().get_data()
     if trade_date is None:
         return date
