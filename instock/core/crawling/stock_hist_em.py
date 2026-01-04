@@ -4,14 +4,19 @@
 Date: 2022/6/19 15:26
 Desc: 东方财富网-行情首页-沪深京 A 股
 """
+import random
+import time
 
 import pandas as pd
 import math
 from functools import lru_cache
-from instock.core.eastMoneyFetcher import eastMoneyFetcher
+from instock.core.eastmoney_fetcher import eastmoney_fetcher
+
+__author__ = 'myh '
+__date__ = '2025/12/31 '
 
 # 创建全局实例，供所有函数使用
-fetcher = eastMoneyFetcher()
+fetcher = eastmoney_fetcher()
 
 def stock_zh_a_spot_em() -> pd.DataFrame:
     """
@@ -52,6 +57,8 @@ def stock_zh_a_spot_em() -> pd.DataFrame:
         _data = data_json["data"]["diff"]
         data.extend(_data)
         page_count =page_count - 1
+       # 添加随机延迟，避免爬取过快
+        time.sleep(random.uniform(0.5, 1.5))
 
     temp_df = pd.DataFrame(data)
     temp_df.columns = [
@@ -221,6 +228,8 @@ def code_id_map_em() -> dict:
         _data = data_json["data"]["diff"]
         data.extend(_data)
         page_count =page_count - 1
+       # 添加随机延迟，避免爬取过快
+        time.sleep(random.uniform(0.5, 1.5))
 
     temp_df = pd.DataFrame(data)
     temp_df["market_id"] = 1
@@ -256,6 +265,8 @@ def code_id_map_em() -> dict:
         _data = data_json["data"]["diff"]
         data.extend(_data)
         page_count =page_count - 1
+       # 添加随机延迟，避免爬取过快
+        time.sleep(random.uniform(0.5, 1.5))
 
     temp_df_sz = pd.DataFrame(data)
     temp_df_sz["sz_id"] = 0
@@ -290,6 +301,8 @@ def code_id_map_em() -> dict:
         _data = data_json["data"]["diff"]
         data.extend(_data)
         page_count =page_count - 1
+       # 添加随机延迟，避免爬取过快
+        time.sleep(random.uniform(0.5, 1.5))
 
     temp_df_sz = pd.DataFrame(data)
     temp_df_sz["bj_id"] = 0

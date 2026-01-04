@@ -11,7 +11,7 @@ from instock.core.singleton_proxy import proxys
 __author__ = 'myh '
 __date__ = '2025/12/31 '
 
-class eastMoneyFetcher:
+class eastmoney_fetcher:
     """
     东方财富网数据获取器
     封装了Cookie管理、会话管理和请求发送功能
@@ -43,7 +43,7 @@ class eastMoneyFetcher:
                 return cookie
 
         # 3. 默认Cookie（可能过期，仅作为备选）
-        return 'fullscreengg=1; fullscreengg2=1; qgqp_b_id=76670de7aee4283d73f88b9c543a53f0; st_si=21277950143086; st_asi=delete; st_pvi=95702116914823; st_sp=2025-12-31%2010%3A46%3A45; st_inirUrl=; st_sn=2; st_psi=20251231104656421-113200301321-2336875982'
+        return 'fullscreengg=1; fullscreengg2=1; qgqp_b_id=76670de7aee4283d73f88b9c543a53f0; st_si=52987000764549; st_sn=1; st_psi=20251231162316664-113200301321-0046286479; st_asi=delete; st_pvi=43436093393372; st_sp=2025-12-31%2016%3A23%3A16; st_inirUrl='
 
     def _create_session(self):
         """创建并配置会话"""

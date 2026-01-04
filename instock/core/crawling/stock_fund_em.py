@@ -6,16 +6,17 @@ Desc: 东方财富网-数据中心-资金流向
 https://data.eastmoney.com/zjlx/detail.html
 """
 import json
+import random
 import time
 import math
 import pandas as pd
-from instock.core.eastMoneyFetcher import eastMoneyFetcher
+from instock.core.eastmoney_fetcher import eastmoney_fetcher
 
 __author__ = 'myh '
-__date__ = '2023/6/12 '
+__date__ = '2025/12/31 '
 
 # 创建全局实例，供所有函数使用
-fetcher = eastMoneyFetcher()
+fetcher = eastmoney_fetcher()
 
 def stock_individual_fund_flow_rank(indicator: str = "5日") -> pd.DataFrame:
     """
@@ -72,6 +73,8 @@ def stock_individual_fund_flow_rank(indicator: str = "5日") -> pd.DataFrame:
         _data = data_json["data"]["diff"]
         data.extend(_data)
         page_count =page_count - 1
+       # 添加随机延迟，避免爬取过快
+        time.sleep(random.uniform(0.5, 1.5))
 
     temp_df = pd.DataFrame(data)
     temp_df = temp_df[~temp_df["f2"].isin(["-"])]
@@ -301,6 +304,8 @@ def stock_sector_fund_flow_rank(
         _data = json_data["data"]["diff"]
         data.extend(_data)
         page_count =page_count - 1
+       # 添加随机延迟，避免爬取过快
+        time.sleep(random.uniform(0.5, 1.5))
 
     temp_df = pd.DataFrame(data)
 

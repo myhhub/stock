@@ -2,17 +2,18 @@
 # !/usr/bin/env python
 
 import math
+import random
+import time
+
 import pandas as pd
 import instock.core.tablestructure as tbs
-from instock.core.eastMoneyFetcher import eastMoneyFetcher
-
+from instock.core.eastmoney_fetcher import eastmoney_fetcher
 
 __author__ = 'myh '
-__date__ = '2023/5/9 '
+__date__ = '2025/12/31 '
 
 # 创建全局实例，供所有函数使用
-fetcher = eastMoneyFetcher()
-
+fetcher = eastmoney_fetcher()
 
 def stock_selection() -> pd.DataFrame:
     """
@@ -53,6 +54,8 @@ def stock_selection() -> pd.DataFrame:
         _data = data_json["result"]["data"]
         data.extend(_data)
         page_count =page_count - 1
+       # 添加随机延迟，避免爬取过快
+        time.sleep(random.uniform(0.5, 1.5))
 
     temp_df = pd.DataFrame(data)
 

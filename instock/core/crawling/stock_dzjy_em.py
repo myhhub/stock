@@ -5,11 +5,17 @@ Date: 2022/5/16 15:31
 Desc: 东方财富网-数据中心-大宗交易-市场统计
 http://data.eastmoney.com/dzjy/dzjy_sctj.aspx
 """
+import random
+import time
+
 import pandas as pd
-from instock.core.eastMoneyFetcher import eastMoneyFetcher
+from instock.core.eastmoney_fetcher import eastmoney_fetcher
+
+__author__ = 'myh '
+__date__ = '2025/12/31 '
 
 # 创建全局实例，供所有函数使用
-fetcher = eastMoneyFetcher()
+fetcher = eastmoney_fetcher()
 
 def stock_dzjy_sctj() -> pd.DataFrame:
     """
@@ -39,6 +45,9 @@ def stock_dzjy_sctj() -> pd.DataFrame:
         data_json = r.json()
         temp_df = pd.DataFrame(data_json['result']["data"])
         big_df = pd.concat([big_df, temp_df], ignore_index=True)
+        # 添加随机延迟，避免爬取过快
+        time.sleep(random.uniform(0.5, 1.5))
+
     big_df.reset_index(inplace=True)
     big_df['index'] = big_df['index'] + 1
     big_df.columns = [
@@ -298,6 +307,9 @@ def stock_dzjy_hygtj(symbol: str = '近三月') -> pd.DataFrame:
         data_json = r.json()
         temp_df = pd.DataFrame(data_json['result']["data"])
         big_df = pd.concat([big_df, temp_df], ignore_index=True)
+        # 添加随机延迟，避免爬取过快
+        time.sleep(random.uniform(0.5, 1.5))
+
     big_df.reset_index(inplace=True)
     big_df['index'] = big_df.index + 1
     big_df.columns = [
@@ -392,6 +404,9 @@ def stock_dzjy_hyyybtj(symbol: str = '近3日') -> pd.DataFrame:
         data_json = r.json()
         temp_df = pd.DataFrame(data_json['result']["data"])
         big_df = pd.concat([big_df, temp_df], ignore_index=True)
+        # 添加随机延迟，避免爬取过快
+        time.sleep(random.uniform(0.5, 1.5))
+
     big_df.reset_index(inplace=True)
     big_df['index'] = big_df.index + 1
     big_df.columns = [
@@ -464,6 +479,8 @@ def stock_dzjy_yybph(symbol: str = '近三月') -> pd.DataFrame:
         data_json = r.json()
         temp_df = pd.DataFrame(data_json['result']["data"])
         big_df = pd.concat([big_df, temp_df], ignore_index=True)
+       # 添加随机延迟，避免爬取过快
+        time.sleep(random.uniform(0.5, 1.5))
 
     big_df.reset_index(inplace=True)
     big_df['index'] = big_df.index + 1

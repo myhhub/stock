@@ -12,6 +12,9 @@ import re
 import numpy as np
 from instock.core.singleton_proxy import proxys
 
+__author__ = 'myh '
+__date__ = '2025/5/9 '
+
 def stock_limitup_reason(date: str = "2025-02-27") -> pd.DataFrame:
     """
     同花顺涨停原因

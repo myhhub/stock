@@ -5,14 +5,18 @@ Date: 2023/1/4 12:18
 Desc: 东方财富-ETF 行情
 https://quote.eastmoney.com/sh513500.html
 """
+import random
+import time
 from functools import lru_cache
 import math
 import pandas as pd
+from instock.core.eastmoney_fetcher import eastmoney_fetcher
 
-from instock.core.eastMoneyFetcher import eastMoneyFetcher
+__author__ = 'myh '
+__date__ = '2025/12/31 '
 
 # 创建全局实例，供所有函数使用
-fetcher = eastMoneyFetcher()
+fetcher = eastmoney_fetcher()
 
 def fund_etf_spot_em() -> pd.DataFrame:
     """
@@ -55,6 +59,8 @@ def fund_etf_spot_em() -> pd.DataFrame:
         _data = data_json["data"]["diff"]
         data.extend(_data)
         page_count =page_count - 1
+       # 添加随机延迟，避免爬取过快
+        time.sleep(random.uniform(0.5, 1.5))
 
     temp_df = pd.DataFrame(data)
     temp_df.rename(
