@@ -51,14 +51,14 @@ def stock_fhps_em(date: str = "20231231") -> pd.DataFrame:
     total_pages = int(data_json["result"]["pages"])
     big_df = pd.DataFrame()
     for page in tqdm(range(1, total_pages + 1), leave=False):
+        # 添加随机延迟，避免爬取过快
+        time.sleep(random.uniform(0.5, 1.5))
         params.update({"pageNumber": page})
         r = fetcher.make_request(url, params=params)
         data_json = r.json()
         temp_df = pd.DataFrame(data_json["result"]["data"])
         if not temp_df.empty:
             big_df = pd.concat(objs=[big_df, temp_df], ignore_index=True)
-       # 添加随机延迟，避免爬取过快
-        time.sleep(random.uniform(0.5, 1.5))
 
     big_df.columns = [
         "_",

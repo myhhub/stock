@@ -50,6 +50,8 @@ def stock_lhb_detail_em(
     total_page_num = data_json["result"]["pages"]
     big_df = pd.DataFrame()
     for page in range(1, total_page_num + 1):
+        # 添加随机延迟，避免爬取过快
+        time.sleep(random.uniform(0.5, 1.5))
         params.update(
             {
                 "pageNumber": page,
@@ -59,8 +61,6 @@ def stock_lhb_detail_em(
         data_json = r.json()
         temp_df = pd.DataFrame(data_json["result"]["data"])
         big_df = pd.concat([big_df, temp_df], ignore_index=True)
-        # 添加随机延迟，避免爬取过快
-        time.sleep(random.uniform(0.5, 1.5))
 
     big_df.reset_index(inplace=True)
     big_df["index"] = big_df.index + 1
@@ -351,13 +351,13 @@ def stock_lhb_jgstatistic_em(symbol: str = "近一月") -> pd.DataFrame:
     total_page = data_json["result"]["pages"]
     big_df = pd.DataFrame()
     for page in tqdm(range(1, total_page + 1), leave=False):
+        # 添加随机延迟，避免爬取过快
+        time.sleep(random.uniform(0.5, 1.5))
         params.update({"pageNumber": page})
         r = fetcher.make_request(url, params=params)
         data_json = r.json()
         temp_df = pd.DataFrame(data_json["result"]["data"])
         big_df = pd.concat([big_df, temp_df], ignore_index=True)
-        # 添加随机延迟，避免爬取过快
-        time.sleep(random.uniform(0.5, 1.5))
 
     big_df.reset_index(inplace=True)
     big_df["index"] = big_df.index + 1
@@ -452,13 +452,13 @@ def stock_lhb_hyyyb_em(
 
     big_df = pd.DataFrame()
     for page in tqdm(range(1, total_page + 1), leave=False):
+        # 添加随机延迟，避免爬取过快
+        time.sleep(random.uniform(0.5, 1.5))
         params.update({"pageNumber": page})
         r = fetcher.make_request(url, params=params)
         data_json = r.json()
         temp_df = pd.DataFrame(data_json["result"]["data"])
         big_df = pd.concat([big_df, temp_df], ignore_index=True)
-        # 添加随机延迟，避免爬取过快
-        time.sleep(random.uniform(0.5, 1.5))
 
     big_df.reset_index(inplace=True)
     big_df["index"] = big_df.index + 1
@@ -532,13 +532,13 @@ def stock_lhb_yybph_em(symbol: str = "近一月") -> pd.DataFrame:
     total_page = data_json["result"]["pages"]
     big_df = pd.DataFrame()
     for page in tqdm(range(1, total_page + 1), leave=False):
+        # 添加随机延迟，避免爬取过快
+        time.sleep(random.uniform(0.5, 1.5))
         params.update({"pageNumber": page})
         r = fetcher.make_request(url, params=params)
         data_json = r.json()
         temp_df = pd.DataFrame(data_json["result"]["data"])
         big_df = pd.concat([big_df, temp_df], ignore_index=True)
-        # 添加随机延迟，避免爬取过快
-        time.sleep(random.uniform(0.5, 1.5))
 
     big_df.reset_index(inplace=True)
     big_df["index"] = big_df.index + 1
@@ -640,13 +640,13 @@ def stock_lhb_traderstatistic_em(symbol: str = "近一月") -> pd.DataFrame:
     total_page = data_json["result"]["pages"]
     big_df = pd.DataFrame()
     for page in tqdm(range(1, total_page + 1), leave=False):
+        # 添加随机延迟，避免爬取过快
+        time.sleep(random.uniform(0.5, 1.5))
         params.update({"pageNumber": page})
         r = fetcher.make_request(url, params=params)
         data_json = r.json()
         temp_df = pd.DataFrame(data_json["result"]["data"])
         big_df = pd.concat([big_df, temp_df], ignore_index=True)
-        # 添加随机延迟，避免爬取过快
-        time.sleep(random.uniform(0.5, 1.5))
 
     big_df.reset_index(inplace=True)
     big_df["index"] = big_df.index + 1
