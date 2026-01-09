@@ -52,7 +52,7 @@ def stock_fhps_em(date: str = "20231231") -> pd.DataFrame:
     big_df = pd.DataFrame()
     for page in tqdm(range(1, total_pages + 1), leave=False):
         # 添加随机延迟，避免爬取过快
-        time.sleep(random.uniform(0.5, 1.5))
+        time.sleep(random.uniform(1, 1.5))
         params.update({"pageNumber": page})
         r = fetcher.make_request(url, params=params)
         data_json = r.json()

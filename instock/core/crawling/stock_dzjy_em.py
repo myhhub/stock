@@ -41,7 +41,7 @@ def stock_dzjy_sctj() -> pd.DataFrame:
     big_df = pd.DataFrame()
     for page in range(1, total_page+1):
         # 添加随机延迟，避免爬取过快
-        time.sleep(random.uniform(0.5, 1.5))
+        time.sleep(random.uniform(1, 1.5))
         params.update({'pageNumber': page})
         r = fetcher.make_request(url, params=params)
         data_json = r.json()
@@ -303,7 +303,7 @@ def stock_dzjy_hygtj(symbol: str = '近三月') -> pd.DataFrame:
     big_df = pd.DataFrame()
     for page in range(1, int(total_page)+1):
         # 添加随机延迟，避免爬取过快
-        time.sleep(random.uniform(0.5, 1.5))
+        time.sleep(random.uniform(1, 1.5))
         params.update({"pageNumber": page})
         r = fetcher.make_request(url, params=params)
         data_json = r.json()
@@ -400,7 +400,7 @@ def stock_dzjy_hyyybtj(symbol: str = '近3日') -> pd.DataFrame:
     big_df = pd.DataFrame()
     for page in range(1, int(total_page)+1):
         # 添加随机延迟，避免爬取过快
-        time.sleep(random.uniform(0.5, 1.5))
+        time.sleep(random.uniform(1, 1.5))
         params.update({"pageNumber": page})
         r = fetcher.make_request(url, params=params)
         data_json = r.json()
@@ -475,7 +475,7 @@ def stock_dzjy_yybph(symbol: str = '近三月') -> pd.DataFrame:
     big_df = pd.DataFrame()
     for page in range(1, int(total_page)+1):
         # 添加随机延迟，避免爬取过快
-        time.sleep(random.uniform(0.5, 1.5))
+        time.sleep(random.uniform(1, 1.5))
         params.update({"pageNumber": page})
         r = fetcher.make_request(url, params=params)
         data_json = r.json()
