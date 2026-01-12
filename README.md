@@ -4,10 +4,10 @@ InStock股票系统，抓取每日股票、ETF关键数据，计算股票技术�
 
 The stock system,Capture key data on daily stocks and ETFs, calculate stock technical indicators, chip distribution, Position Cost Distribution(CYQ), identify various K-line forms, comprehensive stock selection, built-in multiple stock selection strategies, support stock selection verification and backtesting, support automatic trading, and support batch time , runs efficiently, supports display on PCs, tablets, and mobile phones, and provides Docker images for easy installation, making it a good helper for quantitative investment.
 
-Docker镜像：https://hub.docker.com/r/mayanghua/instock **镜像优化构建仅170M**。
+ima知识库：myhhub/stock，每日最全个股信息覆盖超 2230 个栏目，为优选个股提供优质数据支撑。
+ https://ima.qq.com/wiki/?shareId=8b0da768c77bc863f1cad8eb9482e37a6eeb26ad7171523b687d48c1a67c8e2c 。
 
-【ima知识库】 每天最全的个股信息，共2230多个栏目，是最佳选股数据池。
-myhhub/stock https://ima.qq.com/wiki/?shareId=8b0da768c77bc863f1cad8eb9482e37a6eeb26ad7171523b687d48c1a67c8e2c
+Docker镜像：https://hub.docker.com/r/mayanghua/instock 。
 
 # 功能介绍
 
