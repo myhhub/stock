@@ -6,7 +6,7 @@ The stock system,Capture key data on daily stocks and ETFs, calculate stock tech
 
 Docker镜像：https://hub.docker.com/r/mayanghua/instock **镜像优化构建仅170M**。
 
-【ima知识库】 每天更新股票数据大全，共22300多个信息栏目。
+【ima知识库】 每天最全的个股信息，共2230多个栏目，是最佳选股数据池。
 myhhub/stock https://ima.qq.com/wiki/?shareId=8b0da768c77bc863f1cad8eb9482e37a6eeb26ad7171523b687d48c1a67c8e2c
 
 # 功能介绍
