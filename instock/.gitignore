@@ -158,5 +158,6 @@ cython_debug/
 .idea/
 
 cache/
+data/
 log/
 proxy/
