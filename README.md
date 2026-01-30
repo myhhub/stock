@@ -1,5 +1,3 @@
-**IMA知识库**
-
 [对应IMA知识库](https://ima.qq.com/wiki/?shareId=8b0da768c77bc863f1cad8eb9482e37a6eeb26ad7171523b687d48c1a67c8e2c)：专业量化级股票因子池，每日更新全网全域股票数据，个股信息覆盖超2200个维度栏目，为个股精选提供高维度、高质量的数据核心支撑。 https://ima.qq.com/wiki/?shareId=8b0da768c77bc863f1cad8eb9482e37a6eeb26ad7171523b687d48c1a67c8e2c 。
 
 **InStock股票系统**
