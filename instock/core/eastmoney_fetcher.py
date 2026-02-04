@@ -3,6 +3,8 @@
 
 import os
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 from pathlib import Path
 import time
 import random
@@ -21,6 +23,7 @@ class eastmoney_fetcher:
         """初始化获取器"""
         self.base_dir = os.path.dirname(os.path.dirname(__file__))
         self.session = self._create_session()
+        self.proxies = proxys().get_proxies()
 
     def _get_cookie(self):
         """
@@ -43,18 +46,36 @@ class eastmoney_fetcher:
                 return cookie
 
         # 3. 默认Cookie（可能过期，仅作为备选）
-        return 'fullscreengg=1; fullscreengg2=1; qgqp_b_id=76670de7aee4283d73f88b9c543a53f0; st_si=52987000764549; st_sn=1; st_psi=20251231162316664-113200301321-0046286479; st_asi=delete; st_pvi=43436093393372; st_sp=2025-12-31%2016%3A23%3A16; st_inirUrl='
+        return 'st_si=67026802089511; st_psi=20260129173247983-119144370567-7745603485; st_pvi=58060843653169; st_sp=2026-01-29%2017%3A28%3A14; st_inirUrl=; st_sn=4; st_asi=20260129173247983-119144370567-7745603485-webznxg.dbssk.qxg-1'
 
     def _create_session(self):
         """创建并配置会话"""
         session = requests.Session()
+
+        # 配置连接池
+        retry_strategy = Retry(
+            total=3,
+            backoff_factor=0.1,
+            status_forcelist=[429, 500, 502, 503, 504],
+            allowed_methods=["HEAD", "GET", "POST", "OPTIONS"]
+        )
+        adapter = HTTPAdapter(
+            max_retries=retry_strategy,
+            pool_connections=50,  # 增加连接池大小
+            pool_maxsize=50  # 增加连接池最大大小
+        )
+
+        # 为http和https请求添加适配器
+        session.mount("http://", adapter)
+        session.mount("https://", adapter)
+
         # 设置请求头
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
             'Referer': 'https://quote.eastmoney.com/',
             'Accept': '*/*',
             'Accept-Language': 'zh-CN,zh;q=0.9',
-            'Accept-Encoding': 'gzip, deflate',
+            'Accept-Encoding': 'gzip, deflate, br, zstd',
             'Connection': 'keep-alive',
         }
         session.headers.update(headers)
@@ -62,7 +83,7 @@ class eastmoney_fetcher:
         session.cookies.update({'Cookie': self._get_cookie()})
         return session
 
-    def make_request(self, url, params=None, retry=1, timeout=10):
+    def make_request(self, url, params=None, retry=3, timeout=10):
         """
         发送请求
         :param url: 请求URL
@@ -75,8 +96,39 @@ class eastmoney_fetcher:
             try:
                 response = self.session.get(
                     url,
-                    proxies=proxys().get_proxies(),
+                    proxies=self.proxies,
                     params=params,
+                    timeout=timeout
+                )
+                response.raise_for_status()  # 检查HTTP错误
+                return response
+            except requests.exceptions.RequestException as e:
+                print(f"请求错误: {e}, 第 {i + 1}/{retry} 次重试")
+                if i < retry - 1:
+                    # 随机延迟后重试
+                    time.sleep(random.uniform(1, 3))
+                else:
+                    raise
+
+    def make_post_request(self, url, data=None, json=None, params=None, retry=3, timeout=60):
+        """
+        发送POST请求
+        :param url: 请求URL
+        :param data: 请求数据（表单形式）
+        :param json: 请求数据（JSON形式）
+        :param params: URL参数
+        :param retry: 重试次数
+        :param timeout: 超时时间
+        :return: 响应对象
+        """
+        for i in range(retry):
+            try:
+                response = self.session.post(
+                    url,
+                    proxies=self.proxies,
+                    params=params,
+                    data=data,
+                    json=json,
                     timeout=timeout
                 )
                 response.raise_for_status()  # 检查HTTP错误
