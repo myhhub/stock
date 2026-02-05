@@ -39,6 +39,7 @@ trusted-host = mirrors.aliyun.com" > /etc/pip.conf && \
     pip install beautifulsoup4 && \
     pip install bokeh && \
     pip install pandas && \
+    pip install urllib3 && \
     pip install tornado && \
     pip install mini-racer && \
     pip install easytrader && \
