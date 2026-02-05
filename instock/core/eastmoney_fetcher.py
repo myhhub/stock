@@ -46,7 +46,7 @@ class eastmoney_fetcher:
                 return cookie
 
         # 3. 默认Cookie（可能过期，仅作为备选）
-        return 'st_si=67026802089511; st_psi=20260129173247983-119144370567-7745603485; st_pvi=58060843653169; st_sp=2026-01-29%2017%3A28%3A14; st_inirUrl=; st_sn=4; st_asi=20260129173247983-119144370567-7745603485-webznxg.dbssk.qxg-1'
+        return 'st_si=78948464251292; st_psi=20260205091253851-119144370567-1089607836; st_pvi=07789985376191; st_sp=2026-02-05%2009%3A11%3A13; st_inirUrl=https%3A%2F%2Fxuangu.eastmoney.com%2FResult; st_sn=12; st_asi=20260205091253851-119144370567-1089607836-webznxg.dbssk.qxg-1'
 
     def _create_session(self):
         """创建并配置会话"""
