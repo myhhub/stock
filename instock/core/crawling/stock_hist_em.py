@@ -343,7 +343,7 @@ def stock_zh_a_hist(
         "ut": "7eea3edcaed734bea9cbfc24409ed989",
         "klt": period_dict[period],
         "fqt": adjust_dict[adjust],
-        "secid": f"{code_id_dict[symbol]}.{symbol}",
+        "secid": f"1.{symbol}" if symbol.startswith('6') else f"0.{symbol}",
         "beg": start_date,
         "end": end_date,
         "_": "1623766962675",
@@ -422,7 +422,7 @@ def stock_zh_a_hist_min_em(
             "ut": "7eea3edcaed734bea9cbfc24409ed989",
             "ndays": "5",
             "iscr": "0",
-            "secid": f"{code_id_dict[symbol]}.{symbol}",
+            "secid": f"1.{symbol}" if symbol.startswith('6') else f"0.{symbol}",
             "_": "1623766962675",
         }
         r =  fetcher.make_request(url, params=params)
@@ -460,7 +460,7 @@ def stock_zh_a_hist_min_em(
             "ut": "7eea3edcaed734bea9cbfc24409ed989",
             "klt": period,
             "fqt": adjust_map[adjust],
-            "secid": f"{code_id_dict[symbol]}.{symbol}",
+            "secid": f"1.{symbol}" if symbol.startswith('6') else f"0.{symbol}",
             "beg": "0",
             "end": "20500000",
             "_": "1630930917857",
@@ -541,7 +541,7 @@ def stock_zh_a_hist_pre_min_em(
         "ndays": "1",
         "iscr": "1",
         "iscca": "0",
-        "secid": f"{code_id_dict[symbol]}.{symbol}",
+        "secid": f"1.{symbol}" if symbol.startswith('6') else f"0.{symbol}",
         "_": "1623766962675",
     }
     r =  fetcher.make_request(url, params=params)
