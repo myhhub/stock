@@ -15,6 +15,24 @@
     #hot-concept-dashboard .hot-concept-table > tbody > tr > td {
         vertical-align: middle;
     }
+
+    #hot-concept-dashboard .hot-concept-sort-link {
+        color: inherit;
+        display: inline-block;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+    #hot-concept-dashboard .hot-concept-sort-link:hover,
+    #hot-concept-dashboard .hot-concept-sort-link:focus {
+        color: #337ab7;
+        text-decoration: none;
+    }
+
+    #hot-concept-dashboard .hot-concept-sort-indicator {
+        color: #337ab7;
+        margin-left: 3px;
+    }
 </style>
 
 <div id="hot-concept-dashboard" class="page-content">
@@ -74,28 +92,6 @@
             </div>
             <div class="col-xs-12 col-sm-6 col-md-3">
                 <div class="form-group">
-                    <label for="sort-metric-filter">排序指标</label>
-                    <select id="sort-metric-filter" class="form-control input-sm" name="sort_metric">
-                        {% for value, label in metric_options %}
-                        <option value="{{ value }}" {% if filters['sort_metric'] == value %}selected{% end %}>{{ label }}</option>
-                        {% end %}
-                    </select>
-                </div>
-            </div>
-            <div class="col-xs-12 col-sm-6 col-md-3">
-                <div class="form-group">
-                    <label for="sort-order-filter">排序方向</label>
-                    <select id="sort-order-filter" class="form-control input-sm" name="sort_order">
-                        {% for value, label in sort_order_options %}
-                        <option value="{{ value }}" {% if filters['sort_order'] == value %}selected{% end %}>{{ label }}</option>
-                        {% end %}
-                    </select>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-xs-12 col-sm-6 col-md-3">
-                <div class="form-group">
                     <label for="top-n-filter">TopN概念</label>
                     <input id="top-n-filter" class="form-control input-sm" type="number" name="top_n" min="1" max="50" value="{{ filters['top_n'] }}">
                 </div>
@@ -121,8 +117,6 @@
         <span>范围模式：{{ range_state['mode_label'] }}</span>
         <span class="hidden-xs"> | </span>
         <span>{{ range_state['available_range_label'] }}</span>
-        <span class="hidden-xs"> | </span>
-        <span>{{ range_state['sort_label'] }}</span>
     </div>
 
     {% if error_message %}
@@ -177,14 +171,9 @@
                     <table class="table table-striped table-bordered table-hover hot-concept-table">
                         <thead>
                             <tr>
-                                <th>类型</th>
-                                <th>名称</th>
-                                <th>快照</th>
-                                <th>热度分数</th>
-                                <th>平均涨跌幅</th>
-                                <th>上涨比例</th>
-                                <th>总成交额</th>
-                                <th>涨停数</th>
+                                {% for header in concept_sort_headers %}
+                                <th><a class="hot-concept-sort-link" href="{{ header['url'] }}">{{ header['label'] }}{% if header['indicator'] %}<span class="hot-concept-sort-indicator">{{ header['indicator'] }}</span>{% end %}</a></th>
+                                {% end %}
                             </tr>
                         </thead>
                         <tbody>

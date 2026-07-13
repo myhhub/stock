@@ -15,6 +15,24 @@
     #hot-concept-detail .hot-concept-table > tbody > tr > td {
         vertical-align: middle;
     }
+
+    #hot-concept-detail .hot-concept-sort-link {
+        color: inherit;
+        display: inline-block;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+    #hot-concept-detail .hot-concept-sort-link:hover,
+    #hot-concept-detail .hot-concept-sort-link:focus {
+        color: #337ab7;
+        text-decoration: none;
+    }
+
+    #hot-concept-detail .hot-concept-sort-indicator {
+        color: #337ab7;
+        margin-left: 3px;
+    }
 </style>
 
 <div id="hot-concept-detail" class="page-content">
@@ -124,14 +142,9 @@
                     <table class="table table-striped table-bordered table-hover hot-concept-table">
                         <thead>
                             <tr>
-                                <th>快照</th>
-                                <th>排名</th>
-                                <th>代码</th>
-                                <th>名称</th>
-                                <th>最新价</th>
-                                <th>涨跌幅</th>
-                                <th>成交额</th>
-                                <th>热度分数</th>
+                                {% for header in stock_sort_headers %}
+                                <th><a class="hot-concept-sort-link" href="{{ header['url'] }}">{{ header['label'] }}{% if header['indicator'] %}<span class="hot-concept-sort-indicator">{{ header['indicator'] }}</span>{% end %}</a></th>
+                                {% end %}
                             </tr>
                         </thead>
                         <tbody>

@@ -42,6 +42,28 @@ SORT_ORDER_OPTIONS = [
     ('asc', '升序'),
 ]
 
+CONCEPT_SORT_COLUMNS = {
+    'concept_type': {'label': '类型', 'type': 'text'},
+    'concept_name': {'label': '名称', 'type': 'text'},
+    'snapshot_time': {'label': '快照', 'type': 'text'},
+    'score': {'label': '热度分数', 'type': 'number'},
+    'avg_change_rate': {'label': '平均涨跌幅', 'type': 'number'},
+    'rise_ratio': {'label': '上涨比例', 'type': 'number'},
+    'total_deal_amount': {'label': '总成交额', 'type': 'number'},
+    'limit_up_count': {'label': '涨停数', 'type': 'number'},
+}
+
+STOCK_SORT_COLUMNS = {
+    'snapshot_time': {'label': '快照', 'type': 'text'},
+    'rank': {'label': '排名', 'type': 'number'},
+    'code': {'label': '代码', 'type': 'text'},
+    'name': {'label': '名称', 'type': 'text'},
+    'new_price': {'label': '最新价', 'type': 'number'},
+    'change_rate': {'label': '涨跌幅', 'type': 'number'},
+    'deal_amount': {'label': '成交额', 'type': 'number'},
+    'score': {'label': '热度分数', 'type': 'number'},
+}
+
 
 class GetHotConceptHtmlHandler(webBase.BaseHandler, ABC):
     @gen.coroutine
@@ -71,8 +93,8 @@ def _build_hot_concept_context(handler: webBase.BaseHandler, require_selected_co
             concept_type=raw_args['concept_type'] or 'CONCEPT',
             metric_min=raw_args['metric_min'],
             metric_max=raw_args['metric_max'],
-            sort_metric=raw_args['sort_metric'],
-            sort_order=raw_args['sort_order'] or 'desc',
+            sort_metric=_dashboard_sort_metric(raw_args),
+            sort_order=_dashboard_sort_order(raw_args),
             concept_top_n=raw_args['top_n'],
             stock_top_n=raw_args['top_stocks'],
             selected_concept=raw_args['concept_name'],
@@ -107,8 +129,18 @@ def _build_hot_concept_context(handler: webBase.BaseHandler, require_selected_co
 
     components = visualization.build_hot_concept_components(view_model)
     filters = _build_filter_state(raw_args, request, view_model)
-    concepts = _concept_rows_with_urls(view_model.get('concepts', []), filters, view_model)
-    top_stocks = _stock_rows_with_urls(view_model.get('latest_top_stocks', view_model.get('top_stocks', [])), view_model)
+    concepts = _sort_rows(
+        _concept_rows_with_urls(view_model.get('concepts', []), filters, view_model),
+        filters['concept_sort'],
+        filters['concept_sort_order'],
+        CONCEPT_SORT_COLUMNS,
+    )
+    top_stocks = _sort_rows(
+        _stock_rows_with_urls(view_model.get('latest_top_stocks', view_model.get('top_stocks', [])), view_model),
+        filters['stock_sort'],
+        filters['stock_sort_order'],
+        STOCK_SORT_COLUMNS,
+    )
 
     return {
         'web_module_data': sswmd.stock_web_module_data().get_data('hot_concept_dashboard'),
@@ -119,6 +151,8 @@ def _build_hot_concept_context(handler: webBase.BaseHandler, require_selected_co
         'concept_type_options': CONCEPT_TYPE_OPTIONS,
         'sort_order_options': SORT_ORDER_OPTIONS,
         'range_state': _range_state(view_model),
+        'concept_sort_headers': _concept_sort_headers(filters, view_model),
+        'stock_sort_headers': _stock_sort_headers(filters),
         'components': components,
         'concepts': concepts,
         'top_stocks': top_stocks,
@@ -171,6 +205,10 @@ def _read_query_args(handler: webBase.BaseHandler) -> dict[str, str | None]:
         'metric_max': handler.get_argument('metric_max', default=None, strip=True),
         'sort_metric': handler.get_argument('sort_metric', default=None, strip=True),
         'sort_order': handler.get_argument('sort_order', default='desc', strip=True),
+        'concept_sort': handler.get_argument('concept_sort', default=None, strip=True),
+        'concept_sort_order': handler.get_argument('concept_sort_order', default=None, strip=True),
+        'stock_sort': handler.get_argument('stock_sort', default=None, strip=True),
+        'stock_sort_order': handler.get_argument('stock_sort_order', default=None, strip=True),
         'top_n': handler.get_argument('top_n', default=str(dashboard.DEFAULT_CONCEPT_TOP_N), strip=True),
         'top_stocks': handler.get_argument('top_stocks', default=str(dashboard.DEFAULT_STOCK_TOP_N), strip=True),
         'config_hash': handler.get_argument('config_hash', default=None, strip=True),
@@ -189,6 +227,30 @@ def _selected_concept_type(concept_type: str | None, concept_name: str | None) -
     if concept_name and value in {'CONCEPT', 'STYLE'}:
         return value
     return None
+
+
+def _dashboard_sort_metric(raw_args: dict[str, str | None]) -> str:
+    concept_sort = raw_args.get('concept_sort')
+    if concept_sort in dashboard.ALLOWED_METRICS:
+        return concept_sort
+    legacy_sort_metric = raw_args.get('sort_metric')
+    if legacy_sort_metric in dashboard.ALLOWED_METRICS:
+        return legacy_sort_metric
+    metric = raw_args.get('metric') or 'score'
+    return metric if metric in dashboard.ALLOWED_METRICS else 'score'
+
+
+def _dashboard_sort_order(raw_args: dict[str, str | None]) -> str:
+    if raw_args.get('concept_sort') in dashboard.ALLOWED_METRICS:
+        return _normalized_sort_order(raw_args.get('concept_sort_order'), 'desc')
+    if raw_args.get('sort_metric') in dashboard.ALLOWED_METRICS:
+        return _normalized_sort_order(raw_args.get('sort_order'), 'desc')
+    return 'desc'
+
+
+def _normalized_sort_order(value: str | None, default: str) -> str:
+    sort_order = (value or default).lower()
+    return sort_order if sort_order in {'asc', 'desc'} else default
 
 
 def _fallback_request(raw_args: dict[str, str | None]) -> dict[str, Any]:
@@ -222,6 +284,13 @@ def _build_filter_state(
     raw_args: dict[str, str | None], request: dict[str, Any], view_model: dict[str, Any]
 ) -> dict[str, str]:
     metric = _first_text(view_model.get('metric'), request.get('metric'), raw_args.get('metric'), 'score')
+    legacy_concept_sort = _first_text(raw_args.get('sort_metric'), metric)
+    concept_sort = _normalized_sort_column(
+        raw_args.get('concept_sort') or legacy_concept_sort,
+        CONCEPT_SORT_COLUMNS,
+        'score',
+    )
+    stock_sort = _normalized_sort_column(raw_args.get('stock_sort'), STOCK_SORT_COLUMNS, 'rank')
     return {
         'trade_date': _first_text(view_model.get('trade_date'), request.get('trade_date'), raw_args.get('trade_date')),
         'metric': metric,
@@ -231,6 +300,13 @@ def _build_filter_state(
         'metric_max': _first_text(view_model.get('metric_max'), request.get('metric_max'), raw_args.get('metric_max')),
         'sort_metric': _first_text(view_model.get('sort_metric'), request.get('sort_metric'), raw_args.get('sort_metric'), metric),
         'sort_order': _first_text(view_model.get('sort_order'), request.get('sort_order'), raw_args.get('sort_order'), 'desc'),
+        'concept_sort': concept_sort,
+        'concept_sort_order': _normalized_sort_order(
+            raw_args.get('concept_sort_order') or raw_args.get('sort_order'),
+            'desc',
+        ),
+        'stock_sort': stock_sort,
+        'stock_sort_order': _normalized_sort_order(raw_args.get('stock_sort_order'), 'asc'),
         'top_n': _first_text(request.get('concept_top_n'), raw_args.get('top_n'), dashboard.DEFAULT_CONCEPT_TOP_N),
         'top_stocks': _first_text(request.get('stock_top_n'), raw_args.get('top_stocks'), dashboard.DEFAULT_STOCK_TOP_N),
         'config_hash': _first_text(view_model.get('config_hash'), request.get('config_hash'), raw_args.get('config_hash')),
@@ -253,6 +329,87 @@ def _concept_rows_with_urls(
         row['display_total_deal_amount'] = _format_chinese_amount(concept.get('total_deal_amount'))
         rows.append(row)
     return rows
+
+
+def _normalized_sort_column(value: str | None, columns: dict[str, dict[str, str]], default: str) -> str:
+    return value if value in columns else default
+
+
+def _sort_rows(
+    rows: list[dict[str, Any]],
+    sort_column: str,
+    sort_order: str,
+    columns: dict[str, dict[str, str]],
+) -> list[dict[str, Any]]:
+    if sort_column not in columns:
+        return rows
+    is_number = columns[sort_column]['type'] == 'number'
+    reverse = sort_order == 'desc'
+
+    def has_value(row: dict[str, Any]) -> bool:
+        value = row.get(sort_column)
+        return value is not None and value != ''
+
+    def sort_key(row: dict[str, Any]) -> tuple[float | str, str]:
+        value = row.get(sort_column)
+        if is_number:
+            return (_number(value), _text(row.get('code') or row.get('concept_name')))
+        return (_text(value), _text(row.get('code') or row.get('concept_name')))
+
+    valued_rows = [row for row in rows if has_value(row)]
+    empty_rows = [row for row in rows if not has_value(row)]
+    return sorted(valued_rows, key=sort_key, reverse=reverse) + empty_rows
+
+
+def _concept_sort_headers(filters: dict[str, str], view_model: dict[str, Any]) -> list[dict[str, str]]:
+    headers = []
+    for column, config in CONCEPT_SORT_COLUMNS.items():
+        next_order = _next_sort_order(filters['concept_sort'], filters['concept_sort_order'], column)
+        url = OVERVIEW_ROUTE + '?' + urlencode(
+            _query_from_filters(
+                filters,
+                include_concept_name=False,
+                overrides={
+                    'trade_date': _text(view_model.get('trade_date')) or filters.get('trade_date', ''),
+                    'config_hash': _text(view_model.get('config_hash')) or filters.get('config_hash', ''),
+                    'concept_sort': column,
+                    'concept_sort_order': next_order,
+                },
+            )
+        )
+        headers.append(_sort_header(config['label'], column, filters['concept_sort'], filters['concept_sort_order'], url))
+    return headers
+
+
+def _stock_sort_headers(filters: dict[str, str]) -> list[dict[str, str]]:
+    headers = []
+    for column, config in STOCK_SORT_COLUMNS.items():
+        next_order = _next_sort_order(filters['stock_sort'], filters['stock_sort_order'], column)
+        url = DETAIL_ROUTE + '?' + urlencode(
+            _query_from_filters(
+                filters,
+                include_concept_name=True,
+                overrides={'stock_sort': column, 'stock_sort_order': next_order},
+            )
+        )
+        headers.append(_sort_header(config['label'], column, filters['stock_sort'], filters['stock_sort_order'], url))
+    return headers
+
+
+def _next_sort_order(current_column: str, current_order: str, column: str) -> str:
+    if current_column == column and current_order == 'desc':
+        return 'asc'
+    return 'desc'
+
+
+def _sort_header(label: str, column: str, current_column: str, current_order: str, url: str) -> dict[str, str]:
+    active = column == current_column
+    return {
+        'label': label,
+        'url': url,
+        'active': '1' if active else '',
+        'indicator': '↓' if active and current_order == 'desc' else ('↑' if active else ''),
+    }
 
 
 def _detail_url(filters: dict[str, str], overrides: dict[str, str]) -> str:
@@ -280,6 +437,10 @@ def _query_from_filters(
         'metric_max',
         'sort_metric',
         'sort_order',
+        'concept_sort',
+        'concept_sort_order',
+        'stock_sort',
+        'stock_sort_order',
         'top_n',
         'top_stocks',
     ):
