@@ -223,6 +223,17 @@ class stock_web_module_data(metaclass=singleton_type):
             primary_key=[],
             is_realtime=True,
             url="/instock/hot_concept"
+        ), wmd.web_module_data(
+            mode="query",
+            type="热门概念",
+            ico="fa fa-history",
+            name="历史热门概念",
+            table_name="hot_concept_history_dashboard",
+            columns=(),
+            column_names=[],
+            primary_key=[],
+            is_realtime=False,
+            url="/instock/hot_concept/history"
         )]
 
         for table in tbs.TABLE_CN_STOCK_STRATEGIES:

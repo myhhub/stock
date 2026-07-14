@@ -58,8 +58,8 @@ def build_common_parser(description: str | None = None) -> argparse.ArgumentPars
         allow_abbrev=False,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    parser.add_argument('--trade-date', required=True, type=parse_trade_date, metavar='YYYY-MM-DD')
-    parser.add_argument('--snapshot-time', required=True, type=validate_snapshot_time, metavar='HHMM')
+    parser.add_argument('--trade-date', type=parse_trade_date, metavar='YYYY-MM-DD')
+    parser.add_argument('--snapshot-time', type=validate_snapshot_time, metavar='HHMM')
     parser.add_argument('--config', required=True, type=Path, metavar='PATH')
     parser.add_argument('--top-n', default=20, type=positive_int, metavar='INT')
     return parser

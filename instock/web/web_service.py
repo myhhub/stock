@@ -27,6 +27,7 @@ import instock.lib.version as version
 import instock.web.dataTableHandler as dataTableHandler
 import instock.web.dataIndicatorsHandler as dataIndicatorsHandler
 import instock.web.dataHotConceptHandler as dataHotConceptHandler
+import instock.web.dataHotConceptHistoryHandler as dataHotConceptHistoryHandler
 import instock.web.base as webBase
 
 __author__ = 'myh '
@@ -45,6 +46,7 @@ class Application(tornado.web.Application):
             # 获得股票指标数据。
             (r"/instock/data/indicators", dataIndicatorsHandler.GetDataIndicatorsHandler),
             (r"/instock/hot_concept/detail", dataHotConceptHandler.GetHotConceptDetailHtmlHandler),
+            (r"/instock/hot_concept/history", dataHotConceptHistoryHandler.GetHotConceptHistoryHtmlHandler),
             (r"/instock/hot_concept", dataHotConceptHandler.GetHotConceptHtmlHandler),
             # 加入关注
             (r"/instock/control/attention", dataIndicatorsHandler.SaveCollectHandler),

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
 import datetime as dt
 import logging
 import os.path
@@ -18,6 +19,7 @@ cpath_current = os.path.dirname(os.path.dirname(__file__))
 cpath = os.path.abspath(os.path.join(cpath_current, os.pardir))
 sys.path.append(cpath)
 
+import instock.core.crawling.stock_hist_em as stock_hist_em
 import instock.core.hot_concept as hot_concept
 import instock.core.tablestructure as tbs
 import instock.lib.database as mdb
@@ -32,11 +34,15 @@ class HotConceptHistoryJobError(RuntimeError):
     pass
 
 
+BACKFILL_MAX_WORKERS = 4
+
+
 @dataclass
 class MissingDataReport:
     skipped_non_trading_dates: list[str] = field(default_factory=list)
     missing_stock_dates: list[str] = field(default_factory=list)
     missing_membership_dates: list[str] = field(default_factory=list)
+    backfilled_stock_dates: list[str] = field(default_factory=list)
     processed_trade_dates: list[str] = field(default_factory=list)
     db_credential_blocker: str | None = None
 
@@ -47,6 +53,7 @@ class MissingDataReport:
             f'  skipped_non_trading_dates: {self.skipped_non_trading_dates}',
             f'  missing_stock_dates: {self.missing_stock_dates}',
             f'  missing_membership_dates: {self.missing_membership_dates}',
+            f'  backfilled_stock_dates: {self.backfilled_stock_dates}',
             f'  db_credential_blocker: {self.db_credential_blocker}',
         ]
 
@@ -98,7 +105,20 @@ def _table_exists(table_name: str) -> bool:
 
 def _load_stock_rows(trade_date: dt.date) -> pd.DataFrame:
     table_name = tbs.TABLE_CN_STOCK_SPOT['name']
+    if not _table_exists(table_name):
+        return pd.DataFrame()
     return _read_table(f'SELECT * FROM `{table_name}` WHERE `date` = %s', (trade_date,))
+
+
+def _stock_spot_frame(rows: list[dict[str, Any]]) -> pd.DataFrame:
+    columns = list(tbs.TABLE_CN_STOCK_SPOT['columns'])
+    frame = pd.DataFrame(rows)
+    if frame.empty:
+        return pd.DataFrame(columns=columns)
+    for column in columns:
+        if column not in frame.columns:
+            frame[column] = None
+    return frame.reindex(columns=columns)
 
 
 def _load_hot_concept_membership(trade_date: dt.date, captured_at: dt.datetime) -> tuple[pd.DataFrame, dt.date | None]:
@@ -189,6 +209,146 @@ def _insert_partition(
         )
 
 
+def _load_membership_cached(
+    cache: dict[dt.date, tuple[pd.DataFrame, dt.date | None, str | None]],
+    trade_date: dt.date,
+    captured_at: dt.datetime,
+) -> tuple[pd.DataFrame, dt.date | None, str | None]:
+    if trade_date not in cache:
+        cache[trade_date] = _load_membership(trade_date, captured_at)
+    return cache[trade_date]
+
+
+def _fetch_historical_stock_rows(codes: list[str], start_date: str, end_date: str) -> dict[str, pd.DataFrame]:
+    if not codes:
+        return {}
+
+    def fetch_one(code: str) -> tuple[str, pd.DataFrame | None]:
+        data = stock_hist_em.stock_zh_a_hist(symbol=code, period='daily', start_date=start_date, end_date=end_date, adjust='')
+        if data is None or data.empty:
+            return code, None
+        history = data.copy()
+        history['日期'] = pd.to_datetime(history['日期']).dt.strftime('%Y-%m-%d')
+        return code, history
+
+    histories: dict[str, pd.DataFrame] = {}
+    failures = 0
+    workers = min(BACKFILL_MAX_WORKERS, len(codes))
+    with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
+        future_to_code = {executor.submit(fetch_one, code): code for code in codes}
+        for future in concurrent.futures.as_completed(future_to_code):
+            code = future_to_code[future]
+            try:
+                fetched_code, history = future.result()
+            except Exception as exc:
+                failures += 1
+                logging.warning('historical stock fetch failed: code=%s start=%s end=%s error=%s', code, start_date, end_date, exc)
+                continue
+            if history is not None and not history.empty:
+                histories[fetched_code] = history
+            else:
+                failures += 1
+
+    logging.info(
+        'historical stock fetch complete: requested=%s available=%s failures=%s start_date=%s end_date=%s',
+        len(codes),
+        len(histories),
+        failures,
+        start_date,
+        end_date,
+    )
+    return histories
+
+
+def _build_backfilled_stock_row(trade_date_value: str, code: str, name: Any, history_row: pd.Series) -> dict[str, Any]:
+    close_price = float(history_row['收盘'])
+    ups_downs = float(history_row['涨跌额'])
+    return {
+        'date': trade_date_value,
+        'code': code,
+        'name': name,
+        'new_price': close_price,
+        'change_rate': float(history_row['涨跌幅']),
+        'ups_downs': ups_downs,
+        'volume': float(history_row['成交量']),
+        'deal_amount': float(history_row['成交额']),
+        'amplitude': float(history_row['振幅']),
+        'turnoverrate': float(history_row['换手率']),
+        'open_price': float(history_row['开盘']),
+        'high_price': float(history_row['最高']),
+        'low_price': float(history_row['最低']),
+        'pre_close_price': close_price - ups_downs,
+    }
+
+
+def _backfill_missing_stock_rows(
+    missing_trade_dates: list[dt.date],
+    captured_at: dt.datetime,
+    membership_cache: dict[dt.date, tuple[pd.DataFrame, dt.date | None, str | None]],
+    stock_rows_cache: dict[dt.date, pd.DataFrame],
+    report: MissingDataReport,
+) -> None:
+    if not missing_trade_dates:
+        return
+
+    code_names_by_date: dict[dt.date, dict[str, Any]] = {}
+    all_codes: set[str] = set()
+    backfill_dates: list[dt.date] = []
+
+    for trade_date in missing_trade_dates:
+        membership, _, _ = _load_membership_cached(membership_cache, trade_date, captured_at)
+        if membership.empty:
+            continue
+
+        code_names = membership[['code', 'name']].dropna(subset=['code']).copy()
+        if code_names.empty:
+            continue
+        code_names['code'] = code_names['code'].astype(str).str.zfill(6)
+        code_names = code_names.drop_duplicates('code').reset_index(drop=True)
+        if code_names.empty:
+            continue
+
+        code_name_map = dict(zip(code_names['code'], code_names['name']))
+        code_names_by_date[trade_date] = code_name_map
+        all_codes.update(code_name_map)
+        backfill_dates.append(trade_date)
+
+    if not all_codes or not backfill_dates:
+        return
+
+    start_date = min(backfill_dates).strftime('%Y%m%d')
+    end_date = max(backfill_dates).strftime('%Y%m%d')
+    logging.info(
+        'backfilling missing stock spot rows: trade_dates=%s codes=%s start_date=%s end_date=%s',
+        [trade_date.isoformat() for trade_date in backfill_dates],
+        len(all_codes),
+        start_date,
+        end_date,
+    )
+    histories = _fetch_historical_stock_rows(sorted(all_codes), start_date, end_date)
+
+    for trade_date in backfill_dates:
+        trade_date_value = trade_date.isoformat()
+        rows: list[dict[str, Any]] = []
+        for code, name in code_names_by_date[trade_date].items():
+            history = histories.get(code)
+            if history is None:
+                continue
+            matched = history.loc[history['日期'] == trade_date_value]
+            if matched.empty:
+                continue
+            rows.append(_build_backfilled_stock_row(trade_date_value, code, name, matched.iloc[-1]))
+
+        stock_rows = _stock_spot_frame(rows)
+        if stock_rows.empty:
+            continue
+
+        _insert_partition(stock_rows, tbs.TABLE_CN_STOCK_SPOT, '`date`,`code`', '`date` = %s', (trade_date_value,))
+        stock_rows_cache[trade_date] = stock_rows
+        report.backfilled_stock_dates.append(trade_date_value)
+        logging.info('backfilled stock spot rows: trade_date=%s rows=%s', trade_date_value, len(stock_rows.index))
+
+
 def _history_concepts(concepts: pd.DataFrame) -> pd.DataFrame:
     return concepts.drop(columns=['snapshot_time'], errors='ignore')
 
@@ -204,6 +364,8 @@ def run_history_job(start_date: dt.date, end_date: dt.date, config_path: str, to
     digest = hot_concept.config_hash(config)
     captured_at = dt.datetime.now().replace(microsecond=0)
     logging.basicConfig(level=logging.INFO, format='%(asctime)s hot_concept_history %(message)s', force=True)
+    membership_cache: dict[dt.date, tuple[pd.DataFrame, dt.date | None, str | None]] = {}
+    stock_rows_cache: dict[dt.date, pd.DataFrame] = {}
 
     trade_dates: list[dt.date] = []
     for calendar_date in calendar_dates:
@@ -222,14 +384,26 @@ def run_history_job(start_date: dt.date, end_date: dt.date, config_path: str, to
         _print_report(report)
         raise
 
+    missing_trade_dates = [trade_date for trade_date in trade_dates if _load_stock_rows(trade_date).empty]
+    for trade_date in trade_dates:
+        stock_rows_cache[trade_date] = _load_stock_rows(trade_date)
+    _backfill_missing_stock_rows(missing_trade_dates, captured_at, membership_cache, stock_rows_cache, report)
+
     for calendar_date in trade_dates:
         trade_date_value = calendar_date.isoformat()
-        stock_data = _load_stock_rows(calendar_date)
+        stock_data = stock_rows_cache.get(calendar_date)
+        if stock_data is None:
+            stock_data = _load_stock_rows(calendar_date)
+            stock_rows_cache[calendar_date] = stock_data
         if stock_data.empty:
             report.missing_stock_dates.append(trade_date_value)
             continue
 
-        membership, membership_as_of_date, membership_source = _load_membership(calendar_date, captured_at)
+        membership, membership_as_of_date, membership_source = _load_membership_cached(
+            membership_cache,
+            calendar_date,
+            captured_at,
+        )
         if membership.empty or membership_as_of_date is None:
             report.missing_membership_dates.append(trade_date_value)
             continue
