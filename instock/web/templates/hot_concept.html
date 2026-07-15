@@ -1,0 +1,203 @@
+{% extends "layout/default.html" %}
+
+{% block main_content %}
+<script type="text/javascript" src="/static/js/bokeh-3.8.1.min.js"></script>
+<script type="text/javascript" src="/static/js/bokeh-widgets-3.8.1.min.js"></script>
+<script type="text/javascript">
+    Bokeh.set_log_level("error");
+</script>
+<style>
+    #hot-concept-dashboard .hot-concept-wrap {
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
+    #hot-concept-dashboard .hot-concept-table > tbody > tr > td {
+        vertical-align: middle;
+    }
+
+    #hot-concept-dashboard .hot-concept-sort-link {
+        color: inherit;
+        display: inline-block;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+    #hot-concept-dashboard .hot-concept-sort-link:hover,
+    #hot-concept-dashboard .hot-concept-sort-link:focus {
+        color: #337ab7;
+        text-decoration: none;
+    }
+
+    #hot-concept-dashboard .hot-concept-sort-indicator {
+        color: #337ab7;
+        margin-left: 3px;
+    }
+</style>
+
+<div id="hot-concept-dashboard" class="page-content">
+    <div class="page-header">
+        <h1>{{ web_module_data.name }} <small>盘中概念热度与趋势概览</small></h1>
+    </div>
+
+    <div class="alert alert-info">热度仅用于盘中观察，不构成交易建议。</div>
+
+    <form class="well well-sm" method="get" action="/instock/hot_concept">
+        <div class="row">
+            <div class="col-xs-12 col-sm-6 col-md-3">
+                <div class="form-group">
+                    <label for="trade-date-filter">交易日期</label>
+                    <input id="trade-date-filter" class="form-control input-sm" type="text" name="trade_date" value="{{ filters['trade_date'] }}" placeholder="YYYY-MM-DD">
+                </div>
+            </div>
+            <div class="col-xs-12 col-sm-6 col-md-3">
+                <div class="form-group">
+                    <label for="concept-type-filter">概念类型</label>
+                    <select id="concept-type-filter" class="form-control input-sm" name="concept_type">
+                        {% for value, label in concept_type_options %}
+                        <option value="{{ value }}" {% if filters['concept_type'] == value %}selected{% end %}>{{ label }}</option>
+                        {% end %}
+                    </select>
+                </div>
+            </div>
+            <div class="col-xs-12 col-sm-6 col-md-3">
+                <div class="form-group">
+                    <label for="metric-filter">指标</label>
+                    <select id="metric-filter" class="form-control input-sm" name="metric">
+                        {% for value, label in metric_options %}
+                        <option value="{{ value }}" {% if filters['metric'] == value %}selected{% end %}>{{ label }}</option>
+                        {% end %}
+                    </select>
+                </div>
+            </div>
+            <div class="col-xs-12 col-sm-6 col-md-3">
+                <div class="form-group">
+                    <label for="config-hash-filter">配置哈希</label>
+                    <input id="config-hash-filter" class="form-control input-sm" type="text" name="config_hash" value="{{ filters['config_hash'] }}">
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12 col-sm-6 col-md-3">
+                <div class="form-group">
+                    <label for="metric-min-filter">指标下限</label>
+                    <input id="metric-min-filter" class="form-control input-sm" type="number" step="any" name="metric_min" value="{{ filters['metric_min'] }}" placeholder="默认前20%下限">
+                </div>
+            </div>
+            <div class="col-xs-12 col-sm-6 col-md-3">
+                <div class="form-group">
+                    <label for="metric-max-filter">指标上限</label>
+                    <input id="metric-max-filter" class="form-control input-sm" type="number" step="any" name="metric_max" value="{{ filters['metric_max'] }}" placeholder="默认最大值">
+                </div>
+            </div>
+            <div class="col-xs-12 col-sm-6 col-md-3">
+                <div class="form-group">
+                    <label for="top-n-filter">TopN概念</label>
+                    <input id="top-n-filter" class="form-control input-sm" type="number" name="top_n" min="1" max="50" value="{{ filters['top_n'] }}">
+                </div>
+            </div>
+            <div class="col-xs-12 col-sm-6 col-md-3">
+                <div class="form-group">
+                    <label for="top-stocks-filter">TopN股票</label>
+                    <input id="top-stocks-filter" class="form-control input-sm" type="number" name="top_stocks" min="1" max="50" value="{{ filters['top_stocks'] }}">
+                </div>
+            </div>
+            <div class="col-xs-12 col-sm-12 col-md-6">
+                <label>&nbsp;</label>
+                <div>
+                    <button class="btn btn-primary btn-sm" type="submit">查询</button>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <div class="alert alert-info">
+        <span>{{ range_state['current_range_label'] }}</span>
+        <span class="hidden-xs"> | </span>
+        <span>范围模式：{{ range_state['mode_label'] }}</span>
+        <span class="hidden-xs"> | </span>
+        <span>{{ range_state['available_range_label'] }}</span>
+    </div>
+
+    {% if error_message %}
+    <div class="alert alert-warning">{{ error_message }}</div>
+    {% end %}
+
+    {% if not view_model.get('has_data') %}
+    <div class="alert alert-info">暂无热门概念数据</div>
+    {% end %}
+
+    {% if summary_cards %}
+    <div class="row">
+        {% for card in summary_cards %}
+        <div class="col-xs-12 col-sm-6 col-md-3">
+            <div class="panel panel-default">
+                <div class="panel-heading">{{ card['label'] }}</div>
+                <div class="panel-body hot-concept-wrap">
+                    <strong>{{ card['value'] }}</strong>
+                </div>
+            </div>
+        </div>
+        {% end %}
+    </div>
+    {% end %}
+
+    <div class="row">
+        <div class="col-xs-12">
+            <div id="concept-trend-chart" class="panel panel-default">
+                <div class="panel-heading">概念趋势</div>
+                <div class="panel-body">
+                    {% raw components['concept_trend_chart']['div'] %}
+                    {% raw components['concept_trend_chart']['script'] %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xs-12 col-lg-6">
+            <div id="concept-heatmap" class="panel panel-default">
+                <div class="panel-heading">概念热力</div>
+                <div class="panel-body">
+                    {% raw components['concept_heatmap']['div'] %}
+                    {% raw components['concept_heatmap']['script'] %}
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-12 col-lg-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">概念列表</div>
+                <div class="table-responsive">
+                    <table class="table table-striped table-bordered table-hover hot-concept-table">
+                        <thead>
+                            <tr>
+                                {% for header in concept_sort_headers %}
+                                <th><a class="hot-concept-sort-link" href="{{ header['url'] }}">{{ header['label'] }}{% if header['indicator'] %}<span class="hot-concept-sort-indicator">{{ header['indicator'] }}</span>{% end %}</a></th>
+                                {% end %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for concept in concepts %}
+                            <tr>
+                                <td>{{ concept.get('concept_type', '') }}</td>
+                                <td class="hot-concept-wrap"><a href="{{ concept['url'] }}">{{ concept.get('concept_name', '') }}</a></td>
+                                <td>{{ concept.get('snapshot_time', '') }}</td>
+                                <td>{{ concept.get('score', '') }}</td>
+                                <td>{{ concept.get('weighted_change_rate', '') }}</td>
+                                <td>{{ concept.get('avg_change_rate', '') }}</td>
+                                <td>{{ concept.get('rise_ratio', '') }}</td>
+                                <td>{{ concept.get('display_total_deal_amount', '') }}</td>
+                                <td>{{ concept.get('limit_up_count', '') }}</td>
+                            </tr>
+                            {% end %}
+                            {% if not concepts %}
+                            <tr><td colspan="9">暂无热门概念数据</td></tr>
+                            {% end %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% end %}

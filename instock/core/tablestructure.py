@@ -926,8 +926,97 @@ TABLE_CN_STOCK_SELECTION = {'name': 'cn_stock_selection', 'cn': '综合选股',
                                                               'map': 'MUTUAL_NETBUY_AMT'},
                                         'hold_ratio': {'type': FLOAT, 'cn': '沪深股通持股比例', 'size': 70,
                                                        'map': 'HOLD_RATIO'},
-                                        'secucode': {'type': VARCHAR(10, _COLLATE), 'cn': '全代码', 'size': 0,
-                                                     'map': 'SECUCODE'}}}
+                                         'secucode': {'type': VARCHAR(10, _COLLATE), 'cn': '全代码', 'size': 0,
+                                                      'map': 'SECUCODE'}}}
+
+TABLE_CN_HOT_CONCEPT_STOCK_SNAPSHOT = {'name': 'cn_hot_concept_stock_snapshot', 'cn': '热门概念股票快照',
+                                       'columns': {'trade_date': {'type': DATE, 'cn': '交易日期', 'size': 0},
+                                                   'snapshot_time': {'type': VARCHAR(4, _COLLATE), 'cn': '快照时点',
+                                                                     'size': 70},
+                                                   'captured_at': {'type': DATETIME, 'cn': '采集时间', 'size': 0},
+                                                   'code': {'type': VARCHAR(6, _COLLATE), 'cn': '代码', 'size': 60},
+                                                   'name': {'type': VARCHAR(20, _COLLATE), 'cn': '名称', 'size': 70},
+                                                   'new_price': {'type': FLOAT, 'cn': '最新价', 'size': 70},
+                                                   'change_rate': {'type': FLOAT, 'cn': '涨跌幅', 'size': 70},
+                                                   'deal_amount': {'type': BIGINT, 'cn': '成交额', 'size': 100},
+                                                   'config_hash': {'type': VARCHAR(64, _COLLATE), 'cn': '配置哈希',
+                                                                   'size': 120}}}
+
+TABLE_CN_HOT_CONCEPT_MEMBERSHIP = {'name': 'cn_hot_concept_membership', 'cn': '热门概念成分股',
+                                   'columns': {'trade_date': {'type': DATE, 'cn': '交易日期', 'size': 0},
+                                               'snapshot_time': {'type': VARCHAR(4, _COLLATE), 'cn': '快照时点',
+                                                                 'size': 70},
+                                               'captured_at': {'type': DATETIME, 'cn': '采集时间', 'size': 0},
+                                               'membership_as_of_date': {'type': DATE, 'cn': '成分归属日期', 'size': 0},
+                                               'concept_type': {'type': VARCHAR(20, _COLLATE), 'cn': '概念类型',
+                                                                'size': 70},
+                                               'concept_name': {'type': VARCHAR(80, _COLLATE), 'cn': '概念名称',
+                                                                'size': 120},
+                                               'code': {'type': VARCHAR(6, _COLLATE), 'cn': '代码', 'size': 60},
+                                               'name': {'type': VARCHAR(20, _COLLATE), 'cn': '名称', 'size': 70}}}
+
+_HOT_CONCEPT_AGGREGATE_COLUMNS = {'trade_date': {'type': DATE, 'cn': '交易日期', 'size': 0},
+                                  'captured_at': {'type': DATETIME, 'cn': '采集时间', 'size': 0},
+                                  'membership_as_of_date': {'type': DATE, 'cn': '成分归属日期', 'size': 0},
+                                  'concept_type': {'type': VARCHAR(20, _COLLATE), 'cn': '概念类型', 'size': 70},
+                                  'concept_name': {'type': VARCHAR(80, _COLLATE), 'cn': '概念名称', 'size': 120},
+                                  'stock_count': {'type': BIGINT, 'cn': '股票数', 'size': 70},
+                                  'up_count': {'type': BIGINT, 'cn': '上涨数', 'size': 70},
+                                  'rise_ratio': {'type': FLOAT, 'cn': '上涨比例', 'size': 70},
+                                  'avg_change_rate': {'type': FLOAT, 'cn': '平均涨跌幅', 'size': 90},
+                                  'weighted_change_rate': {'type': FLOAT, 'cn': '成交额加权涨跌幅', 'size': 120},
+                                  'total_deal_amount': {'type': BIGINT, 'cn': '总成交额', 'size': 120},
+                                  'limit_up_count': {'type': BIGINT, 'cn': '涨停数', 'size': 70},
+                                  'score': {'type': FLOAT, 'cn': '热度分数', 'size': 70},
+                                  'weighted_change_rate_percentile': {'type': FLOAT, 'cn': '加权涨跌幅分位',
+                                                                      'size': 100},
+                                  'avg_change_rate_percentile': {'type': FLOAT, 'cn': '平均涨跌幅分位', 'size': 100},
+                                  'deal_amount_percentile': {'type': FLOAT, 'cn': '成交额分位', 'size': 100},
+                                  'limit_up_count_percentile': {'type': FLOAT, 'cn': '涨停数分位', 'size': 100},
+                                  'weight_weighted_change_rate_percentile': {'type': FLOAT, 'cn': '加权涨跌幅权重',
+                                                                             'size': 90},
+                                  'weight_avg_change_rate_percentile': {'type': FLOAT, 'cn': '平均涨跌幅权重',
+                                                                        'size': 90},
+                                  'weight_rise_ratio': {'type': FLOAT, 'cn': '上涨比例权重', 'size': 90},
+                                  'weight_deal_amount_percentile': {'type': FLOAT, 'cn': '成交额权重', 'size': 90},
+                                  'weight_limit_up_count_percentile': {'type': FLOAT, 'cn': '涨停数权重', 'size': 90},
+                                  'config_hash': {'type': VARCHAR(64, _COLLATE), 'cn': '配置哈希', 'size': 120},
+                                  'config_json': {'type': VARCHAR(2000, _COLLATE), 'cn': '配置JSON', 'size': 150}}
+
+_HOT_CONCEPT_SNAPSHOT_COLUMNS = {'snapshot_time': {'type': VARCHAR(4, _COLLATE), 'cn': '快照时点', 'size': 70}}
+_HOT_CONCEPT_SNAPSHOT_COLUMNS.update(_HOT_CONCEPT_AGGREGATE_COLUMNS.copy())
+
+TABLE_CN_HOT_CONCEPT_SNAPSHOT = {'name': 'cn_hot_concept_snapshot', 'cn': '热门概念快照',
+                                 'columns': _HOT_CONCEPT_SNAPSHOT_COLUMNS}
+
+_HOT_CONCEPT_TOP_STOCK_COLUMNS = {'trade_date': {'type': DATE, 'cn': '交易日期', 'size': 0},
+                                  'snapshot_time': {'type': VARCHAR(4, _COLLATE), 'cn': '快照时点', 'size': 70},
+                                  'captured_at': {'type': DATETIME, 'cn': '采集时间', 'size': 0},
+                                  'membership_as_of_date': {'type': DATE, 'cn': '成分归属日期', 'size': 0},
+                                  'concept_type': {'type': VARCHAR(20, _COLLATE), 'cn': '概念类型', 'size': 70},
+                                  'concept_name': {'type': VARCHAR(80, _COLLATE), 'cn': '概念名称', 'size': 120},
+                                  'rank': {'type': BIGINT, 'cn': '排名', 'size': 60},
+                                  'code': {'type': VARCHAR(6, _COLLATE), 'cn': '代码', 'size': 60},
+                                  'name': {'type': VARCHAR(20, _COLLATE), 'cn': '名称', 'size': 70},
+                                  'new_price': {'type': FLOAT, 'cn': '最新价', 'size': 70},
+                                  'change_rate': {'type': FLOAT, 'cn': '涨跌幅', 'size': 70},
+                                  'deal_amount': {'type': BIGINT, 'cn': '成交额', 'size': 100},
+                                  'stock_count': {'type': BIGINT, 'cn': '股票数', 'size': 70},
+                                  'score': {'type': FLOAT, 'cn': '热度分数', 'size': 70},
+                                  'config_hash': {'type': VARCHAR(64, _COLLATE), 'cn': '配置哈希', 'size': 120}}
+
+TABLE_CN_HOT_CONCEPT_TOP_STOCK = {'name': 'cn_hot_concept_top_stock', 'cn': '热门概念Top股票',
+                                  'columns': _HOT_CONCEPT_TOP_STOCK_COLUMNS}
+
+TABLE_CN_HOT_CONCEPT_HISTORY = {'name': 'cn_hot_concept_history', 'cn': '历史热门概念',
+                                'columns': _HOT_CONCEPT_AGGREGATE_COLUMNS.copy()}
+
+_HOT_CONCEPT_HISTORY_TOP_STOCK_COLUMNS = _HOT_CONCEPT_TOP_STOCK_COLUMNS.copy()
+_HOT_CONCEPT_HISTORY_TOP_STOCK_COLUMNS.pop('snapshot_time')
+
+TABLE_CN_HOT_CONCEPT_HISTORY_TOP_STOCK = {'name': 'cn_hot_concept_history_top_stock',
+                                          'cn': '历史热门概念Top股票',
+                                          'columns': _HOT_CONCEPT_HISTORY_TOP_STOCK_COLUMNS}
 
 CN_STOCK_CPBD = {'name': 'cn_stock_cpbd', 'cn': '操盘必读',
                  'columns': {'SECURITY_CODE': {'type': VARCHAR(6, _COLLATE), 'cn': '代码'},

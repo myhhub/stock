@@ -160,3 +160,7 @@ cython_debug/
 cache/
 log/
 test/
+.mariadb/
+/mariadb/
+
+.sisyphus/

@@ -6,6 +6,7 @@ TA_Lib==0.6.8
 arrow==1.4.0
 bokeh==3.8.1
 PyMySQL==1.1.2
+brotli==1.2.0
 requests==2.32.5
 Logbook==1.9.2
 SQLAlchemy==2.0.45

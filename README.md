@@ -434,6 +434,54 @@ abc:123456@65.1.244.232:3128
 #基础数据作业 
 python basic_data_daily_job.py
 ```
+#### 10.1.1.热门概念分析
+
+热门概念分析通过独立脚本执行，**不内置常驻调度器**，需要由 `cron`、`supervisor` 或其他外部调度系统按时间触发。
+
+默认评分配置文件：`instock/config/hot_concept_score.json`。
+
+盘中抓取支持以下时间槽：`0925`、`0930`、`1000`、`1030`、`1100`、`1130`、`1300`、`1330`、`1400`、`1430`、`1500`。
+
+1）盘中抓取并聚合热门概念：
+
+```
+sh instock/bin/run_hot_concept_job.sh intraday --trade-date 2026-06-30 --snapshot-time 0925 --config instock/config/hot_concept_score.json
+
+sh instock/bin/run_hot_concept_job.sh intraday --trade-date 2026-06-30 --snapshot-time 1000 --config instock/config/hot_concept_score.json --top-n 20
+```
+
+2）收盘后统计一段时间内的热门概念：
+
+```
+sh instock/bin/run_hot_concept_job.sh history --start-date 2026-06-24 --end-date 2026-06-30 --config instock/config/hot_concept_score.json --top-n 20
+```
+
+3）查询盘中热门概念及概念内 TopN 股票：
+
+```
+sh instock/bin/run_hot_concept_job.sh query --trade-date 2026-06-30 --snapshot-time 0925 --top-concepts 10 --top-stocks 20 --format json
+```
+
+4）查询历史区间热门概念及概念内 TopN 股票：
+
+```
+sh instock/bin/run_hot_concept_job.sh query --start-date 2026-06-24 --end-date 2026-06-30 --top-concepts 10 --top-stocks 20 --format json
+```
+
+5）查看包装脚本帮助：
+
+```
+sh instock/bin/run_hot_concept_job.sh help
+```
+
+说明：
+
+```
+1、`intraday` 用于单个时间槽抓取和聚合当天热门概念。
+2、`history` 用于按交易日统计历史区间热门概念。
+3、`query` 用于查询结果，`--format` 支持 `json` 和 `table`。
+4、`--top-n` 控制每个概念写入的 TopN 股票数量，默认 20。
+```
 #### 10.2.启动web服务
 
 ```

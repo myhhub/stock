@@ -59,9 +59,11 @@ def stock_selection() -> pd.DataFrame:
     temp_df = pd.DataFrame(data)
 
     mask = ~temp_df['CONCEPT'].isna()
-    temp_df.loc[mask, 'CONCEPT'] = temp_df.loc[mask, 'CONCEPT'].apply(lambda x: ', '.join(x))
+    temp_df.loc[mask, 'CONCEPT'] = temp_df.loc[mask, 'CONCEPT'].apply(
+        lambda x: x if isinstance(x, str) else ', '.join(x))
     mask = ~temp_df['STYLE'].isna()
-    temp_df.loc[mask, 'STYLE'] = temp_df.loc[mask, 'STYLE'].apply(lambda x: ', '.join(x))
+    temp_df.loc[mask, 'STYLE'] = temp_df.loc[mask, 'STYLE'].apply(
+        lambda x: x if isinstance(x, str) else ', '.join(x))
 
     for k in cols:
         t = tbs.get_field_type_name(cols[k]["type"])

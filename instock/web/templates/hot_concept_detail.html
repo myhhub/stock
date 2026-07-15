@@ -1,0 +1,179 @@
+{% extends "layout/default.html" %}
+
+{% block main_content %}
+<script type="text/javascript" src="/static/js/bokeh-3.8.1.min.js"></script>
+<script type="text/javascript" src="/static/js/bokeh-widgets-3.8.1.min.js"></script>
+<script type="text/javascript">
+    Bokeh.set_log_level("error");
+</script>
+<style>
+    #hot-concept-detail .hot-concept-wrap {
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
+    #hot-concept-detail .hot-concept-table > tbody > tr > td {
+        vertical-align: middle;
+    }
+
+    #hot-concept-detail .hot-concept-sort-link {
+        color: inherit;
+        display: inline-block;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+    #hot-concept-detail .hot-concept-sort-link:hover,
+    #hot-concept-detail .hot-concept-sort-link:focus {
+        color: #337ab7;
+        text-decoration: none;
+    }
+
+    #hot-concept-detail .hot-concept-sort-indicator {
+        color: #337ab7;
+        margin-left: 3px;
+    }
+</style>
+
+<div id="hot-concept-detail" class="page-content">
+    <div class="page-header">
+        <h1>{{ web_module_data.name }} <small>概念详情与成分股表现</small></h1>
+    </div>
+
+    <div class="alert alert-info">热度仅用于盘中观察，不构成交易建议。</div>
+
+    <div class="alert alert-info hot-concept-wrap">
+        <span>当前指标：{{ detail_state['metric_label'] }}</span>
+        <span class="hidden-xs"> | </span>
+        <span>概念标识：{{ detail_state['selected_identity'] or '暂无' }}</span>
+    </div>
+
+    <p><a class="btn btn-primary btn-sm" href="{{ back_url }}">返回概念总览</a></p>
+
+    {% if error_message %}
+    <div class="alert alert-warning">{{ error_message }}</div>
+    {% end %}
+
+    {% if not view_model.get('has_data') %}
+    <div class="alert alert-info">暂无热门概念数据</div>
+    {% end %}
+
+    {% if view_model.get('has_data') and not selected_concept_metrics %}
+    <div class="alert alert-info">暂无选中概念数据</div>
+    {% end %}
+
+    {% if summary_cards %}
+    <div class="row">
+        {% for card in summary_cards %}
+        <div class="col-xs-12 col-sm-6 col-md-3">
+            <div class="panel panel-default">
+                <div class="panel-heading">{{ card['label'] }}</div>
+                <div class="panel-body hot-concept-wrap">
+                    <strong>{{ card['value'] }}</strong>
+                </div>
+            </div>
+        </div>
+        {% end %}
+    </div>
+    {% end %}
+
+    {% if selected_concept_metrics %}
+    <div class="panel panel-default">
+        <div class="panel-heading">当前概念详情</div>
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover hot-concept-table">
+                <tbody>
+                    <tr>
+                        <th>类型</th>
+                        <td>{{ selected_concept_metrics['concept_type'] }}</td>
+                        <th>名称</th>
+                        <td class="hot-concept-wrap">{{ selected_concept_metrics['concept_name'] }}</td>
+                        <th>快照</th>
+                        <td>{{ selected_concept_metrics['snapshot_time'] }}</td>
+                    </tr>
+                    <tr>
+                        <th>热度分数</th>
+                        <td>{{ selected_concept_metrics['score'] }}</td>
+                        <th>平均涨跌幅</th>
+                        <td>{{ selected_concept_metrics['avg_change_rate'] }}</td>
+                        <th>成交额加权涨跌幅</th>
+                        <td>{{ selected_concept_metrics['weighted_change_rate'] }}</td>
+                    </tr>
+                    <tr>
+                        <th>上涨比例</th>
+                        <td>{{ selected_concept_metrics['rise_ratio'] }}</td>
+                        <th>总成交额</th>
+                        <td>{{ selected_concept_metrics['total_deal_amount'] }}</td>
+                        <th>涨停数</th>
+                        <td>{{ selected_concept_metrics['limit_up_count'] }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% end %}
+
+    <div class="row">
+        <div class="col-xs-12 col-lg-6">
+            <div id="selected-concept-chart" class="panel panel-default">
+                <div class="panel-heading">选中概念指标</div>
+                <div class="panel-body">
+                    {% raw components['selected_concept_chart']['div'] %}
+                    {% raw components['selected_concept_chart']['script'] %}
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-12 col-lg-6">
+            <div id="stock-trend-chart" class="panel panel-default">
+                <div class="panel-heading">概念内股票趋势</div>
+                <div class="panel-body">
+                    {% raw components['stock_trend_chart']['div'] %}
+                    {% raw components['stock_trend_chart']['script'] %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xs-12">
+            <div id="top-stock-table" class="panel panel-default">
+                <div class="panel-heading">概念内TopN股票</div>
+                <div class="table-responsive">
+                    <table class="table table-striped table-bordered table-hover hot-concept-table">
+                        <thead>
+                            <tr>
+                                {% for header in stock_sort_headers %}
+                                <th><a class="hot-concept-sort-link" href="{{ header['url'] }}">{{ header['label'] }}{% if header['indicator'] %}<span class="hot-concept-sort-indicator">{{ header['indicator'] }}</span>{% end %}</a></th>
+                                {% end %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for stock in top_stocks %}
+                            <tr>
+                                <td>{{ stock.get('snapshot_time', '') }}</td>
+                                <td>{{ stock.get('rank', '') }}</td>
+                                <td>
+                                    {% if stock.get('indicator_url') %}
+                                    <a href="{{ stock.get('indicator_url') }}" target="_blank" rel="noopener noreferrer">{{ stock.get('code', '') }}</a>
+                                    {% else %}
+                                    {{ stock.get('code', '') }}
+                                    {% end %}
+                                </td>
+                                <td class="hot-concept-wrap">{{ stock.get('name', '') }}</td>
+                                <td>{{ stock.get('new_price', '') }}</td>
+                                <td>{{ stock.get('change_rate', '') }}</td>
+                                <td>{{ stock.get('display_deal_amount', '') }}</td>
+                                <td>{{ stock.get('score', '') }}</td>
+                            </tr>
+                            {% end %}
+                            {% if not top_stocks %}
+                            <tr><td colspan="8">暂无热门概念数据</td></tr>
+                            {% end %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% end %}

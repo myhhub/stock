@@ -6,11 +6,11 @@ import os.path
 import sys
 from abc import ABC
 
-import tornado.escape
-import tornado.httpserver
-import tornado.ioloop
-import tornado.options
-from tornado import gen
+import tornado.escape  # type: ignore[reportMissingImports]
+import tornado.httpserver  # type: ignore[reportMissingImports]
+import tornado.ioloop  # type: ignore[reportMissingImports]
+import tornado.options  # type: ignore[reportMissingImports]
+from tornado import gen  # type: ignore[reportMissingImports]
 
 # 在项目运行时，临时将项目路径添加到环境变量
 cpath_current = os.path.dirname(os.path.dirname(__file__))
@@ -26,6 +26,8 @@ import instock.lib.database as mdb
 import instock.lib.version as version
 import instock.web.dataTableHandler as dataTableHandler
 import instock.web.dataIndicatorsHandler as dataIndicatorsHandler
+import instock.web.dataHotConceptHandler as dataHotConceptHandler
+import instock.web.dataHotConceptHistoryHandler as dataHotConceptHistoryHandler
 import instock.web.base as webBase
 
 __author__ = 'myh '
@@ -43,6 +45,9 @@ class Application(tornado.web.Application):
             (r"/instock/data", dataTableHandler.GetStockHtmlHandler),
             # 获得股票指标数据。
             (r"/instock/data/indicators", dataIndicatorsHandler.GetDataIndicatorsHandler),
+            (r"/instock/hot_concept/detail", dataHotConceptHandler.GetHotConceptDetailHtmlHandler),
+            (r"/instock/hot_concept/history", dataHotConceptHistoryHandler.GetHotConceptHistoryHtmlHandler),
+            (r"/instock/hot_concept", dataHotConceptHandler.GetHotConceptHtmlHandler),
             # 加入关注
             (r"/instock/control/attention", dataIndicatorsHandler.SaveCollectHandler),
         ]

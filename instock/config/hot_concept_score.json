@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "min_stock_count": 3,
+  "weights": {
+    "weighted_change_rate_percentile": 0.30,
+    "avg_change_rate_percentile": 0.25,
+    "rise_ratio": 0.20,
+    "deal_amount_percentile": 0.15,
+    "limit_up_count_percentile": 0.10
+  }
+}
