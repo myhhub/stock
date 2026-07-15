@@ -47,6 +47,7 @@ CONCEPT_SORT_COLUMNS = {
     'concept_name': {'label': '名称', 'type': 'text'},
     'snapshot_time': {'label': '快照', 'type': 'text'},
     'score': {'label': '热度分数', 'type': 'number'},
+    'weighted_change_rate': {'label': '成交额加权涨跌幅', 'type': 'number'},
     'avg_change_rate': {'label': '平均涨跌幅', 'type': 'number'},
     'rise_ratio': {'label': '上涨比例', 'type': 'number'},
     'total_deal_amount': {'label': '总成交额', 'type': 'number'},

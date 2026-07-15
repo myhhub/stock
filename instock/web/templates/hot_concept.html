@@ -183,6 +183,7 @@
                                 <td class="hot-concept-wrap"><a href="{{ concept['url'] }}">{{ concept.get('concept_name', '') }}</a></td>
                                 <td>{{ concept.get('snapshot_time', '') }}</td>
                                 <td>{{ concept.get('score', '') }}</td>
+                                <td>{{ concept.get('weighted_change_rate', '') }}</td>
                                 <td>{{ concept.get('avg_change_rate', '') }}</td>
                                 <td>{{ concept.get('rise_ratio', '') }}</td>
                                 <td>{{ concept.get('display_total_deal_amount', '') }}</td>
@@ -190,7 +191,7 @@
                             </tr>
                             {% end %}
                             {% if not concepts %}
-                            <tr><td colspan="8">暂无热门概念数据</td></tr>
+                            <tr><td colspan="9">暂无热门概念数据</td></tr>
                             {% end %}
                         </tbody>
                     </table>
