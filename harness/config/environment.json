@@ -1,0 +1,176 @@
+{
+  "schema_version": "2.0",
+  "project": {
+    "name": "InStock",
+    "description": "Python 股票量化系统（A股数据采集、指标计算、策略选股、Web 展示）",
+    "root": ".",
+    "python_entry": "instock"
+  },
+  "services": {
+    "mariadb": {
+      "type": "mariadb",
+      "host": "localhost",
+      "port": 3306,
+      "user": "root",
+      "password": "${db_password}",
+      "database": "instockdb",
+      "charset": "utf8mb4",
+      "version": "latest",
+      "driver": "pymysql",
+      "orm": "sqlalchemy",
+      "connection_url": "mysql+pymysql://${db_user}:${db_password}@${db_host}:${db_port}/${db_database}?charset=utf8mb4",
+      "notes": "torndb 与 sqlalchemy 共用同一组连接参数，由 instock/lib/database.py 从环境变量加载"
+    }
+  },
+  "web_server": {
+    "framework": "tornado",
+    "port": 9988,
+    "entry": "instock/web/web_service.py",
+    "url": "http://localhost:9988/",
+    "routes": [
+      "/",
+      "/instock/",
+      "/instock/api_data",
+      "/instock/data",
+      "/instock/data/indicators",
+      "/instock/control/attention"
+    ]
+  },
+  "process_manager": {
+    "name": "supervisord",
+    "config_path": "supervisor/supervisord.conf",
+    "programs": [
+      "run_job",
+      "run_web",
+      "run_cron"
+    ],
+    "notes": "Docker 容器入口为 supervisord -n -c supervisor/supervisord.conf，本地运行可不依赖 supervisor"
+  },
+  "scheduler": {
+    "type": "cron",
+    "rules": [
+      {
+        "expression": "*/30 9,10,11,13,14,15 * * 1-5",
+        "target": "cron.hourly",
+        "entry": "instock/job/basic_data_daily_job.py",
+        "description": "工作日盘中（9-11/13-15 点）每 30 分钟执行基础数据实时作业"
+      },
+      {
+        "expression": "30 17 * * 1-5",
+        "target": "cron.workdayly",
+        "entry": "instock/job/execute_daily_job.py",
+        "description": "工作日 17:30 执行综合收盘作业"
+      },
+      {
+        "expression": "30 10 * * 3,6",
+        "target": "cron.monthly",
+        "entry": "清空 instock/cache/hist 缓存",
+        "description": "每周三、六 10:30 清理缓存数据"
+      }
+    ],
+    "source": "docker/Dockerfile (crontab)"
+  },
+  "env_vars": {
+    "db_host": {
+      "required": false,
+      "default": "localhost",
+      "secret": false,
+      "description": "数据库主机，Docker 容器内为 InStockDbService"
+    },
+    "db_user": {
+      "required": false,
+      "default": "root",
+      "secret": false,
+      "description": "数据库用户"
+    },
+    "db_password": {
+      "required": false,
+      "default": "root",
+      "secret": true,
+      "description": "数据库密码，Docker 镜像默认 root，本地用 ${db_password} 占位"
+    },
+    "db_database": {
+      "required": false,
+      "default": "instockdb",
+      "secret": false,
+      "description": "数据库名称"
+    },
+    "db_port": {
+      "required": false,
+      "default": 3306,
+      "secret": false,
+      "description": "数据库端口"
+    },
+    "EAST_MONEY_COOKIE": {
+      "required": false,
+      "default": "",
+      "secret": true,
+      "description": "东方财富网 Cookie，优先级：环境变量 > config/eastmoney_cookie.txt > 内置默认"
+    },
+    "PYTHONPATH": {
+      "required": false,
+      "default": ".",
+      "secret": false,
+      "description": "Python 模块搜索路径，Docker 内为 /data/InStock，本地为项目根"
+    }
+  },
+  "config_files": {
+    "dir": "instock/config",
+    "files": {
+      "eastmoney_cookie.txt": {
+        "purpose": "东方财富网 Cookie 文本，被 eastmoney_fetcher 回退读取",
+        "required": false
+      },
+      "proxy.txt": {
+        "purpose": "代理地址配置，被 singleton_proxy 读取",
+        "required": false
+      },
+      "trade_client.json": {
+        "purpose": "easytrader 交易客户端配置",
+        "required": false
+      }
+    }
+  },
+  "docker": {
+    "compose_path": "docker/docker-compose.yml",
+    "services": {
+      "instockdbservice": {
+        "image": "library/mariadb:latest",
+        "container_name": "InStockDbService",
+        "environment": {
+          "MYSQL_ROOT_PASSWORD": "root"
+        }
+      },
+      "instock": {
+        "image": "mayanghua/instock:latest",
+        "container_name": "InStock",
+        "ports": ["9988:9988"],
+        "environment": {
+          "db_host": "InStockDbService"
+        }
+      }
+    },
+    "startup": "cd docker && docker-compose up -d"
+  },
+  "dependencies": {
+    "python": {
+      "requirements": "requirements.txt",
+      "key_packages": [
+        "pymysql==1.1.2",
+        "SQLAlchemy==2.0.45",
+        "tornado==6.5.4",
+        "pandas==2.3.3",
+        "numpy==2.4.1",
+        "TA_Lib==0.6.8",
+        "easytrader==0.23.7"
+      ]
+    },
+    "system": {
+      "TA-Lib": {
+        "type": "native_library",
+        "install": "从 https://github.com/ta-lib/ta-lib/releases 下载 tar.gz，./configure && make && make install 后再 pip install TA-Lib",
+        "notes": "TA_Lib pip 包依赖系统级 ta-lib native 库，需先编译安装"
+      }
+    }
+  }
+}
